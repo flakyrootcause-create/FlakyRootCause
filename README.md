@@ -1,6 +1,7 @@
-# FlakyRootCause
-
 # Flaky Test Root Cause Category through LLM
+
+This is the artifact of paper *"Preliminary Results on Evaluating Large Language Models for
+Labeling Root Cause Categories of Fixed Flaky Tests"* accepted at FTW 2026.
 
 ## File Structure
 
