@@ -1,0 +1,11 @@
+{
+  "id": 196,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/commit/8588dbeb023a124c6f8c35b66391a7d8caa8bf35",
+  "pr_url": "https://github.com/getsentry/sentry-python/commit/8588dbeb023a124c6f8c35b66391a7d8caa8bf35",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

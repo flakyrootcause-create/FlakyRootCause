@@ -1,0 +1,17 @@
+{
+  "id": 286,
+  "repo": "talos",
+  "issue_url": "https://github.com/siderolabs/talos/pull/11362",
+  "pr_url": "https://github.com/siderolabs/talos/pull/11362",
+  "issue_description": "Fixes #10853\r\n\r\nI think the issue is that we do DNS client request to the DNS caching server, and expect the request to fail on client side, as caching server doesn't respond in time (as the server is waiting for a response).\r\n\r\nMake sure we use a short timeout on our client side, so that we time out before a server does.\r\n",
+  "files_changed": [
+    {
+      "filename": "internal/pkg/dns/dns_test.go",
+      "status": "modified",
+      "patch": "@@ -90,7 +90,11 @@ func TestDNS(t *testing.T) {\n \n \t\t\t\ttime.Sleep(10 * time.Millisecond)\n \n-\t\t\t\tr, err := dnssrv.Exchange(createQuery(test.hostname), dnsAddr)\n+\t\t\t\tc := dnssrv.Client{\n+\t\t\t\t\tTimeout: time.Second,\n+\t\t\t\t}\n+\n+\t\t\t\tr, _, err := c.Exchange(createQuery(test.hostname), dnsAddr)\n \t\t\t\ttest.errCheck(t, err)\n \n \t\t\t\tif r != nil {"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

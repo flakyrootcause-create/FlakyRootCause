@@ -1,0 +1,17 @@
+{
+  "id": 222,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/commit/1ffbfbe487370f5071e72042441c499f35f63f72",
+  "pr_url": "https://github.com/apache/spark/commit/1ffbfbe487370f5071e72042441c499f35f63f72",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "README.md",
+      "status": "modified",
+      "patch": "@@ -1,12 +1,12 @@\n # Apache Spark\n \n-Lightning-Fast Cluster Computing - <http://spark.incubator.apache.org/>\n+Lightning-Fast Cluster Computing - <http://spark.apache.org/>\n \n \n ## Online Documentation\n \n You can find the latest Spark documentation, including a programming\n-guide, on the project webpage at <http://spark.incubator.apache.org/documentation.html>.\n+guide, on the project webpage at <http://spark.apache.org/documentation.html>.\n This README file only contains basic setup instructions.\n \n \n@@ -92,21 +92,10 @@ If your project is built with Maven, add this to your POM file's `<dependencies>\n \n ## Configuration\n \n-Please refer to the [Configuration guide](http://spark.incubator.apache.org/docs/latest/configuration.html)\n+Please refer to the [Configuration guide](http://spark.apache.org/docs/latest/configuration.html)\n in the online documentation for an overview on how to configure Spark.\n \n \n-## Apache Incubator Notice\n-\n-Apache Spark is an effort undergoing incubation at The Apache Software\n-Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of\n-all newly accepted projects until a further review indicates that the\n-infrastructure, communications, and decision making process have stabilized in\n-a manner consistent with other successful ASF projects. While incubation status\n-is not necessarily a reflection of the completeness or stability of the code,\n-it does indicate that the project has yet to be fully endorsed by the ASF.\n-\n-\n ## Contributing to Spark\n \n Contributions via GitHub pull requests are gladly accepted from their original"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

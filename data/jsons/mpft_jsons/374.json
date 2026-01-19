@@ -1,0 +1,17 @@
+{
+  "id": 374,
+  "repo": "vscode",
+  "issue_url": "https://github.com/microsoft/vscode/pull/255123",
+  "pr_url": "https://github.com/microsoft/vscode/pull/255123",
+  "issue_description": "This test was flaking because before the suite runs a bunch of settings are added which are critical to making the test reliable. Inside the settings part it opens the editor, edits it and saves the file via ctrl/cmd+s. This is all fine, but it doesn't verify anything so the editor may end up closing before ctrl/cmd+s actually gets handled. We disable the modal in smoke tests since it needs to run headlessly, so it's difficult to see that the file never actually saves and a dirty file is closed and discarded.\r\n\r\nThe fix is to verify settings.json actually does save by changing the shared Editors.saveOpenedFile mechanism to ensure the dirty indicator isn't present on the active tab.\r\n\r\nFixes #254893\r\nPart of #246731\r\n\r\nFYI @aiday-mar \r\n\r\n<!-- Thank you for submitting a Pull Request. Please:\r\n* Read our Pull Request guidelines:\r\n  https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests\r\n* Associate an issue with the Pull Request.\r\n* Ensure that the code is up-to-date with the `main` branch.\r\n* Include a description of the proposed changes and how to test them.\r\n-->\r\n",
+  "files_changed": [
+    {
+      "filename": "test/automation/src/editors.ts",
+      "status": "modified",
+      "patch": "@@ -15,6 +15,7 @@ export class Editors {\n \t\t} else {\n \t\t\tawait this.code.sendKeybinding('ctrl+s');\n \t\t}\n+\t\tawait this.code.waitForElements('.tab.active.dirty', false, results => results.length === 0);\n \t}\n \n \tasync selectTab(fileName: string): Promise<void> {"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

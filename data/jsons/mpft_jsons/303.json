@@ -1,0 +1,57 @@
+{
+  "id": 303,
+  "repo": "matplotlib",
+  "issue_url": "https://github.com/matplotlib/matplotlib/pull/13782",
+  "pr_url": "https://github.com/matplotlib/matplotlib/pull/13782",
+  "issue_description": "The tests that style.use() and imread() support urls can just use local\r\nurls (`file://`); this avoids failing the tests when downloading the\r\ngist fails due to a flaky connection.\r\n\r\nSince RFC8089 file: urls don't necessarily start with two slashes\r\nanymore (https://tools.ietf.org/html/rfc8089#appendix-A).\r\n\r\n(If we really want to test https we could use http.server to spin up a local server but that seems overkill.)\r\n\r\n\r\n## PR Summary\r\n\r\n## PR Checklist\r\n\r\n- [ ] Has Pytest style unit tests\r\n- [ ] Code is [Flake 8](http://flake8.pycqa.org/en/latest/) compliant\r\n- [ ] New features are documented, with examples if plot related\r\n- [ ] Documentation is sphinx and numpydoc compliant\r\n- [ ] Added an entry to doc/users/next_whats_new/ if major new feature (follow instructions in README.rst there)\r\n- [ ] Documented in doc/api/api_changes.rst if API changed in a backward-incompatible way\r\n\r\n<!--\r\nThank you so much for your PR!  To help us review your contribution, please\r\nconsider the following points:\r\n\r\n- A development guide is available at https://matplotlib.org/devdocs/devel/index.html.\r\n\r\n- Help with git and github is available at\r\n  https://matplotlib.org/devel/gitwash/development_workflow.html.\r\n\r\n- Do not create the PR out of master, but out of a separate branch.\r\n\r\n- The PR title should summarize the changes, for example \"Raise ValueError on\r\n  non-numeric input to set_xlim\".  Avoid non-descriptive titles such as\r\n  \"Addresses issue #8576\".\r\n\r\n- The summary should provide at least 1-2 sentences describing the pull request\r\n  in detail (Why is this change required?  What problem does it solve?) and\r\n  link to any relevant issues.\r\n\r\n- If you are contributing fixes to docstrings, please pay attention to\r\n  http://matplotlib.org/devel/documenting_mpl.html#formatting.  In particular,\r\n  note the difference between using single backquotes, double backquotes, and\r\n  asterisks in the markup.\r\n\r\nWe understand that PRs can sometimes be overwhelming, especially as the\r\nreviews start coming in.  Please let us know if the reviews are unclear or\r\nthe recommended next step seems overly demanding, if you would like help in\r\naddressing a reviewer's comments, or if you have been waiting too long to hear\r\nback on your PR.\r\n-->\r\n",
+  "files_changed": [
+    {
+      "filename": ".appveyor.yml",
+      "status": "modified",
+      "patch": "@@ -16,7 +16,7 @@ environment:\n   global:\n     PYTHONIOENCODING: UTF-8\n     PYTEST_ARGS: -raR --numprocesses=auto --timeout=300 --durations=25\n-                 --cov-report= --cov=lib -m \"not network\" --log-level=DEBUG\n+                 --cov-report= --cov=lib --log-level=DEBUG\n \n   matrix:\n     # theoretically the CONDA_INSTALL_LOCN could be only two: one for 32bit,"
+    },
+    {
+      "filename": "doc/api/next_api_changes/2019-04-01-AL.rst",
+      "status": "added",
+      "patch": "@@ -0,0 +1,7 @@\n+API changes\n+```````````\n+\n+The ``--no-network`` flag to ``tests.py`` has been removed (no test requires\n+internet access anymore).  If it is desired to disable internet access both for\n+old and new versions of Matplotlib, use ``tests.py -m 'not network'`` (which is\n+now a no-op)."
+    },
+    {
+      "filename": "doc/devel/testing.rst",
+      "status": "modified",
+      "patch": "@@ -54,7 +54,6 @@ commands, such as:\n \n ========================  ===========\n ``--pep8``                Perform pep8 checks (requires pytest-pep8_)\n-``-m \"not network\"``      Disable tests that require network access\n ========================  ===========\n \n Additional arguments are passed on to pytest. See the pytest documentation for"
+    },
+    {
+      "filename": "lib/matplotlib/__init__.py",
+      "status": "modified",
+      "patch": "@@ -867,7 +867,7 @@ def rc_params(fail_on_error=False):\n     return rc_params_from_file(matplotlib_fname(), fail_on_error)\n \n \n-URL_REGEX = re.compile(r'http://|https://|ftp://|file://|file:\\\\')\n+URL_REGEX = re.compile(r'^http://|^https://|^ftp://|^file:')\n \n \n def is_url(filename):"
+    },
+    {
+      "filename": "lib/matplotlib/image.py",
+      "status": "modified",
+      "patch": "@@ -1379,12 +1379,20 @@ def read_png(*args, **kwargs):\n     if format is None:\n         if isinstance(fname, str):\n             parsed = urllib.parse.urlparse(fname)\n-            # If the string is a URL, assume png\n+            # If the string is a URL (Windows paths appear as if they have a\n+            # length-1 scheme), assume png.\n             if len(parsed.scheme) > 1:\n                 ext = 'png'\n             else:\n                 basename, ext = os.path.splitext(fname)\n                 ext = ext.lower()[1:]\n+        elif hasattr(fname, 'geturl'):  # Returned by urlopen().\n+            # We could try to parse the url's path and use the extension, but\n+            # returning png is consistent with the block above.  Note that this\n+            # if clause has to come before checking for fname.name as\n+            # urlopen(\"file:///...\") also has a name attribute (with the fixed\n+            # value \"<urllib response>\").\n+            ext = 'png'\n         elif hasattr(fname, 'name'):\n             basename, ext = os.path.splitext(fname.name)\n             ext = ext.lower()[1:]"
+    },
+    {
+      "filename": "lib/matplotlib/tests/test_image.py",
+      "status": "modified",
+      "patch": "@@ -5,6 +5,7 @@\n import sys\n from pathlib import Path\n import platform\n+import sys\n import urllib.request\n import warnings\n \n@@ -657,9 +658,11 @@ def test_minimized_rasterized():\n                 assert False\n \n \n-@pytest.mark.network\n def test_load_from_url():\n-    url = \"http://matplotlib.org/_static/logo_sidebar_horiz.png\"\n+    path = Path(__file__).parent / \"baseline_images/test_image/imshow.png\"\n+    url = ('file:'\n+           + ('///' if sys.platform == 'win32' else '')\n+           + path.resolve().as_posix())\n     plt.imread(url)\n     plt.imread(urllib.request.urlopen(url))\n "
+    },
+    {
+      "filename": "lib/matplotlib/tests/test_style.py",
+      "status": "modified",
+      "patch": "@@ -3,6 +3,7 @@\n import gc\n from pathlib import Path\n from tempfile import TemporaryDirectory\n+import sys\n \n import pytest\n \n@@ -56,10 +57,14 @@ def test_use():\n             assert mpl.rcParams[PARAM] == VALUE\n \n \n-@pytest.mark.network\n-def test_use_url():\n+def test_use_url(tmpdir):\n+    path = Path(tmpdir, 'file')\n+    path.write_text('axes.facecolor: adeade')\n     with temp_style('test', DUMMY_SETTINGS):\n-        with style.context('https://gist.github.com/adrn/6590261/raw'):\n+        url = ('file:'\n+               + ('///' if sys.platform == 'win32' else '')\n+               + path.resolve().as_posix())\n+        with style.context(url):\n             assert mpl.rcParams['axes.facecolor'] == \"#adeade\"\n \n "
+    },
+    {
+      "filename": "pytest.ini",
+      "status": "modified",
+      "patch": "@@ -6,5 +6,4 @@ python_files = test_*.py\n \n markers =\n     backend: Set alternate Matplotlib backend temporarily.\n-    network: Mark a test that uses the network.\n     style: Set alternate Matplotlib style temporarily."
+    },
+    {
+      "filename": "tests.py",
+      "status": "modified",
+      "patch": "@@ -39,17 +39,10 @@\n     from matplotlib import test\n \n     parser = argparse.ArgumentParser(add_help=False)\n-    parser.add_argument('--no-network', action='store_true',\n-                        help='Run tests without network connection')\n     parser.add_argument('--recursionlimit', type=int, default=0,\n                         help='Specify recursionlimit for test run')\n     args, extra_args = parser.parse_known_args()\n \n-    if args.no_network:\n-        from matplotlib.testing import disable_internet\n-        disable_internet.turn_off_internet()\n-        extra_args.extend(['-m', 'not network'])\n-\n     print('Python byte-compilation optimization level:', sys.flags.optimize)\n \n     retcode = test(argv=extra_args, switch_backend_warn=False,"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

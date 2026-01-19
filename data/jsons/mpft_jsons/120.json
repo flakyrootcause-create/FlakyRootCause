@@ -1,0 +1,17 @@
+{
+  "id": 120,
+  "repo": "paho.mqtt.testing",
+  "issue_url": "https://github.com/emqx/paho.mqtt.testing/pull/8",
+  "pr_url": "https://github.com/emqx/paho.mqtt.testing/pull/8",
+  "issue_description": "Currently, there's a clause that sends no response when the connection\r\nstaet in the channel is `idle`, the initial state.\r\n\r\nhttps://github.com/emqx/emqx/blob/e861f3963e9eee6b16e685aa4c7b57ed428d041b/apps/emqx/src/emqx_channel.erl#L490\r\n\r\nHere, we attempt to publish a simple message before sending the large\r\none to ensure that the channel's connection state is connected.",
+  "files_changed": [
+    {
+      "filename": "interoperability/test_client/V5/test_connack.py",
+      "status": "modified",
+      "patch": "@@ -92,8 +92,17 @@ def test_maximum_packet_size(base_wait_for, base_sleep, base_socket_timeout):\n   connack = aclient.connect(host=host, port=port, cleanstart=True,\n                             socket_timeout=9 * base_socket_timeout)\n   assert hasattr(connack.properties, \"MaximumPacketSize\")\n-  payload = b\".\" * (int(connack.properties.MaximumPacketSize) + 1)\n+\n+  # publish a simple message to ensure that the channel connection\n+  # state is not idle\n+  aclient.subscribe([topics[0]], [MQTTV5.SubscribeOptions(2)])\n+  time.sleep(2 * base_sleep)\n+  aclient.publish(topics[0], b\".\", 0)\n   time.sleep(2 * base_sleep)\n+  waitfor(callback.messages, 1, 5 * base_wait_for)\n+  callback.clear()\n+\n+  payload = b\".\" * (int(connack.properties.MaximumPacketSize) + 1)\n   aclient.publish(topics[0], payload, 0)\n   # should get back a disconnect with packet size too big\n   waitfor(callback.disconnects, 1, 9 * base_wait_for)"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 382,
+  "repo": "ui",
+  "issue_url": "https://github.com/temporalio/ui/pull/2897",
+  "pr_url": "https://github.com/temporalio/ui/pull/2897",
+  "issue_description": "## Summary\n- Fixed flaky combobox tests that were failing due to CSS transitions\n\n## Problem\nThe combobox tests were failing with \"Unable to find an accessible element with the role 'listbox'\" because they were using `getByRole` which expects the element to be immediately visible. However, the Menu component applies CSS transitions (invisible scale-95 opacity-0) when closed, making the listbox technically present but not visible.\n\n## Solution\nChanged from `getByRole('listbox')` to `findByRole('listbox')` which waits for the element to become visible, accounting for the CSS transition timing.\n\n## Test Plan\n[ ] Run `pnpm stories:test` - combobox tests should pass\n[ ] Verify Async Select test passes\n[ ] Verify Multiselect test passes",
+  "files_changed": [
+    {
+      "filename": "src/lib/holocene/combobox/combobox.stories.svelte",
+      "status": "modified",
+      "patch": "@@ -96,7 +96,8 @@\n \n     await userEvent.type(combobox, 'Japanese');\n \n-    const menu = canvas.getByRole('listbox');\n+    // Wait for the listbox to appear since it may have a transition\n+    const menu = await canvas.findByRole('listbox');\n \n     expect(menu).toBeInTheDocument();\n   }}\n@@ -113,7 +114,8 @@\n \n     await userEvent.type(combobox, 'Jerseyan');\n \n-    const menu = canvas.getByRole('listbox');\n+    // Wait for the listbox to appear since it may have a transition\n+    const menu = await canvas.findByRole('listbox');\n     const noResults = canvas.getByText('No Results');\n \n     expect(menu).toBeInTheDocument();\n@@ -140,7 +142,8 @@\n     const canvas = within(canvasElement);\n     const combobox = canvas.getByTestId(id);\n     await userEvent.type(combobox, 'E');\n-    const menu = canvas.getByRole('listbox');\n+    // Wait for the listbox to appear since it may have a transition\n+    const menu = await canvas.findByRole('listbox');\n     expect(menu).toBeInTheDocument();\n   }}\n />\n@@ -153,7 +156,8 @@\n \n     await userEvent.type(combobox, 'one');\n \n-    const menu = canvas.getByRole('listbox');\n+    // Wait for the listbox to appear since it may have a transition\n+    const menu = await canvas.findByRole('listbox');\n \n     expect(menu).toBeInTheDocument();\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,27 @@
+{
+  "id": 114,
+  "repo": "emqx",
+  "issue_url": "https://github.com/emqx/emqx/pull/15837",
+  "pr_url": "https://github.com/emqx/emqx/pull/15837",
+  "issue_description": "6.0.0\r\n\r\nRelease version:\r\n\r\n## Summary\r\n\r\nFix some flaky tests found on master:\r\n\r\n- persistence_enabled.mqttv5.t_takeover_clean_session_with_delayed_willmsg\r\n- emqx_prometheus_data_SUITE\r\n\r\n\r\n## PR Checklist\r\n<!--\r\nPlease convert the PR to a draft if any of the following conditions are not met.\r\n-->\r\n- [ ] For internal contributor: there is a jira ticket to track this change\r\n- [x] The changes are covered with new or existing tests\r\n- [ ] n/a Change log for changes visible by users has been added to `changes/ee/(feat|perf|fix|breaking)-<PR-id>.en.md` files\r\n- [x] Schema changes are backward compatible or intentionally breaking (describe the changes and the reasoning in the summary)\r\n\r\n<!--\r\nPlease, take in account the following guidelines while working on PR:\r\n* Try to achieve reasonable coverage of the new code\r\n* Add property-based tests for code that performs complex user input validation or implements a complex algorithm\r\n* Create a PR to [emqx-docs](https://github.com/emqx/emqx-docs) if documentation update is required, or make a follow-up jira ticket\r\n* Do not squash large PRs into a single commit, try to keep comprehensive history of incremental changes\r\n* Do not squash any significant amount of review fixes into the previous commits\r\n-->\r\n\r\n<!--\r\n## Checklist for CI (.github/workflows) changes\r\n- [ ] If changed package build workflow, pass [this action](https://github.com/emqx/emqx/actions/workflows/build_packages.yaml) (manual trigger)\r\n- [ ] Change log has been added to `changes/` dir for user-facing artifacts update\r\n-->\r\n",
+  "files_changed": [
+    {
+      "filename": "apps/emqx/src/emqx_persistent_session_ds/emqx_persistent_session_ds_state_v2.erl",
+      "status": "modified",
+      "patch": "@@ -323,7 +323,12 @@ delete(\n     #{?collection_guard := Guard, ?id := ClientId}\n ) ->\n     Opts = #{\n-        db => ?DB, shard => {auto, ClientId}, generation => Generation, timeout => trans_timeout()\n+        db => ?DB,\n+        shard => {auto, ClientId},\n+        generation => Generation,\n+        timeout => trans_timeout(),\n+        retries => trans_retries(),\n+        retry_interval => trans_retry_interval()\n     },\n     {atomic, _, _} =\n         emqx_ds:trans("
+    },
+    {
+      "filename": "apps/emqx_ds_builtin_raft/src/emqx_ds_builtin_raft.erl",
+      "status": "modified",
+      "patch": "@@ -627,14 +627,16 @@ unpack_iterator(Shard, Iterator = #'Iterator'{}) ->\n     emqx_ds_storage_layer_ttv:unpack_iterator(Shard, Iterator).\n \n high_watermark(DBShard = {DB, Shard}, Stream = #'Stream'{}) ->\n-    Now = current_timestamp(DB, Shard),\n-    emqx_ds_storage_layer_ttv:high_watermark(DBShard, Stream, Now).\n+    maybe\n+        {ok, Now} ?= current_timestamp(DB, Shard),\n+        emqx_ds_storage_layer_ttv:high_watermark(DBShard, Stream, Now)\n+    end.\n \n fast_forward(DBShard = {DB, Shard}, It = #'Iterator'{}, Key, BatchSize) ->\n     ?IF_SHARD_READY(\n         DBShard,\n-        begin\n-            Now = current_timestamp(DB, Shard),\n+        maybe\n+            {ok, Now} ?= current_timestamp(DB, Shard),\n             emqx_ds_storage_layer_ttv:fast_forward(DBShard, It, Key, Now, BatchSize)\n         end\n     ).\n@@ -648,9 +650,9 @@ iterator_match_context(DBShard, Iterator = #'Iterator'{}) ->\n scan_stream(DBShard = {DB, Shard}, Stream = #'Stream'{}, TopicFilter, StartMsg, BatchSize) ->\n     ?IF_SHARD_READY(\n         DBShard,\n-        begin\n+        maybe\n             %% TODO: this has been changed during refactoring. Double-check.\n-            Now = current_timestamp(DB, Shard),\n+            {ok, Now} ?= current_timestamp(DB, Shard),\n             emqx_ds_storage_layer_ttv:scan_stream(\n                 DBShard, Stream, TopicFilter, Now, StartMsg, BatchSize\n             )\n@@ -737,10 +739,14 @@ otx_get_runtime_config(DB) ->\n -doc \"\"\"\n Messages have been replicated up to this timestamp on the local replica.\n \"\"\".\n--spec current_timestamp(emqx_ds:db(), emqx_ds:shard()) -> emqx_ds:time().\n+-spec current_timestamp(emqx_ds:db(), emqx_ds:shard()) -> {ok, emqx_ds:time()} | emqx_ds:error(_).\n current_timestamp(DB, Shard) ->\n-    {ok, Val} = emqx_dsch:gvar_get(DB, Shard, ?gv_sc_replica, ?gv_timestamp),\n-    Val.\n+    case emqx_dsch:gvar_get(DB, Shard, ?gv_sc_replica, ?gv_timestamp) of\n+        {ok, _} = Ok ->\n+            Ok;\n+        undefined ->\n+            ?err_rec(replica_offline)\n+    end.\n \n %%================================================================================\n %% RPC targets"
+    },
+    {
+      "filename": "apps/emqx_ds_builtin_raft/src/emqx_ds_builtin_raft_metrics.erl",
+      "status": "modified",
+      "patch": "@@ -485,7 +485,12 @@ local_shard(DB, Shard, IsActive, Labels0) ->\n     end.\n \n current_timestamp(DB, Shard, Ls) ->\n-    [{Ls, emqx_ds_builtin_raft:current_timestamp(DB, Shard)}].\n+    case emqx_ds_builtin_raft:current_timestamp(DB, Shard) of\n+        {ok, TS} ->\n+            [{Ls, TS}];\n+        {error, _, _} ->\n+            []\n+    end.\n \n rasrv_lifecycle(Counters, Ls, Acc) ->\n     Acc#{"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

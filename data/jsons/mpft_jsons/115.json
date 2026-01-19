@@ -1,0 +1,17 @@
+{
+  "id": 115,
+  "repo": "cassandra-gocql-driver",
+  "issue_url": "https://github.com/apache/cassandra-gocql-driver/pull/1558",
+  "pr_url": "https://github.com/apache/cassandra-gocql-driver/pull/1558",
+  "issue_description": "In conn_test.go, \"TestStartupTimeout\" at the very last step requires the log to contain \"no response to connection startup within timeout\".\r\n\r\nHowever, during my test, it fails sometimes, not always, with log containing \"no response received from cassandra within timeout period\" instead.\r\n\r\nFixing the flaky test by allowing log to contain either message.",
+  "files_changed": [
+    {
+      "filename": "conn_test.go",
+      "status": "modified",
+      "patch": "@@ -238,7 +238,8 @@ func TestStartupTimeout(t *testing.T) {\n \t\tt.Fatalf(\"Expected to receive no connections error - got '%s'\", err)\n \t}\n \n-\tif !strings.Contains(log.String(), \"no response to connection startup within timeout\") {\n+\tif !strings.Contains(log.String(), \"no response to connection startup within timeout\") &&\n+\t\t!strings.Contains(log.String(), \"no response received from cassandra within timeout period\") {\n \t\tt.Fatalf(\"Expected to receive timeout log message  - got '%s'\", log.String())\n \t}\n "
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

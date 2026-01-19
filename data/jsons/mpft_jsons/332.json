@@ -1,0 +1,11 @@
+{
+  "id": 332,
+  "repo": "gvisor",
+  "issue_url": "https://github.com/google/gvisor/commit/9e2b411a509227d76802457adffd3b63044bba2a",
+  "pr_url": "https://github.com/google/gvisor/commit/9e2b411a509227d76802457adffd3b63044bba2a",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

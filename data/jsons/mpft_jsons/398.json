@@ -1,0 +1,11 @@
+{
+  "id": 398,
+  "repo": "yggdrasil-decision-forests",
+  "issue_url": "https://github.com/google/yggdrasil-decision-forests/commit/095e31527c2580768f9571871cbc3daf04ddf415#diff-c37ecea972cbe79910743a8322d961a58b82b269fe4a0edf4ce65132d6b7fea3",
+  "pr_url": "https://github.com/google/yggdrasil-decision-forests/commit/095e31527c2580768f9571871cbc3daf04ddf415#diff-c37ecea972cbe79910743a8322d961a58b82b269fe4a0edf4ce65132d6b7fea3",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 126,
+  "repo": "go",
+  "issue_url": "https://github.com/golang/go/pull/36733",
+  "pr_url": "https://github.com/golang/go/pull/36733",
+  "issue_description": "fixes #36695\r\n",
+  "files_changed": [
+    {
+      "filename": "src/bytes/buffer_test.go",
+      "status": "modified",
+      "patch": "@@ -8,7 +8,6 @@ import (\n \t. \"bytes\"\n \t\"io\"\n \t\"math/rand\"\n-\t\"runtime\"\n \t\"testing\"\n \t\"unicode/utf8\"\n )\n@@ -501,14 +500,13 @@ func TestGrow(t *testing.T) {\n \t\t\tbuf := NewBuffer(xBytes)\n \t\t\t// If we read, this affects buf.off, which is good to test.\n \t\t\treadBytes, _ := buf.Read(tmp)\n-\t\t\tbuf.Grow(growLen)\n \t\t\tyBytes := Repeat(y, growLen)\n+\t\t\tallocs := testing.AllocsPerRun(100, func() {\n+\t\t\t\tbuf.Grow(growLen)\n+\t\t\t\tbuf.Write(yBytes)\n+\t\t\t})\n \t\t\t// Check no allocation occurs in write, as long as we're single-threaded.\n-\t\t\tvar m1, m2 runtime.MemStats\n-\t\t\truntime.ReadMemStats(&m1)\n-\t\t\tbuf.Write(yBytes)\n-\t\t\truntime.ReadMemStats(&m2)\n-\t\t\tif runtime.GOMAXPROCS(-1) == 1 && m1.Mallocs != m2.Mallocs {\n+\t\t\tif allocs != 0 {\n \t\t\t\tt.Errorf(\"allocation occurred during write\")\n \t\t\t}\n \t\t\t// Check that buffer has correct data."
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

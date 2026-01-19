@@ -1,0 +1,17 @@
+{
+  "id": 111,
+  "repo": "armeria",
+  "issue_url": "https://github.com/line/armeria/pull/6382",
+  "pr_url": "https://github.com/line/armeria/pull/6382",
+  "issue_description": "Motivation:\r\n\r\nI thought the previous modification #6354 would fix the flakiness, but it turned out it didn't.\r\n\r\nThe first attempt may not be cancelled by `res.cancel(true)` because of the race between an event loop and the main thread. https://github.com/line/armeria/blob/a0e2225cb7aac6b229b86e25e9b2f34633a9f45b/thrift/thrift0.13/src/test/java/com/linecorp/armeria/it/client/retry/RetryingRpcClientTest.java#L354-L356 Therefore, I propose removing the flaky assertions and adding a new clear assertion that verifies retry occurs only once.\r\n\r\nModifications:\r\n\r\n- Remove flaky assertions in `RetryingRpcClientTest.doNotRetryWhenResponseIsCancelled()`\r\n\r\nResult:\r\n\r\nMake CI stable\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "thrift/thrift0.13/src/test/java/com/linecorp/armeria/it/client/retry/RetryingRpcClientTest.java",
+      "status": "modified",
+      "patch": "@@ -328,6 +328,7 @@ void shouldGetExceptionWhenFactoryIsClosed() throws Exception {\n \n     @Test\n     void doNotRetryWhenResponseIsCancelled() throws Exception {\n+        serviceRetryCount.set(0);\n         try (ClientFactory factory = ClientFactory.builder().build()) {\n             final AtomicReference<ClientRequestContext> context = new AtomicReference<>();\n             final HelloService.Iface client =\n@@ -349,15 +350,10 @@ void doNotRetryWhenResponseIsCancelled() throws Exception {\n             await().untilAsserted(() -> {\n                 verify(serviceHandler, only()).hello(\"hello\");\n             });\n-            final RequestLog log = context.get().log().whenComplete().join();\n-\n-            // ClientUtil.completeLogIfIncomplete() records exceptions caused by response cancellations.\n-            assertThat(log.requestCause()).isExactlyInstanceOf(CancellationException.class);\n-            assertThat(log.responseCause()).isExactlyInstanceOf(CancellationException.class);\n-\n             // Sleep 1 second more to check if there was another retry.\n             TimeUnit.SECONDS.sleep(1);\n             verify(serviceHandler, only()).hello(\"hello\");\n+            assertThat(serviceRetryCount).hasValue(1);\n         }\n     }\n }"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

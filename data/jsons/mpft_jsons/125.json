@@ -1,0 +1,27 @@
+{
+  "id": 125,
+  "repo": "melos",
+  "issue_url": "https://github.com/invertase/melos/pull/677",
+  "pr_url": "https://github.com/invertase/melos/pull/677",
+  "issue_description": "## Description\r\n\r\nThis PR addresses the issue of flaky test results when executing the `run` command test (`verifies that a melos script can call another script containing steps, and ensures all commands in those steps are executed successfully`) in Linux CI/CD environments, as reported in issue #670. \r\n\r\nCloses #670\r\n\r\n## Type of Change\r\n\r\n<!--- Put an `x` in all the boxes that apply: -->\r\n\r\n- [ ] \u2728 `feat` -- New feature (non-breaking change which adds functionality)\r\n- [x] \ud83d\udee0\ufe0f `fix` -- Bug fix (non-breaking change which fixes an issue)\r\n- [ ] \u274c `!` -- Breaking change (fix or feature that would cause existing functionality to change)\r\n- [ ] \ud83e\uddf9 `refactor` -- Code refactor\r\n- [ ] \u2705 `ci` -- Build configuration change\r\n- [ ] \ud83d\udcdd `docs` -- Documentation\r\n- [ ] \ud83d\uddd1\ufe0f `chore` -- Chore\r\n",
+  "files_changed": [
+    {
+      "filename": "packages/melos/test/commands/run_test.dart",
+      "status": "modified",
+      "patch": "@@ -594,7 +594,7 @@ melos run hello_script\n \n       expect(\n         logger.output.normalizeNewLines(),\n-        ignoringAnsii(\n+        ignoringDependencyMessages(\n           '''\n melos run hello_script\n   \u2514> test_script"
+    },
+    {
+      "filename": "packages/melos/test/matchers.dart",
+      "status": "modified",
+      "patch": "@@ -26,6 +26,25 @@ import 'package:path/path.dart' as p;\n import 'package:test/test.dart';\n import 'package:yaml/yaml.dart';\n \n+/// Resolve flaky test in linux environments\n+Matcher ignoringDependencyMessages(String expected) {\n+  return predicate(\n+    (actual) {\n+      final normalizedActual = actual\n+          .toString()\n+          .split('\\n')\n+          .where(\n+            (line) =>\n+                !line.startsWith('Resolving dependencies...') &&\n+                !line.startsWith('Got dependencies!'),\n+          )\n+          .join('\\n');\n+      return ignoringAnsii(expected).matches(normalizedActual, {});\n+    },\n+    'ignores dependency resolution messages',\n+  );\n+}\n+\n Matcher packageNamed(Object? matcher) => _PackageNameMatcher(matcher);\n \n Matcher ignoringAnsii(Object? matcher) {"
+    },
+    {
+      "filename": "packages/melos/test/workspace_test.dart",
+      "status": "modified",
+      "patch": "@@ -110,7 +110,7 @@ The packages that caused the problem are:\n       );\n \n       expect(result.exitCode, 0);\n-      expect(result.stdout, 'a\\n');\n+      expect(result.stdout, ignoringDependencyMessages('a\\n'));\n     });\n \n     test("
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

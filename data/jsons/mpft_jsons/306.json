@@ -1,0 +1,17 @@
+{
+  "id": 306,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/pull/97390",
+  "pr_url": "https://github.com/tensorflow/tensorflow/pull/97390",
+  "issue_description": "[IFRT] Remove the error message mentioning an invalid output target\n\nA log message was being generated when an invalid output target was specified\nand being ignored. This caused some OSS tests to fail in a flaky manner, so\nlogging is removed in this change.\n",
+  "files_changed": [
+    {
+      "filename": "third_party/xla/xla/python/ifrt/ir/transforms/passes.cc",
+      "status": "modified",
+      "patch": "@@ -46,8 +46,8 @@ namespace {\n std::string GetDotDumpDir(std::string dot_graph_dump_to) {\n   if (dot_graph_dump_to == \"sponge\") {\n     if (!tsl::io::GetTestUndeclaredOutputsDir(&dot_graph_dump_to)) {\n-      LOG(ERROR) << \"compile option `dot_graph_dump_to=sponge` is specified \"\n-                    \"outside of a test; ignoring the value\";\n+      // Compile option `dot_graph_dump_to=sponge` is specified outside of a\n+      // test. Ignore the value.\n       return \"\";\n     }\n   }"
+    }
+  ],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

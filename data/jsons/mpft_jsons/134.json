@@ -1,0 +1,17 @@
+{
+  "id": 134,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/pull/49203",
+  "pr_url": "https://github.com/apache/spark/pull/49203",
+  "issue_description": "### What changes were proposed in this pull request?\r\n\r\nSimplify org.apache.spark.sql.connect.execution.ReattachableExecuteSuite.\"reattach after connection expired\" to make it more deterministic.\r\n\r\n### Why are the changes needed?\r\n\r\nThe test previously involved execution and interruption that made the test unnecessarily flaky, e.g., an exception was thrown when releasing the corresponding [execution](https://github.com/apache/spark/actions/runs/12296721038/job/34316344940), not when reattaching the execution.\r\n- The test's sole purpose is to check whether the lack of 'session' results in the correct error code.\r\n- The involvement of actual query execution only makes the test flaky and complicated.\r\n\r\n### Does this PR introduce _any_ user-facing change?\r\n\r\nNo.\r\n\r\n### How was this patch tested?\r\n\r\nRepeatedly ran testOnly org.apache.spark.sql.connect.execution.ReattachableExecuteSuite.\r\n\r\n### Was this patch authored or co-authored using generative AI tooling?\r\n\r\nNo.\r\n",
+  "files_changed": [
+    {
+      "filename": "connector/connect/server/src/test/scala/org/apache/spark/sql/connect/execution/ReattachableExecuteSuite.scala",
+      "status": "modified",
+      "patch": "@@ -58,18 +58,15 @@ class ReattachableExecuteSuite extends SparkConnectServerTest {\n \n   test(\"reattach after connection expired\") {\n     withClient { client =>\n-      val iter = client.execute(buildPlan(MEDIUM_RESULTS_QUERY))\n-      val operationId = getReattachableIterator(iter).operationId\n-      // open the iterator\n-      iter.next()\n-\n-      SparkConnectService.invalidateSession(defaultUserId, defaultSessionId)\n       withRawBlockingStub { stub =>\n-        val iter2 = stub.reattachExecute(buildReattachExecuteRequest(operationId, None))\n+        // emulate session expiration\n+        SparkConnectService.invalidateSession(defaultUserId, defaultSessionId)\n \n-        // session closed, bound to fail\n+        // session closed, bound to fail immediately\n+        val operationId = UUID.randomUUID().toString\n+        val iter = stub.reattachExecute(buildReattachExecuteRequest(operationId, None))\n         val e = intercept[StatusRuntimeException] {\n-          while (iter2.hasNext) iter2.next()\n+          iter.next()\n         }\n         assert(e.getMessage.contains(\"INVALID_HANDLE.SESSION_NOT_FOUND\"))\n       }"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

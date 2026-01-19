@@ -1,0 +1,11 @@
+{
+  "id": 359,
+  "repo": "iceberg",
+  "issue_url": "https://github.com/apache/iceberg/commit/20e0e3dae59826ea02bc2c79f8778cdf7a825316",
+  "pr_url": "https://github.com/apache/iceberg/commit/20e0e3dae59826ea02bc2c79f8778cdf7a825316",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 44,
+  "repo": "rust",
+  "issue_url": "https://github.com/rust-lang/rust/issues/62558",
+  "pr_url": "https://github.com/wickedchicken/rust-rain/pull/8",
+  "issue_description": "Moved from https://github.com/rust-lang/rust-clippy/issues/4267\r\n\r\n#61861 was merged in #61962, since then Rustfmt fails to build when cross compiling which is the case for almost all non Tier 1 platforms.\r\nClippy and RLS are failing with similar error.\r\n\r\nError on `aarch64-unknown-linux-gnu`:\r\n```\r\n[01:14:03] error[E0464]: multiple matching crates for `rustc_macros`\r\n[01:14:03]   --> /cargo/registry/src/github.com-1ecc6299db9ec823/rustc-ap-rustc_target-491.0.0/abi/mod.rs:10:5\r\n[01:14:03]    |\r\n[01:14:03]    | use syntax_pos::symbol::{sym, Symbol};\r\n[01:14:03]    |     ^^^^^^^^^^\r\n[01:14:03]    |\r\n[01:14:03]    = note: candidates:\r\n[01:14:03]            crate `rustc_macros`: /checkout/obj/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_macros-97bf1e9c420f9886.so\r\n[01:14:03]            crate `rustc_macros`: /checkout/obj/build/x86_64-unknown-linux-gnu/stage1-tools/release/deps/librustc_macros-2f4546e1163449fb.so\r\n[01:14:03] \r\n[01:14:03] error[E0461]: couldn't find crate `rustc_macros` with expected target triple x86_64-unknown-linux-gnu which `syntax_pos` depends on\r\n[01:14:03]   --> /cargo/registry/src/github.com-1ecc6299db9ec823/rustc-ap-rustc_target-491.0.0/abi/mod.rs:10:5\r\n[01:14:03]    |\r\n[01:14:03] 10 | use syntax_pos::symbol::{sym, Symbol};\r\n[01:14:03]    |     ^^^^^^^^^^\r\n[01:14:03]    |\r\n[01:14:03]    = note: the following crate versions were found:\r\n[01:14:03]            crate `rustc_macros`, target triple aarch64-unknown-linux-gnu: /checkout/obj/build/x86_64-unknown-linux-gnu/stage1-tools/aarch64-unknown-linux-gnu/release/deps/librustc_macros-55389246a2ce204b.so\r\n[01:14:03] \r\n[01:14:03] error: aborting due to 2 previous errors\r\n```\r\nhttps://api.travis-ci.com/v3/job/209363492/log.txt\r\n\r\n@rustbot modify labels: T-dev-tools A-rustbuild",
+  "files_changed": [
+    {
+      "filename": "ci/script.sh",
+      "status": "modified",
+      "patch": "@@ -9,7 +9,11 @@ main() {\n     fi\n     cargo fmt --all -- --check\n     cross build --target $TARGET\n-    cross clippy -- --target $TARGET -D warnings\n+    # Re-enable for all targets once https://github.com/rust-lang/rust/issues/62558 is\n+    # fixed.\n+    if [ \"$TARGET\" == \"x86_64-unknown-linux-gnu\" ]; then\n+        cross clippy -- --target $TARGET -D warnings\n+    fi\n     cross build --target $TARGET --release\n \n     if [ ! -z $DISABLE_TESTS ]; then"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "Miscategorized"
+}

@@ -1,0 +1,11 @@
+{
+  "id": 221,
+  "repo": "cypress",
+  "issue_url": "https://github.com/cypress-io/cypress/commit/c9b392afdae6dbd1540545fa47fc4785b0175e4b",
+  "pr_url": "https://github.com/cypress-io/cypress/commit/c9b392afdae6dbd1540545fa47fc4785b0175e4b",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

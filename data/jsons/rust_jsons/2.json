@@ -1,0 +1,17 @@
+{
+  "id": 2,
+  "repo": "nearcore",
+  "issue_url": "https://github.com/near/nearcore/issues/10089",
+  "pr_url": "https://github.com/near/nearcore/pull/10111",
+  "issue_description": "https://github.com/near/nearcore/pull/10015 introduced a flaky test test_trie_consistency_random, fails about 2% of the time; will fix at first convenience.",
+  "files_changed": [
+    {
+      "filename": "core/store/src/trie/mem/updating.rs",
+      "status": "modified",
+      "patch": "@@ -1243,7 +1243,7 @@ mod tests {\n             let num_insertions =\n                 rand::thread_rng().gen_range(0..=(MAX_KEYS - existing_keys.len()) / SLOWDOWN);\n             let num_deletions =\n-                rand::thread_rng().gen_range(0..=existing_keys.len() / SLOWDOWN + 1);\n+                rand::thread_rng().gen_range(0..=(existing_keys.len() + SLOWDOWN - 1) / SLOWDOWN);\n             let mut changes = Vec::new();\n             for _ in 0..num_insertions {\n                 let key_length = rand::thread_rng().gen_range(0..=10);"
+    }
+  ],
+  "fix_category": "rand::thread_rng().gen_range",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": "Ranges"
+}

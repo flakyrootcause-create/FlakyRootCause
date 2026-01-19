@@ -1,0 +1,17 @@
+{
+  "id": 350,
+  "repo": "flink-kubernetes-operator",
+  "issue_url": "https://github.com/apache/flink-kubernetes-operator/commit/3f4481732621e7276485dcbab9f98d7c94e93fac",
+  "pr_url": "https://github.com/apache/flink-kubernetes-operator/commit/3f4481732621e7276485dcbab9f98d7c94e93fac",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "README.md",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,6 @@\n-# flink-kubernetes-operator\n-Temporary repository for Flink Kubernetes Operator. The content will be moved to OSS repo once created an IPR. Check [FLIP-212](https://cwiki.apache.org/confluence/display/FLINK/FLIP-212%3A+Introduce+Flink+Kubernetes+Operator) further info.\n+# Apache Flink Kubernetes Operator\n+\n+A Kubernetes operator for Apache Flink, implemented in Java. See [FLIP-212](https://cwiki.apache.org/confluence/display/FLINK/FLIP-212%3A+Introduce+Flink+Kubernetes+Operator).\n \n ## Installation\n "
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

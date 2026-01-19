@@ -1,0 +1,11 @@
+{
+  "id": 184,
+  "repo": "keycloak",
+  "issue_url": "https://github.com/keycloak/keycloak/commit/d5ed9babf0b1ab0217b025db3d15527ec93bfd45",
+  "pr_url": "https://github.com/keycloak/keycloak/commit/d5ed9babf0b1ab0217b025db3d15527ec93bfd45",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

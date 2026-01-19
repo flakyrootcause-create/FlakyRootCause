@@ -1,0 +1,22 @@
+{
+  "id": 113,
+  "repo": "dockstore-ui2",
+  "issue_url": "https://github.com/dockstore/dockstore-ui2/pull/2053",
+  "pr_url": "https://github.com/dockstore/dockstore-ui2/pull/2053",
+  "issue_description": "**Description**\r\nSteve pointed this out when he was running into flaky tests. Looking at videos of the failures, it looks like the previous dialog had not finished closing before proceeding, which threw off the tests. Fix has worked for me a few times.\r\n\r\n**Review Instructions**\r\nNot really reviewable; tests should pass.\r\n\r\n**Issue**\r\nNone\r\n\r\n**Security**\r\nIf there are any concerns that require extra attention from the security team, highlight them here.\r\n\r\nPlease make sure that you've checked the following before submitting your pull request. Thanks!\r\n\r\n- [x] Check that your code compiles by running `npm run build`\r\n- [x] Ensure that the PR targets the correct branch. Check the milestone or fix version of the ticket.\r\n- [x] If this is the first time you're submitting a PR or even if you just need a refresher, consider reviewing our [style guide](https://github.com/dockstore/dockstore/wiki/Dockstore-Frontend-Opinionated-Style-Guide#pr-checklist)\r\n- [x] Do not bypass Angular sanitization (bypassSecurityTrustHtml, etc.), or justify why you need to do so\r\n- [x] If displaying markdown, use the `markdown-wrapper` component, which does extra sanitization\r\n- [x] Do not use cookies, although this may change in the future\r\n- [x] Run `npm audit` and ensure you are not introducing new vulnerabilities\r\n- [x] Do due diligence on new 3rd party libraries, checking for CVEs\r\n- [x] Don't allow user-uploaded images to be served from the Dockstore domain\r\n- [x] If this PR is for a user-facing feature, create and link a documentation ticket for this feature (usually in the same milestone as the linked issue). Style points if you create a documentation PR directly and link that instead.\r\n- [x] Check whether this PR disables tests. If it legitimately needs to disable a test, create a new ticket to re-enable it in a specific milestone. \r\n",
+  "files_changed": [
+    {
+      "filename": "cypress/e2e/group3/githubAppTools.ts",
+      "status": "modified",
+      "patch": "@@ -97,6 +97,7 @@ describe('GitHub App Tools', () => {\n       cy.get('[data-cy=install-dockstore-app]');\n       cy.contains('Tool storage type').click();\n       cy.contains('Close').click();\n+      cy.contains('Close').should('not.exist'); // Wait for dialog to close before proceeding\n \n       cy.intercept('GET', '/api/lambdaEvents/**').as('lambdaEvents1');\n       // GitHub App Logs"
+    },
+    {
+      "filename": "src/app/workflow/versions/versions-datasource.ts",
+      "status": "modified",
+      "patch": "@@ -57,10 +57,19 @@ export class VersionsDataSource implements DataSource<WorkflowVersion> {\n         pageIndex,\n         sortCol,\n         sortDirection,\n+        'metrics',\n         'response'\n       );\n     } else {\n-      workflowVersions = this.workflowsService.getWorkflowVersions(workflowId, pageSize, pageIndex, sortCol, sortDirection, 'response');\n+      workflowVersions = this.workflowsService.getWorkflowVersions(\n+        workflowId,\n+        pageSize,\n+        pageIndex,\n+        sortCol,\n+        sortDirection,\n+        'metrics',\n+        'response'\n+      );\n     }\n \n     workflowVersions.pipe(finalize(() => this.loadingSubject$.next(false))).subscribe((versions) => {"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

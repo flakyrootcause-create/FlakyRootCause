@@ -1,0 +1,17 @@
+{
+  "id": 414,
+  "repo": "bbgo",
+  "issue_url": "https://github.com/c9s/bbgo/pull/2194",
+  "pr_url": "https://github.com/c9s/bbgo/pull/2194",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "pkg/strategy/xmaker/hedgemarket_test.go",
+      "status": "modified",
+      "patch": "@@ -163,7 +163,8 @@ func TestHedgeMarket_startAndHedge(t *testing.T) {\n \thm.positionDeltaC <- testhelper.Number(1.0)\n \thm.positionDeltaC <- testhelper.Number(1.0)\n \n-\ttime.Sleep(stepTime)\n+\t// wait for 2 ticks, so that 2 delta can be merged into one hedge\n+\ttime.Sleep(stepTime * 2)\n \n \t// emit trades\n \tuserDataStream.EmitTradeUpdate(types.Trade{"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

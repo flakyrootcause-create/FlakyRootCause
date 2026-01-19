@@ -1,0 +1,11 @@
+{
+  "id": 96,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/commit/a130929f2535139865ecde536e8b1db1e2539924",
+  "pr_url": "https://github.com/elastic/elasticsearch/commit/a130929f2535139865ecde536e8b1db1e2539924",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

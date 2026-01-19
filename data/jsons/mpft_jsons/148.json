@@ -1,0 +1,11 @@
+{
+  "id": 148,
+  "repo": "llvm-project",
+  "issue_url": "https://github.com/llvm/llvm-project/commit/fe5c47c",
+  "pr_url": "https://github.com/llvm/llvm-project/commit/fe5c47c",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

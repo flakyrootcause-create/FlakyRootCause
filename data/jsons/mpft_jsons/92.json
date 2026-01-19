@@ -1,0 +1,17 @@
+{
+  "id": 92,
+  "repo": "tensorzero",
+  "issue_url": "https://github.com/tensorzero/tensorzero/commit/248a2d1f8cd50a8593e757721c4720903f9180d5",
+  "pr_url": "https://github.com/tensorzero/tensorzero/commit/248a2d1f8cd50a8593e757721c4720903f9180d5",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "gateway/src/inference/types.rs",
+      "status": "modified",
+      "patch": "@@ -27,6 +27,7 @@ use crate::{error::Error, variant::JsonMode};\n pub struct Input {\n     #[serde(skip_serializing_if = \"Option::is_none\")]\n     pub system: Option<Value>,\n+    #[serde(default)]\n     pub messages: Vec<InputMessage>,\n }\n "
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

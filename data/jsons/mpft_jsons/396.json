@@ -1,0 +1,11 @@
+{
+  "id": 396,
+  "repo": "mug",
+  "issue_url": "https://github.com/google/mug/commit/dcca78d38d3893939cc6c7432b6c7bffa1fbb44e",
+  "pr_url": "https://github.com/google/mug/commit/dcca78d38d3893939cc6c7432b6c7bffa1fbb44e",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 193,
+  "repo": "okhttp",
+  "issue_url": "https://github.com/square/okhttp/commit/5e8011ad1a6216cee325fc316c7bb4decf15a471",
+  "pr_url": "https://github.com/square/okhttp/commit/5e8011ad1a6216cee325fc316c7bb4decf15a471",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "pom.xml",
+      "status": "modified",
+      "patch": "@@ -147,19 +147,6 @@\n                     </execution>\n                 </executions>\n             </plugin>\n-            <plugin>\n-                <groupId>org.apache.maven.plugins</groupId>\n-                <artifactId>maven-gpg-plugin</artifactId>\n-                <executions>\n-                    <execution>\n-                        <id>sign-artifacts</id>\n-                        <phase>verify</phase>\n-                        <goals>\n-                            <goal>sign</goal>\n-                        </goals>\n-                    </execution>\n-                </executions>\n-            </plugin>\n             <plugin>\n                 <!--\n                   OkHttp requires with javac >= 1.7 for syncFlush on DeflaterOutputStream."
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

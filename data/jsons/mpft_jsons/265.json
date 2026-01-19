@@ -1,0 +1,57 @@
+{
+  "id": 265,
+  "repo": "vllm",
+  "issue_url": "https://github.com/vllm-project/vllm/commit/33f227e16bfc05910c6650a9d22911031d7f67d6",
+  "pr_url": "https://github.com/vllm-project/vllm/commit/33f227e16bfc05910c6650a9d22911031d7f67d6",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "benchmark/benchmark_latency.py",
+      "status": "modified",
+      "patch": "@@ -29,6 +29,7 @@ def main(args: argparse.Namespace):\n     server = Server(\n         model=args.model,\n         model_path=args.model_path,\n+        use_dummy_weights=args.use_dummy_weights,\n         pipeline_parallel_size=args.pipeline_parallel_size,\n         tensor_parallel_size=args.tensor_parallel_size,\n         block_size=args.block_size,"
+    },
+    {
+      "filename": "cacheflow/http_frontend/fastapi_frontend.py",
+      "status": "modified",
+      "patch": "@@ -47,6 +47,7 @@ def __init__(\n         self.server = remote_server_class.remote(\n             model=model,\n             model_path=model_path,\n+            use_dummy_weights=False,\n             pipeline_parallel_size=pipeline_parallel_size,\n             tensor_parallel_size=tensor_parallel_size,\n             block_size=block_size,"
+    },
+    {
+      "filename": "cacheflow/master/server.py",
+      "status": "modified",
+      "patch": "@@ -16,6 +16,7 @@ def __init__(\n         self,\n         model: str,\n         model_path: str,\n+        use_dummy_weights: bool,\n         pipeline_parallel_size: int,\n         tensor_parallel_size: int,\n         block_size: int,\n@@ -66,6 +67,7 @@ def __init__(\n                 dtype=dtype,\n                 seed=seed,\n                 model_path=model_path,\n+                use_dummy_weights=use_dummy_weights,\n                 max_num_batched_tokens=max_num_batched_tokens,\n             )\n             self.controllers.append(controller)\n@@ -179,4 +181,5 @@ def add_server_arguments(parser: argparse.ArgumentParser):\n     parser.add_argument('--seed', type=int, default=0, help='random seed')\n     parser.add_argument('--swap-space', type=int, default=20, help='CPU swap space size (GiB) per GPU')\n     parser.add_argument('--max-num-batched-tokens', type=int, default=2560, help='maximum number of batched tokens')\n+    parser.add_argument('--use-dummy-weights', action='store_true', help='use dummy values for model weights')\n     return parser"
+    },
+    {
+      "filename": "cacheflow/models/llama.py",
+      "status": "modified",
+      "patch": "@@ -286,3 +286,7 @@ def get_weights(model_name: str, path: str):\n                         np.save(f, param.cpu().detach().numpy())\n \n             return path\n+\n+    def initialize_dummy_weights(self) -> None:\n+        for param in self.state_dict().values():\n+            param.data.uniform_(-0.1, 0.1)"
+    },
+    {
+      "filename": "cacheflow/models/model_utils.py",
+      "status": "modified",
+      "patch": "@@ -28,18 +28,29 @@ def get_model(\n     model_name: str,\n     dtype: Union[torch.dtype, str],\n     path: str,\n+    use_dummy_weights: bool,\n ) -> nn.Module:\n     torch_dtype = get_torch_dtype(dtype)\n     torch.set_default_dtype(torch_dtype)\n     config = AutoConfig.from_pretrained(model_name)\n     for model_class_name, model_class in _MODELS.items():\n         if model_class_name in model_name:\n-            # Download model weights if it's not cached.\n-            weights_dir = model_class.get_weights(model_name, path=path)\n-            # Create a model instance.\n-            model = model_class(config)\n-            # Load the weights from the cached or downloaded files.\n-            model.load_weights(weights_dir)\n+            if use_dummy_weights:\n+                # Create a model instance.\n+                # The weights will be initialized as empty tensors.\n+                model = model_class(config)\n+                model = model.cuda()\n+                # NOTE(woosuk): For precise performance evaluation, we assign\n+                # random values to the weights. \n+                model.initialize_dummy_weights()\n+            else:\n+                # Download model weights if it's not cached.\n+                weights_dir = model_class.get_weights(model_name, path=path)\n+                # Create a model instance.\n+                model = model_class(config)\n+                # Load the weights from the cached or downloaded files.\n+                model.load_weights(weights_dir)\n+                model = model.cuda()\n             return model.eval(), torch_dtype\n     raise ValueError(f'Unsupported model name: {model_name}')\n "
+    },
+    {
+      "filename": "cacheflow/models/opt.py",
+      "status": "modified",
+      "patch": "@@ -324,3 +324,7 @@ def get_weights(model_name: str, path: str):\n                         np.save(f, param.cpu().detach().numpy())\n \n             return path\n+\n+    def initialize_dummy_weights(self) -> None:\n+        for param in self.state_dict().values():\n+            param.data.uniform_(-0.1, 0.1)"
+    },
+    {
+      "filename": "cacheflow/worker/controller.py",
+      "status": "modified",
+      "patch": "@@ -27,6 +27,7 @@ def __init__(\n         dtype: str,\n         seed: int,\n         model_path: str,\n+        use_dummy_weights: bool,\n         max_num_batched_tokens: int,\n     ) -> None:\n         self.stage_id = stage_id\n@@ -58,6 +59,7 @@ def __init__(\n                 tensor_parallel_size=tensor_parallel_size,\n                 pipeline_parallel_size=pipeline_parallel_size,\n                 model_path=model_path,\n+                use_dummy_weights=use_dummy_weights,\n                 max_num_batched_tokens=max_num_batched_tokens,\n             )\n             self.workers.append(worker)"
+    },
+    {
+      "filename": "cacheflow/worker/worker.py",
+      "status": "modified",
+      "patch": "@@ -29,6 +29,7 @@ def __init__(\n         rank: int,\n         world_size: int,\n         model_path: str,\n+        use_dummy_weights: bool,\n         max_num_batched_tokens: int,\n         tensor_parallel_size: int = 1,\n         pipeline_parallel_size: int = 1,\n@@ -43,8 +44,8 @@ def __init__(\n         set_random_seed(seed)\n \n         # Initialize the model.\n-        self.model, self.dtype = get_model(model_name, dtype=dtype, path=model_path)\n-        self.model = self.model.cuda()\n+        self.model, self.dtype = get_model(\n+            model_name, dtype=dtype, path=model_path, use_dummy_weights=use_dummy_weights)\n         tensor_model_parallel_world_size = (\n             get_tensor_model_parallel_world_size())\n         initialize_all_reduce_launcher("
+    },
+    {
+      "filename": "simple_server.py",
+      "status": "modified",
+      "patch": "@@ -22,6 +22,7 @@ def main(args: argparse.Namespace):\n     server = Server(\n         model=args.model,\n         model_path=args.model_path,\n+        use_dummy_weights=args.use_dummy_weights,\n         pipeline_parallel_size=args.pipeline_parallel_size,\n         tensor_parallel_size=args.tensor_parallel_size,\n         block_size=args.block_size,"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

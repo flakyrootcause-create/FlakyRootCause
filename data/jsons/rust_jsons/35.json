@@ -1,0 +1,17 @@
+{
+  "id": 35,
+  "repo": "qdrant",
+  "issue_url": "https://github.com/qdrant/qdrant/issues/472",
+  "pr_url": "https://github.com/qdrant/qdrant/pull/474",
+  "issue_description": "The test `Payload Index Test test_is_empty_conditions` is flaky.\r\n\r\n```\r\nfailures:\r\n\r\n---- tests::test_is_empty_conditions stdout ----\r\nthread 'tests::test_is_empty_conditions' panicked at 'assertion failed: (estimation_struct.exp as f64 - real_number as f64).abs() <\\n    (estimation_plain.exp as f64 - real_number as f64).abs()', lib/segment/tests/payload_index_test.rs:107:9\r\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\r\n\r\n\r\nfailures:\r\n    tests::test_is_empty_conditions\r\n```\r\n\r\n## Current Behavior\r\nThe issue has been observed both locally and on [CI](https://github.com/qdrant/qdrant/runs/5993313794?check_suite_focus=true#step%3A7%3A202=)\r\n\r\n## Steps to Reproduce\r\nNo clear reproduction steps due to the flaky aspect.",
+  "files_changed": [
+    {
+      "filename": "lib/segment/tests/payload_index_test.rs",
+      "status": "modified",
+      "patch": "@@ -106,11 +106,8 @@ mod tests {\n \n         assert!(\n             (estimation_struct.exp as f64 - real_number as f64).abs()\n-                < (estimation_plain.exp as f64 - real_number as f64).abs()\n+                <= (estimation_plain.exp as f64 - real_number as f64).abs()\n         );\n-\n-        eprintln!(\"estimation_struct = {:#?}\", estimation_struct);\n-        eprintln!(\"estimation_plain = {:#?}\", estimation_plain);\n     }\n \n     #[test]"
+    }
+  ],
+  "fix_category": "Comparison operator",
+  "root_cause_category": "Logic",
+  "root_cause_subcategory": "Off by one"
+}

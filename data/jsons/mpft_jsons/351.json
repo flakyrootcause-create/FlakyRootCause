@@ -1,0 +1,77 @@
+{
+  "id": 351,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/63fc9b3cb8c0a21a8a6df4254b4e8e7f44e35308",
+  "pr_url": "https://github.com/apache/kafka/commit/63fc9b3cb8c0a21a8a6df4254b4e8e7f44e35308",
+  "issue_description": "Corrected Spelling errors.\n",
+  "files_changed": [
+    {
+      "filename": "core/data/kafka-573957/.lock",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-573957/recovery-point-offset-checkpoint",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-573957/replication-offset-checkpoint",
+      "status": "added",
+      "patch": "@@ -0,0 +1,3 @@\n+0\n+1\n+test-topic 1 0"
+    },
+    {
+      "filename": "core/data/kafka-573957/test-topic-1/00000000000000000000.index",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-573957/test-topic-1/00000000000000000000.log",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-939818/.lock",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-939818/recovery-point-offset-checkpoint",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-939818/replication-offset-checkpoint",
+      "status": "added",
+      "patch": "@@ -0,0 +1,3 @@\n+0\n+1\n+test-topic 1 0"
+    },
+    {
+      "filename": "core/data/kafka-939818/test-topic-1/00000000000000000000.index",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/data/kafka-939818/test-topic-1/00000000000000000000.log",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "core/src/main/scala/kafka/utils/ZkUtils.scala",
+      "status": "modified",
+      "patch": "@@ -390,8 +390,8 @@ object ZkUtils extends Logging {\n   }\n \n   /**\n-   * Update the value of a persistent node with the given path and data.\n-   * create parrent directory if necessary. Never throw NodeExistException.\n+   * Update the value of a ephemeral node with the given path and data.\n+   * create parent directory if necessary. Never throw NodeExistException.\n    */\n   def updateEphemeralPath(client: ZkClient, path: String, data: String): Unit = {\n     try {"
+    },
+    {
+      "filename": "gradle/wrapper/gradle-wrapper.jar",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "gradle/wrapper/gradle-wrapper.properties",
+      "status": "added",
+      "patch": "@@ -0,0 +1,6 @@\n+#Mon May 11 13:18:44 PDT 2015\n+distributionBase=GRADLE_USER_HOME\n+distributionPath=wrapper/dists\n+zipStoreBase=GRADLE_USER_HOME\n+zipStorePath=wrapper/dists\n+distributionUrl=https\\://services.gradle.org/distributions/gradle-2.0-bin.zip"
+    }
+  ],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

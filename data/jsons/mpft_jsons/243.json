@@ -1,0 +1,22 @@
+{
+  "id": 243,
+  "repo": "httpx",
+  "issue_url": "https://github.com/encode/httpx/pull/946",
+  "pr_url": "https://github.com/encode/httpx/pull/946",
+  "issue_description": "Refs #943\r\n\r\n* We've already got a test that ensures `response.elapsed > datetime.timedelta(0)`, so let's not try to enforce a \"this should end up as more than one second\" case.\r\n* Let's bump the slow response default to a more reliably noticable 1 second delay.\r\n",
+  "files_changed": [
+    {
+      "filename": "tests/client/test_client.py",
+      "status": "modified",
+      "patch": "@@ -146,10 +146,3 @@ def test_merge_url():\n \n     assert url.scheme == \"https\"\n     assert url.is_ssl\n-\n-\n-def test_elapsed_delay(server):\n-    url = server.url.copy_with(path=\"/slow_response/100\")\n-    with httpx.Client() as client:\n-        response = client.get(url)\n-    assert response.elapsed.total_seconds() > 0.0"
+    },
+    {
+      "filename": "tests/conftest.py",
+      "status": "modified",
+      "patch": "@@ -102,12 +102,7 @@ async def hello_world(scope, receive, send):\n \n \n async def slow_response(scope, receive, send):\n-    delay_ms_str: str = scope[\"path\"].replace(\"/slow_response/\", \"\")\n-    try:\n-        delay_ms = float(delay_ms_str)\n-    except ValueError:\n-        delay_ms = 100\n-    await sleep(delay_ms / 1000.0)\n+    await sleep(1.0)\n     await send(\n         {\n             \"type\": \"http.response.start\","
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 179,
+  "repo": "jaeger-ui",
+  "issue_url": "https://github.com/jaegertracing/jaeger-ui/commit/f559122",
+  "pr_url": "https://github.com/jaegertracing/jaeger-ui/commit/f559122",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

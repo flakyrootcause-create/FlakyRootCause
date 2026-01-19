@@ -1,0 +1,11 @@
+{
+  "id": 88,
+  "repo": "Umbraco-CMS",
+  "issue_url": "https://github.com/umbraco/Umbraco-CMS/pull/18451/commits",
+  "pr_url": "https://github.com/umbraco/Umbraco-CMS/pull/18451/commits",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

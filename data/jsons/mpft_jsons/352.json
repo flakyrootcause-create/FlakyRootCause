@@ -1,0 +1,11 @@
+{
+  "id": 352,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/ac2a642ba99cde8a398510ce5cf503462863b489",
+  "pr_url": "https://github.com/apache/kafka/commit/ac2a642ba99cde8a398510ce5cf503462863b489",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

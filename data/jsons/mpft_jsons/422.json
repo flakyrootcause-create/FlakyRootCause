@@ -1,0 +1,17 @@
+{
+  "id": 422,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/pull/20085",
+  "pr_url": "https://github.com/apache/kafka/pull/20085",
+  "issue_description": "**Problem Description**\nIn the `RemoteIndexCache.cleanup()` method, the asynchronous invocation\nof `index.deleteIfExists()` may cause a conflict. When the\n`getIndexFileFromRemoteCacheDir()` method is executed, it utilizes\n`Files.walk()` to traverse all files in the directory path. If\n`index.deleteIfExists()` is triggered during this traversal, a\n`NoSuchFileException` will be thrown.\n\n**Solution**\nTo resolve this issue, ensure that `index.deleteIfExists()` has been\nfully executed before invoking `getIndexFileFromRemoteCacheDir()`.\n",
+  "files_changed": [
+    {
+      "filename": "storage/src/test/java/org/apache/kafka/storage/internals/log/RemoteIndexCacheTest.java",
+      "status": "modified",
+      "patch": "@@ -331,6 +331,18 @@ public void testCacheEntryIsDeletedOnRemoval() throws IOException, InterruptedEx\n         verify(cacheEntry.offsetIndex()).renameTo(any(File.class));\n         verify(cacheEntry.txnIndex()).renameTo(any(File.class));\n \n+        // wait until the delete method is invoked\n+        TestUtils.waitForCondition(() -> {\n+            try {\n+                verify(cacheEntry.timeIndex()).deleteIfExists();\n+                verify(cacheEntry.offsetIndex()).deleteIfExists();\n+                verify(cacheEntry.txnIndex()).deleteIfExists();\n+                return true;\n+            } catch (Exception e) {\n+                return false;\n+            }\n+        }, \"Failed to delete index file\");\n+\n         // verify no index files on disk\n         assertFalse(getIndexFileFromRemoteCacheDir(cache, LogFileUtils.INDEX_FILE_SUFFIX).isPresent(),\n                 \"Offset index file should not be present on disk at \" + tpDir.toPath());"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

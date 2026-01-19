@@ -1,0 +1,11 @@
+{
+  "id": 58,
+  "repo": "sentry",
+  "issue_url": "https://github.com/getsentry/sentry/commit/132590b2ecda6006725db947d748428f0ab10c04",
+  "pr_url": "https://github.com/getsentry/sentry/commit/132590b2ecda6006725db947d748428f0ab10c04",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

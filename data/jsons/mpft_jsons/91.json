@@ -1,0 +1,11 @@
+{
+  "id": 91,
+  "repo": "CoreWF",
+  "issue_url": "https://github.com/UiPath/CoreWF/commit/5fefd464cbd4afaedb27bf3d259dfc995086faa7",
+  "pr_url": "https://github.com/UiPath/CoreWF/commit/5fefd464cbd4afaedb27bf3d259dfc995086faa7",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

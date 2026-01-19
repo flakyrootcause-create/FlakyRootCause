@@ -1,0 +1,11 @@
+{
+  "id": 401,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/commit/ccb721baab856d2d729b38841f4f2a2904063118#diff-41386766c394f14f5f205f92bb26eb1420b80af0057c78b2842fcc7ddd3d67aa",
+  "pr_url": "https://github.com/elastic/elasticsearch/commit/ccb721baab856d2d729b38841f4f2a2904063118#diff-41386766c394f14f5f205f92bb26eb1420b80af0057c78b2842fcc7ddd3d67aa",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

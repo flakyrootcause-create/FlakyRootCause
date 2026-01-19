@@ -1,0 +1,11 @@
+{
+  "id": 261,
+  "repo": "mastra",
+  "issue_url": "https://github.com/mastra-ai/mastra/commit/f4abe67a592c924b34ea40d0d018a8a6552dbd83",
+  "pr_url": "https://github.com/mastra-ai/mastra/commit/f4abe67a592c924b34ea40d0d018a8a6552dbd83",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

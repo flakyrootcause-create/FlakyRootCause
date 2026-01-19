@@ -1,0 +1,11 @@
+{
+  "id": 62,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/commit/11e2cb77534c8dac6dc6968dc5223baef94164b6",
+  "pr_url": "https://github.com/pandas-dev/pandas/commit/11e2cb77534c8dac6dc6968dc5223baef94164b6",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

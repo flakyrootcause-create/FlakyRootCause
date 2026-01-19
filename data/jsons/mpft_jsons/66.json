@@ -1,0 +1,17 @@
+{
+  "id": 66,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/pull/14851",
+  "pr_url": "https://github.com/pandas-dev/pandas/pull/14851",
+  "issue_description": "xref #14626",
+  "files_changed": [
+    {
+      "filename": "pandas/tests/indexes/test_base.py",
+      "status": "modified",
+      "patch": "@@ -915,23 +915,12 @@ def test_format(self):\n         self._check_method_works(Index.format)\n \n         # GH 14626\n-        # our formatting is different by definition when we have\n-        # ms vs us precision (e.g. trailing zeros);\n-        # so don't compare this case\n-        def datetime_now_without_trailing_zeros():\n-            now = datetime.now()\n-\n-            while str(now).endswith(\"000\"):\n-                now = datetime.now()\n-\n-            return now\n-\n-        index = Index([datetime_now_without_trailing_zeros()])\n-\n         # windows has different precision on datetime.datetime.now (it doesn't\n         # include us since the default for Timestamp shows these but Index\n-        # formating does not we are skipping\n-        if not is_platform_windows():\n+        # formating does not we are skipping)\n+        now = datetime.now()\n+        if not str(now).endswith(\"000\"):\n+            index = Index([now])\n             formatted = index.format()\n             expected = [str(index[0])]\n             self.assertEqual(formatted, expected)"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

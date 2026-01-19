@@ -1,0 +1,17 @@
+{
+  "id": 429,
+  "repo": "deno",
+  "issue_url": "https://github.com/denoland/deno/pull/29760",
+  "pr_url": "https://github.com/denoland/deno/pull/29760",
+  "issue_description": "This PR tries to fix flakiness of `specs::coverage::data_url`.\r\n\r\n`foo` is async function, but is not awaited\r\n\r\ncloses #29759 ",
+  "files_changed": [
+    {
+      "filename": "tests/specs/coverage/data_url/main_test.ts",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,5 @@\n import { foo } from \"./main.ts\";\n \n-Deno.test(\"test\", () => {\n-  foo();\n+Deno.test(\"test\", async () => {\n+  await foo();\n });"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

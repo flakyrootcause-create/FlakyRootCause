@@ -1,0 +1,17 @@
+{
+  "id": 260,
+  "repo": "mastra",
+  "issue_url": "https://github.com/mastra-ai/mastra/pull/5483",
+  "pr_url": "https://github.com/mastra-ai/mastra/pull/5483",
+  "issue_description": "For example this test fails randomly and needs to be re-run multiple times: https://github.com/mastra-ai/mastra/actions/runs/15888293944/job/44806477266?pr=5482\r\n\r\nSeems to be flawed test logic (fixed here)",
+  "files_changed": [
+    {
+      "filename": "packages/memory/integration-tests/src/streaming-memory.test.ts",
+      "status": "modified",
+      "patch": "@@ -279,15 +279,18 @@ describe('Memory Streaming Tests', () => {\n             content: message,\n           });\n         });\n-        const uiMessages = result.current.messages;\n+\n+        // Wait for message count to increase\n         await waitFor(\n           () => {\n             expect(error).toBeNull();\n             expect(result.current.messages.length).toBeGreaterThan(messageCountBefore);\n           },\n-          { timeout: 1000 },\n+          { timeout: 2000 },\n         );\n \n+        // Get fresh reference to messages after all waits complete\n+        const uiMessages = result.current.messages;\n         const latestMessage = uiMessages.at(-1);\n         if (!latestMessage) throw new Error(`No latest message`);\n         if ("
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

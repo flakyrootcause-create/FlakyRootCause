@@ -1,0 +1,37 @@
+{
+  "id": 57,
+  "repo": "databend",
+  "issue_url": "https://github.com/databendlabs/databend/issues/13053",
+  "pr_url": "https://github.com/databendlabs/databend/pull/13569",
+  "issue_description": "**Summary**\r\n\r\nhttps://github.com/datafuselabs/databend/actions/runs/6321697555/job/17166517616?pr=12998\r\n\r\n```\r\n0: statement failed: ClickHouse client error: . Code: 500, Text = TableLockExpired. Code: 2016, Text = the acquired table lock has expired..\r\n[SQL] merge into t_stored_merge as t1 using (select * from t_source_merge as t2)  on t1.a = t2.a  when matched then update set t1.c = t2.c  when not matched then insert (a,c) values(t2.a,t2.c);\r\n```\r\nat tests/sqllogictests/suites/ee/01_ee_system/01_0001_computed_column:250",
+  "files_changed": [
+    {
+      "filename": "src/meta/api/src/schema_api_impl.rs",
+      "status": "modified",
+      "patch": "@@ -3220,7 +3220,7 @@ impl<KV: kvapi::KVApi<Error = MetaError> + ?Sized> SchemaApi for KV {\n             let if_then = vec![txn_op_put_with_expire(\n                 &key,\n                 serialize_struct(&lock_meta)?,\n-                req.expire_at,\n+                SeqV::<()>::now_ms() / 1000 + req.expire_secs,\n             )];\n \n             let txn_req = TxnRequest {\n@@ -3284,7 +3284,7 @@ impl<KV: kvapi::KVApi<Error = MetaError> + ?Sized> SchemaApi for KV {\n             let if_then = vec![txn_op_put_with_expire(\n                 &key,\n                 serialize_struct(&lock_meta)?,\n-                req.expire_at,\n+                SeqV::<()>::now_ms() / 1000 + req.expire_secs,\n             )];\n \n             let txn_req = TxnRequest {"
+    },
+    {
+      "filename": "src/meta/api/src/schema_api_test_suite.rs",
+      "status": "modified",
+      "patch": "@@ -5237,7 +5237,7 @@ impl SchemaApiTestSuite {\n             info!(\"--- create table lock revision 1\");\n             let req1 = CreateLockRevReq {\n                 lock_key: LockKey::Table { table_id },\n-                expire_at: (Utc::now().timestamp() + 2) as u64,\n+                expire_secs: 2,\n                 user: \"root\".to_string(),\n                 node: \"node1\".to_string(),\n                 query_id: \"query1\".to_string(),\n@@ -5247,7 +5247,7 @@ impl SchemaApiTestSuite {\n             info!(\"--- create table lock revision 2\");\n             let req2 = CreateLockRevReq {\n                 lock_key: LockKey::Table { table_id },\n-                expire_at: (Utc::now().timestamp() + 2) as u64,\n+                expire_secs: 2,\n                 user: \"root\".to_string(),\n                 node: \"node1\".to_string(),\n                 query_id: \"query2\".to_string(),\n@@ -5267,7 +5267,7 @@ impl SchemaApiTestSuite {\n             info!(\"--- extend table lock revision 2 expire\");\n             let req4 = ExtendLockRevReq {\n                 lock_key: LockKey::Table { table_id },\n-                expire_at: (Utc::now().timestamp() + 4) as u64,\n+                expire_secs: 4,\n                 revision: res2.revision,\n                 acquire_lock: true,\n             };"
+    },
+    {
+      "filename": "src/meta/app/src/schema/lock.rs",
+      "status": "modified",
+      "patch": "@@ -109,7 +109,7 @@ pub struct ListLockRevReq {\n #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]\n pub struct CreateLockRevReq {\n     pub lock_key: LockKey,\n-    pub expire_at: u64,\n+    pub expire_secs: u64,\n     pub user: String,\n     pub node: String,\n     pub query_id: String,\n@@ -123,7 +123,7 @@ pub struct CreateLockRevReply {\n #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]\n pub struct ExtendLockRevReq {\n     pub lock_key: LockKey,\n-    pub expire_at: u64,\n+    pub expire_secs: u64,\n     pub revision: u64,\n     pub acquire_lock: bool,\n }"
+    },
+    {
+      "filename": "src/query/catalog/src/lock.rs",
+      "status": "modified",
+      "patch": "@@ -14,7 +14,6 @@\n \n use std::sync::Arc;\n \n-use chrono::Utc;\n use common_exception::Result;\n use common_meta_app::schema::CreateLockRevReq;\n use common_meta_app::schema::DeleteLockRevReq;\n@@ -65,7 +64,7 @@ pub trait LockExt: Lock {\n             user,\n             node,\n             query_id,\n-            expire_at: Utc::now().timestamp() as u64 + expire_secs,\n+            expire_secs,\n         }\n     }\n \n@@ -92,7 +91,7 @@ pub trait LockExt: Lock {\n             lock_key: self.gen_lock_key(),\n             revision,\n             acquire_lock,\n-            expire_at: Utc::now().timestamp() as u64 + expire_secs,\n+            expire_secs,\n         }\n     }\n }"
+    },
+    {
+      "filename": "src/query/storages/fuse/src/operations/commit.rs",
+      "status": "modified",
+      "patch": "@@ -272,7 +272,7 @@ impl FuseTable {\n             });\n     }\n \n-    // TODO refactor, it is called by segment compaction and re-cluster now\n+    // TODO refactor, it is called by segment compaction\n     #[async_backtrace::framed]\n     pub async fn commit_mutation(\n         &self,"
+    }
+  ],
+  "fix_category": "Tweak Durations",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Tweak Durations"
+}

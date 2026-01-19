@@ -1,0 +1,11 @@
+{
+  "id": 275,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/9ec34cb925afbfc73b0518febbca73bd8d1a64f6",
+  "pr_url": "https://github.com/nodejs/node/commit/9ec34cb925afbfc73b0518febbca73bd8d1a64f6",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

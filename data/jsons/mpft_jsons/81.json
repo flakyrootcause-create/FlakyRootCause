@@ -1,0 +1,11 @@
+{
+  "id": 81,
+  "repo": "langchain4j",
+  "issue_url": "https://github.com/langchain4j/langchain4j/pull/3097/commits",
+  "pr_url": "https://github.com/langchain4j/langchain4j/pull/3097/commits",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,27 @@
+{
+  "id": 67,
+  "repo": "superset",
+  "issue_url": "https://github.com/apache/superset/pull/17782",
+  "pr_url": "https://github.com/apache/superset/pull/17782",
+  "issue_description": "[PR Linked Issue]\nThese tests are the same ones that run against other analytics DBs, but for some reason when we run them against Presto/Hive we get false positives (or are they false negatives? \ud83e\udd14) at a much greater rate. These tests also seem to take much longer to run, which may be related.\r\n\r\nIf we can get to the bottom of this it will massively improve the experience of contributing to Superset.\r\n\r\n#### How to reproduce the bug\r\n\r\nRun CI a few times.\r\n\r\n### Expected results\r\n\r\nCI should pass if the PR hasn't introduced any bugs.\r\n\r\n### Actual results\r\n\r\nIt fails a lot. Often multiple times in a row, with different tests.\r\n\r\n### Additional context\r\n\r\nI want to start putting together a list of the tests that have failed, to see if there is some sort of pattern. Feel free to add new entries to this list (only if you are certain that it really is a false positive!). Please also link to a relevant line of the GitHub Action where the test failed.\r\n\r\n- [ERROR tests/integration_tests/dashboards/filter_state/api_tests.py::test_delete_not_owner](https://github.com/apache/superset/runs/4524150250?check_suite_focus=true#step:8:2363)\r\n- [ERROR tests/integration_tests/security_tests.py::TestRolePermission::test_admin_permissions](https://github.com/apache/superset/runs/4525283552?check_suite_focus=true#step:8:2420)\r\n",
+  "files_changed": [
+    {
+      "filename": ".github/workflows/superset-python-presto-hive.yml",
+      "status": "modified",
+      "patch": "@@ -80,7 +80,7 @@ jobs:\n       - name: Python unit tests (PostgreSQL)\n         if: steps.check.outcome == 'failure'\n         run: |\n-          ./scripts/python_tests.sh\n+          ./scripts/python_tests.sh -m 'chart_data_flow or sql_json_flow'\n       - name: Upload code coverage\n         if: steps.check.outcome == 'failure'\n         run: |\n@@ -158,7 +158,7 @@ jobs:\n       - name: Python unit tests (PostgreSQL)\n         if: steps.check.outcome == 'failure'\n         run: |\n-          ./scripts/python_tests.sh\n+          ./scripts/python_tests.sh -m 'chart_data_flow or sql_json_flow'\n       - name: Upload code coverage\n         if: steps.check.outcome == 'failure'\n         run: |"
+    },
+    {
+      "filename": "scripts/python_tests.sh",
+      "status": "modified",
+      "patch": "@@ -31,4 +31,5 @@ superset db upgrade\n superset init\n \n echo \"Running tests\"\n-pytest --durations=0 --maxfail=1 --cov=superset $@\n+\n+pytest --durations=0 --maxfail=1 --cov=superset \"$@\""
+    },
+    {
+      "filename": "tests/integration_tests/sqllab_tests.py",
+      "status": "modified",
+      "patch": "@@ -66,6 +66,7 @@\n QUERY_3 = \"SELECT * FROM birth_names LIMIT 10\"\n \n \n+@pytest.mark.sql_json_flow\n class TestSqlLab(SupersetTestCase):\n     \"\"\"Testings for Sql Lab\"\"\"\n "
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

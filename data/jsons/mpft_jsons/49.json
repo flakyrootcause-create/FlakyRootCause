@@ -1,0 +1,11 @@
+{
+  "id": 49,
+  "repo": "coveragepy",
+  "issue_url": "https://github.com/nedbat/coveragepy/commit/4d61fff19caa797947d8818d711227ad85a8aed5",
+  "pr_url": "https://github.com/nedbat/coveragepy/commit/4d61fff19caa797947d8818d711227ad85a8aed5",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

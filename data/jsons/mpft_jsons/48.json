@@ -1,0 +1,22 @@
+{
+  "id": 48,
+  "repo": "python-telegram-bot",
+  "issue_url": "https://github.com/python-telegram-bot/python-telegram-bot/pull/4360",
+  "pr_url": "https://github.com/python-telegram-bot/python-telegram-bot/pull/4360",
+  "issue_description": "<!--\r\nHey! You're PRing? Cool!\r\nPlease be sure to check out our contribution guide (https://github.com/python-telegram-bot/python-telegram-bot/blob/master/.github/CONTRIBUTING.rst).\r\nEspecially, please have a look at the check list for PRs (https://github.com/python-telegram-bot/python-telegram-bot/blob/master/.github/CONTRIBUTING.rst#check-list-for-prs). Feel free to copy (parts of) the checklist to the PR description to remind you or the maintainers of open points or if you have questions on anything.\r\n-->\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "tests/test_bot.py",
+      "status": "modified",
+      "patch": "@@ -2368,11 +2368,15 @@ async def test_delete_message_old_message(self, bot, chat_id):\n     # test modules. No need to duplicate here.\n \n     async def test_delete_messages(self, bot, chat_id):\n-        msg1 = await bot.send_message(chat_id, text=\"will be deleted\")\n-        msg2 = await bot.send_message(chat_id, text=\"will be deleted\")\n-        await asyncio.sleep(2)\n+        msg1, msg2 = await asyncio.gather(\n+            bot.send_message(chat_id, text=\"will be deleted\"),\n+            bot.send_message(chat_id, text=\"will be deleted\"),\n+        )\n \n-        assert await bot.delete_messages(chat_id=chat_id, message_ids=(msg1.id, msg2.id)) is True\n+        assert (\n+            await bot.delete_messages(chat_id=chat_id, message_ids=sorted((msg1.id, msg2.id)))\n+            is True\n+        )\n \n     async def test_send_venue(self, bot, chat_id):\n         longitude = -46.788279\n@@ -3915,7 +3919,7 @@ async def test_copy_messages(self, bot, chat_id):\n         msg1, msg2 = await tasks\n \n         copy_messages = await bot.copy_messages(\n-            chat_id, from_chat_id=chat_id, message_ids=(msg1.message_id, msg2.message_id)\n+            chat_id, from_chat_id=chat_id, message_ids=sorted((msg1.message_id, msg2.message_id))\n         )\n         assert isinstance(copy_messages, tuple)\n "
+    },
+    {
+      "filename": "tests/test_constants.py",
+      "status": "modified",
+      "patch": "@@ -234,6 +234,11 @@ async def test_max_message_length(self, bot, chat_id):\n             return_exceptions=True,\n         )\n         good_msg, bad_msg = await tasks\n+\n+        if isinstance(good_msg, BaseException):\n+            # handling xfails\n+            raise good_msg\n+\n         assert good_msg.text == good_text\n         assert isinstance(bad_msg, BadRequest)\n         assert \"Message is too long\" in str(bad_msg)\n@@ -247,6 +252,11 @@ async def test_max_caption_length(self, bot, chat_id):\n             return_exceptions=True,\n         )\n         good_msg, bad_msg = await tasks\n+\n+        if isinstance(good_msg, BaseException):\n+            # handling xfails\n+            raise good_msg\n+\n         assert good_msg.caption == good_caption\n         assert isinstance(bad_msg, BadRequest)\n         assert \"Message caption is too long\" in str(bad_msg)"
+    }
+  ],
+  "fix_category": "Lock atomic operation",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

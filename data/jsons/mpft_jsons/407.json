@@ -1,0 +1,11 @@
+{
+  "id": 407,
+  "repo": "adk-python",
+  "issue_url": "https://github.com/google/adk-python/commit/430b82024fa88575de6d19399e8da6047962b77d",
+  "pr_url": "https://github.com/google/adk-python/commit/430b82024fa88575de6d19399e8da6047962b77d",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

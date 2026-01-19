@@ -1,0 +1,11 @@
+{
+  "id": 98,
+  "repo": "stamhoofd",
+  "issue_url": "https://github.com/stamhoofd/stamhoofd/commit/384cc253a780958e5bfafdb684ee6bc77c9b451b",
+  "pr_url": "https://github.com/stamhoofd/stamhoofd/commit/384cc253a780958e5bfafdb684ee6bc77c9b451b",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

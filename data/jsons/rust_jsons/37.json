@@ -1,0 +1,67 @@
+{
+  "id": 37,
+  "repo": "rust-tun",
+  "issue_url": "https://github.com/tun2proxy/rust-tun/issues/110",
+  "pr_url": "https://github.com/tun2proxy/rust-tun/pull/115",
+  "issue_description": "Currently, I use this crate by creating the interface, and looking up the interface by name and getting the ID so that I can use it in creating routes and other things. However, this is almost flaky in practice because of the way names are handled on different platforms and I would rather get the ID directly if that is possible. Or, are the low level details such that I should just search through the interface list and it would be just as efficient?",
+  "files_changed": [
+    {
+      "filename": "Cargo.toml",
+      "status": "modified",
+      "patch": "@@ -1,6 +1,6 @@\n [package]\n name = \"tun2\"\n-version = \"3.1.8\"\n+version = \"4.0.0\"\n edition = \"2021\"\n authors = [\"meh. <meh@schizofreni.co>\", \"@ssrlive\"]\n license = \"WTFPL\""
+    },
+    {
+      "filename": "README.md",
+      "status": "modified",
+      "patch": "@@ -81,7 +81,7 @@ Platforms\n \n Linux\n -----\n-You will need the `tun2` module to be loaded and root is required to create\n+You will need the `tun` module to be loaded and root is required to create\n interfaces.\n \n macOS & FreeBSD"
+    },
+    {
+      "filename": "examples/dev-config.rs",
+      "status": "modified",
+      "patch": "@@ -47,14 +47,18 @@ fn main_entry(quit: Receiver<()>) -> Result<(), BoxError> {\n     });\n \n     let mut dev = tun2::create(&config)?;\n+\n+    let r = dev.tun_index()?;\n+    println!(\"Index: {:?}\", r);\n+\n     let r = dev.address()?;\n-    println!(\"{:?}\", r);\n+    println!(\"Address: {:?}\", r);\n \n     let r = dev.destination()?;\n-    println!(\"{:?}\", r);\n+    println!(\"Destination: {:?}\", r);\n \n     let r = dev.netmask()?;\n-    println!(\"{:?}\", r);\n+    println!(\"Netmask: {:?}\", r);\n \n     dev.set_address(std::net::IpAddr::V4(Ipv4Addr::new(10, 0, 0, 20)))?;\n     dev.set_destination(std::net::IpAddr::V4(Ipv4Addr::new(10, 0, 0, 66)))?;"
+    },
+    {
+      "filename": "src/device.rs",
+      "status": "modified",
+      "patch": "@@ -48,6 +48,9 @@ pub trait AbstractDevice: Read + Write {\n         Ok(())\n     }\n \n+    /// Get the device index.\n+    fn tun_index(&self) -> Result<i32>;\n+\n     /// Get the device tun name.\n     fn tun_name(&self) -> Result<String>;\n "
+    },
+    {
+      "filename": "src/platform/android/device.rs",
+      "status": "modified",
+      "patch": "@@ -97,6 +97,10 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        Err(Error::NotImplemented)\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         Ok(\"\".to_string())\n     }"
+    },
+    {
+      "filename": "src/platform/freebsd/device.rs",
+      "status": "modified",
+      "patch": "@@ -277,6 +277,11 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        let name = self.tun_name()?;\n+        Ok(posix::tun_name_to_index(name)? as i32)\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         Ok(self.tun_name.clone())\n     }"
+    },
+    {
+      "filename": "src/platform/ios/device.rs",
+      "status": "modified",
+      "patch": "@@ -107,6 +107,10 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        Err(Error::NotImplemented)\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         Ok(\"\".to_string())\n     }"
+    },
+    {
+      "filename": "src/platform/linux/device.rs",
+      "status": "modified",
+      "patch": "@@ -239,6 +239,11 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        let name = self.tun_name()?;\n+        Ok(posix::tun_name_to_index(name)? as i32)\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         Ok(self.tun_name.clone())\n     }"
+    },
+    {
+      "filename": "src/platform/macos/device.rs",
+      "status": "modified",
+      "patch": "@@ -304,6 +304,11 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        let name = self.tun_name()?;\n+        Ok(posix::tun_name_to_index(&name)? as i32)\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         self.tun_name.as_ref().cloned().ok_or(Error::InvalidConfig)\n     }"
+    },
+    {
+      "filename": "src/platform/posix/mod.rs",
+      "status": "modified",
+      "patch": "@@ -26,3 +26,16 @@ pub(crate) use self::fd::Fd;\n \n mod split;\n pub use self::split::{Reader, Tun, Writer};\n+\n+#[allow(dead_code)]\n+pub fn tun_name_to_index(name: impl AsRef<str>) -> std::io::Result<u32> {\n+    let name_cstr = std::ffi::CString::new(name.as_ref()).map_err(|_| {\n+        std::io::Error::new(std::io::ErrorKind::InvalidInput, \"Invalid interface name\")\n+    })?;\n+    let result = unsafe { libc::if_nametoindex(name_cstr.as_ptr()) };\n+    if result == 0 {\n+        Err(std::io::Error::last_os_error())\n+    } else {\n+        Ok(result as _)\n+    }\n+}"
+    },
+    {
+      "filename": "src/platform/windows/device.rs",
+      "status": "modified",
+      "patch": "@@ -138,6 +138,13 @@ impl Write for Device {\n }\n \n impl AbstractDevice for Device {\n+    fn tun_index(&self) -> Result<i32> {\n+        match &self.driver {\n+            Driver::Tun(tun) => Ok(tun.session.get_adapter().get_adapter_index()? as i32),\n+            Driver::Tap(_tap) => Err(Error::NotImplemented),\n+        }\n+    }\n+\n     fn tun_name(&self) -> Result<String> {\n         match &self.driver {\n             Driver::Tun(tun) => Ok(tun.session.get_adapter().get_name()?),"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "Cavalier use of flaky moniker"
+}

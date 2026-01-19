@@ -1,0 +1,17 @@
+{
+  "id": 33,
+  "repo": "rust-lightning",
+  "issue_url": "https://github.com/lightningdevkit/rust-lightning/issues/2073",
+  "pr_url": "https://github.com/lightningdevkit/rust-lightning/pull/2074",
+  "issue_description": "Looks like the new `fuzz_threaded_connections` is flaky, it can hit an unwrap on the first read_event, which shouldn't fail, but CI managed to make it. This isn't an immediate correctness concern, however, as that erroring isnt a problem, just surprising.",
+  "files_changed": [
+    {
+      "filename": "lightning/src/ln/peer_handler.rs",
+      "status": "modified",
+      "patch": "@@ -2334,7 +2334,7 @@ mod tests {\n \t\t\t\t\tlet addr_b = NetAddress::IPv4{addr: [127, 0, 0, 1], port: 1001};\n \t\t\t\t\tlet initial_data = peers[1].new_outbound_connection(id_a, fd_b.clone(), Some(addr_a.clone())).unwrap();\n \t\t\t\t\tpeers[0].new_inbound_connection(fd_a.clone(), Some(addr_b.clone())).unwrap();\n-\t\t\t\t\tassert_eq!(peers[0].read_event(&mut fd_a, &initial_data).unwrap(), false);\n+\t\t\t\t\tif peers[0].read_event(&mut fd_a, &initial_data).is_err() { break; }\n \n \t\t\t\t\twhile start_time.elapsed() < std::time::Duration::from_secs(1) {\n \t\t\t\t\t\tpeers[0].process_events();\n@@ -2364,8 +2364,10 @@ mod tests {\n \t\t\t\t\t\t\t\t},\n \t\t\t\t\t\t\t});\n \n-\t\t\t\t\t\tpeers[0].timer_tick_occurred();\n-\t\t\t\t\t\tpeers[1].timer_tick_occurred();\n+\t\t\t\t\t\tif ctr % 2 == 0 {\n+\t\t\t\t\t\t\tpeers[0].timer_tick_occurred();\n+\t\t\t\t\t\t\tpeers[1].timer_tick_occurred();\n+\t\t\t\t\t\t}\n \t\t\t\t\t}\n \n \t\t\t\t\tpeers[0].socket_disconnected(&fd_a);"
+    }
+  ],
+  "fix_category": "Handle error case",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": "Robustness"
+}

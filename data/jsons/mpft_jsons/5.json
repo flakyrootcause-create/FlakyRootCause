@@ -1,0 +1,11 @@
+{
+  "id": 5,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/b933c4643cd4e3fa88f0bd614664c854344c9241",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/b933c4643cd4e3fa88f0bd614664c854344c9241",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

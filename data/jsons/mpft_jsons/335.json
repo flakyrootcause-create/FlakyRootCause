@@ -1,0 +1,11 @@
+{
+  "id": 335,
+  "repo": "pekko",
+  "issue_url": "https://github.com/apache/pekko/commit/af011361f4ecb24b3f407d543981076d2996fc97",
+  "pr_url": "https://github.com/apache/pekko/commit/af011361f4ecb24b3f407d543981076d2996fc97",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 220,
+  "repo": "cypress",
+  "issue_url": "https://github.com/cypress-io/cypress/commit/738193f4505be801c35f4a5b4feb452f3f974a64",
+  "pr_url": "https://github.com/cypress-io/cypress/commit/738193f4505be801c35f4a5b4feb452f3f974a64",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

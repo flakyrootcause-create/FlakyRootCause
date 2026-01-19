@@ -1,0 +1,22 @@
+{
+  "id": 378,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/pull/98800",
+  "pr_url": "https://github.com/tensorflow/tensorflow/pull/98800",
+  "issue_description": "fix flaky test directory call\n\nsometimes multiple runners share the same temp directory. When this happens there's a chance that the check for number of files output is (2) instead of (1). Fix this by creating a unique directory for this test.\n",
+  "files_changed": [
+    {
+      "filename": "third_party/xla/xla/pjrt/dump/BUILD",
+      "status": "modified",
+      "patch": "@@ -48,7 +48,9 @@ xla_cc_test(\n         \"@com_google_absl//absl/log\",\n         \"@com_google_absl//absl/status:status_matchers\",\n         \"@com_google_absl//absl/status:statusor\",\n+        \"@com_google_absl//absl/strings\",\n         \"@com_google_absl//absl/strings:string_view\",\n+        \"@com_google_absl//absl/time\",\n         \"@com_google_absl//absl/types:span\",\n         \"@com_google_googletest//:gtest_main\",\n         \"@llvm-project//mlir:IR\","
+    },
+    {
+      "filename": "third_party/xla/xla/pjrt/dump/dump_test.cc",
+      "status": "modified",
+      "patch": "@@ -26,7 +26,10 @@ limitations under the License.\n #include \"absl/log/log.h\"\n #include \"absl/status/status_matchers.h\"\n #include \"absl/status/statusor.h\"\n+#include \"absl/strings/str_cat.h\"\n #include \"absl/strings/string_view.h\"\n+#include \"absl/time/clock.h\"\n+#include \"absl/time/time.h\"\n #include \"absl/types/span.h\"\n #include \"mlir/IR/Builders.h\"\n #include \"mlir/IR/BuiltinOps.h\"\n@@ -119,7 +122,11 @@ TEST(DumpTest, GetDumpSubdirPathEmptyPath) {\n }\n \n TEST(DumpTest, DumpCompileInputs) {\n-  const std::string temp_dir = tsl::testing::TmpDir();\n+  const std::string temp_test_dir = tsl::testing::TmpDir();\n+  const std::string temp_test_subdir =\n+      tsl::io::JoinPath(temp_test_dir, \"compile_dump_test\",\n+                        absl::StrCat(absl::ToUnixMillis(absl::Now())));\n+  TF_ASSERT_OK(tsl::Env::Default()->RecursivelyCreateDir(temp_test_subdir));\n   xla::CompileOptions compile_options;\n   mlir::MLIRContext context;\n   mlir::OpBuilder builder(&context);\n@@ -129,13 +136,13 @@ TEST(DumpTest, DumpCompileInputs) {\n \n   // Dump compile inputs.\n   compile_options.executable_build_options.mutable_debug_options()\n-      ->set_xla_dump_to(temp_dir);\n+      ->set_xla_dump_to(temp_test_subdir);\n \n-  TF_ASSERT_OK(pjrt::DumpCompileInputs(temp_dir, compile_options, *module,\n-                                       *topology.get()));\n+  TF_ASSERT_OK(pjrt::DumpCompileInputs(temp_test_subdir, compile_options,\n+                                       *module, *topology.get()));\n   std::vector<std::string> files;\n   TF_ASSERT_OK(tsl::Env::Default()->GetMatchingPaths(\n-      tsl::io::JoinPath(temp_dir, \"*\"), &files));\n+      tsl::io::JoinPath(temp_test_subdir, \"*\"), &files));\n \n   ASSERT_EQ(files.size(), 1);\n   std::string dump_subdir = files[0];"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

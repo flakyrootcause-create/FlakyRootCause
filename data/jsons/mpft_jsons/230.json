@@ -1,0 +1,11 @@
+{
+  "id": 230,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/b79691898661545a0951daab289f0481ebca53ba",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/b79691898661545a0951daab289f0481ebca53ba",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

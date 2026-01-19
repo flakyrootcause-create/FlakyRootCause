@@ -1,0 +1,11 @@
+{
+  "id": 405,
+  "repo": "android-cuttlefish",
+  "issue_url": "https://github.com/google/android-cuttlefish/commit/bfa8acc4e6f55758cdef20d9313982f49ac51072",
+  "pr_url": "https://github.com/google/android-cuttlefish/commit/bfa8acc4e6f55758cdef20d9313982f49ac51072",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

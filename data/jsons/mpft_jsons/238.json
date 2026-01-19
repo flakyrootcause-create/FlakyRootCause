@@ -1,0 +1,17 @@
+{
+  "id": 238,
+  "repo": "ray",
+  "issue_url": "https://github.com/ray-project/ray/pull/55361",
+  "pr_url": "https://github.com/ray-project/ray/pull/55361",
+  "issue_description": "[PR Linked Issue]\nCI test **darwin://python/ray/tests:test_multi_node** is consistently_failing. Recent failures: \n\t- https://buildkite.com/ray-project/postmerge-macos/builds/7162#01987fcf-d2dd-40d7-ab47-675bc7df8452\n\t- https://buildkite.com/ray-project/postmerge-macos/builds/7162#01987f0b-3872-4031-a057-406c38641c46\n\nDataCaseName-darwin://python/ray/tests:test_multi_node-END\nManaged by OSS Test Policy",
+  "files_changed": [
+    {
+      "filename": "python/ray/tests/test_multi_node.py",
+      "status": "modified",
+      "patch": "@@ -78,14 +78,17 @@ def f():\n     def all_workers_exited():\n         result = True\n         print(\"list of idle workers:\")\n-        for proc in psutil.process_iter():\n-            if ray_constants.WORKER_PROCESS_TYPE_IDLE_WORKER in proc.name():\n+        for proc in psutil.process_iter(attrs=[\"name\"], ad_value=None):\n+            if (\n+                proc.info[\"name\"]\n+                and ray_constants.WORKER_PROCESS_TYPE_IDLE_WORKER in proc.info[\"name\"]\n+            ):\n                 print(f\"{proc}\")\n                 result = False\n         return result\n \n     # Check that workers are eventually cleaned up.\n-    wait_for_condition(all_workers_exited, timeout=15, retry_interval_ms=1000)\n+    wait_for_condition(all_workers_exited, timeout=30, retry_interval_ms=1000)\n \n \n def test_error_isolation(call_ray_start):"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

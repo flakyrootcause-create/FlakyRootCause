@@ -1,0 +1,17 @@
+{
+  "id": 408,
+  "repo": "twenty",
+  "issue_url": "https://github.com/twentyhq/twenty/pull/14331",
+  "pr_url": "https://github.com/twentyhq/twenty/pull/14331",
+  "issue_description": "Test was failing the 15th of each month",
+  "files_changed": [
+    {
+      "filename": "packages/twenty-server/src/modules/workflow/workflow-executor/workflow-actions/filter/utils/__tests__/evaluate-filter-conditions.util.spec.ts",
+      "status": "modified",
+      "patch": "@@ -742,10 +742,11 @@ describe('evaluateFilterConditions', () => {\n \n         expect(evaluateFilterConditions({ filters: [filter] })).toBe(true);\n \n+        const otherDate = new Date('2023-01-16');\n         const differentFilter = createFilter(\n           ViewFilterOperand.Is,\n           sameDate1,\n-          now,\n+          otherDate,\n           'DATE',\n         );\n "
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

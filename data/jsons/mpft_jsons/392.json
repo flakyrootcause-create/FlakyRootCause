@@ -1,0 +1,17 @@
+{
+  "id": 392,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/58567",
+  "pr_url": "https://github.com/nodejs/node/pull/58567",
+  "issue_description": "[PR Linked Issue]\n### Test\n\n`test/async-hooks/test-improper-order.js`\n\n### Platform\n\nAIX\n\n### Console output\n\n```console\nnot ok 68 async-hooks/test-improper-order\n  ---\n  duration_ms: 459.21600\n  severity: fail\n  exitcode: 1\n  stack: |-\n    node:assert:94\n      throw new AssertionError(obj);\n      ^\n    \n    AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n    \n    null !== 1\n    \n        at ChildProcess.<anonymous> (/home/iojs/build/workspace/node-test-commit-aix/nodes/aix72-ppc64/test/async-hooks/test-improper-order.js:55:12)\n        at ChildProcess.<anonymous> (/home/iojs/build/workspace/node-test-commit-aix/nodes/aix72-ppc64/test/common/index.js:437:15)\n        at ChildProcess.emit (node:events:507:28)\n        at maybeClose (node:internal/child_process:1101:16)\n        at ChildProcess._handle.onexit (node:internal/child_process:305:5) {\n      generatedMessage: true,\n      code: 'ERR_ASSERTION',\n      actual: null,\n      expected: 1,\n      operator: 'strictEqual'\n    }\n    \n    Node.js v25.0.0-pre\n  ...\n```\n\n### Build links\n\n- https://ci.nodejs.org/job/node-test-commit-aix/57496/nodes=aix72-ppc64/testReport/junit/(root)/async-hooks/test_improper_order/\n\n### Additional information\n\nThis flake is appearing in the reliability report 3 times daily from 2025-05-31 - https://github.com/nodejs/reliability/issues/1217 till today 2025-06-03 - https://github.com/nodejs/reliability/issues/1220.\n\nThe same strategy in https://github.com/nodejs/node/pull/58478 can be used to deflake this test.",
+  "files_changed": [
+    {
+      "filename": "test/async-hooks/test-improper-order.js",
+      "status": "modified",
+      "patch": "@@ -51,8 +51,15 @@ if (process.argv[2] === 'child') {\n   child.stderr.on('data', (d) => { errData = Buffer.concat([ errData, d ]); });\n   child.stdout.on('data', (d) => { outData = Buffer.concat([ outData, d ]); });\n \n-  child.on('close', common.mustCall((code) => {\n-    assert.strictEqual(code, 1);\n+  child.on('close', common.mustCall((code, signal) => {\n+    if ((common.isAIX ||\n+        (common.isLinux && process.arch === 'x64')) &&\n+        signal === 'SIGABRT') {\n+      // XXX: The child process could be aborted due to unknown reasons. Work around it.\n+    } else {\n+      assert.strictEqual(signal, null);\n+      assert.strictEqual(code, 1);\n+    }\n     assert.match(outData.toString(), heartbeatMsg,\n                  'did not crash until we reached offending line of code ' +\n                  `(found ${outData})`);"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

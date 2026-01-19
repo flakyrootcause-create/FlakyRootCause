@@ -1,0 +1,11 @@
+{
+  "id": 397,
+  "repo": "adk-java",
+  "issue_url": "https://github.com/google/adk-java/commit/bfdf13c147f02022ae45285c25222c4eca790c5e",
+  "pr_url": "https://github.com/google/adk-java/commit/bfdf13c147f02022ae45285c25222c4eca790c5e",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

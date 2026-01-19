@@ -1,0 +1,17 @@
+{
+  "id": 39,
+  "repo": "polkadot",
+  "issue_url": "https://github.com/paritytech/polkadot/issues/5417",
+  "pr_url": "https://github.com/paritytech/polkadot/pull/5427",
+  "issue_description": "See: https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1530940 from the totally unrelated https://github.com/paritytech/polkadot/pull/5405 \r\n\r\ncc @drahnr @eskimor ",
+  "files_changed": [
+    {
+      "filename": "node/network/approval-distribution/src/tests.rs",
+      "status": "modified",
+      "patch": "@@ -75,7 +75,7 @@ fn test_harness<T: Future<Output = VirtualOverseer>>(\n \tstate\n }\n \n-const TIMEOUT: Duration = Duration::from_millis(100);\n+const TIMEOUT: Duration = Duration::from_millis(200);\n \n async fn overseer_send(overseer: &mut VirtualOverseer, msg: ApprovalDistributionMessage) {\n \tgum::trace!(msg = ?msg, \"Sending message\");"
+    }
+  ],
+  "fix_category": "Tweak durations",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Increase timeout"
+}

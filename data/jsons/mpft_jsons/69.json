@@ -1,0 +1,11 @@
+{
+  "id": 69,
+  "repo": "tornado",
+  "issue_url": "https://github.com/tornadoweb/tornado/commit/0207ec2b2d1702679284f295e2bce520f1fee8f1",
+  "pr_url": "https://github.com/tornadoweb/tornado/commit/0207ec2b2d1702679284f295e2bce520f1fee8f1",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

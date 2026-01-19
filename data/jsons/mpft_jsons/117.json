@@ -1,0 +1,17 @@
+{
+  "id": 117,
+  "repo": "identity-web-ui-sdk",
+  "issue_url": "https://github.com/ReachFive/identity-web-ui-sdk/pull/259",
+  "pr_url": "https://github.com/ReachFive/identity-web-ui-sdk/pull/259",
+  "issue_description": "Some tests may randomly fail du to debounce timer on field validation.",
+  "files_changed": [
+    {
+      "filename": "tests/components/form/fields/simpleField.test.tsx",
+      "status": "modified",
+      "patch": "@@ -3,7 +3,7 @@\n  */\n \n import React from 'react'\n-import { describe, expect, jest, test } from '@jest/globals';\n+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';\n import { render, screen, waitFor } from '@testing-library/react';\n import userEvent from '@testing-library/user-event'\n import '@testing-library/jest-dom/jest-globals'\n@@ -64,8 +64,18 @@ const theme: Theme = buildTheme({\n type Model = { simple: string }\n \n describe('DOM testing', () => {\n+\n+    beforeEach(() => {\n+        jest.useFakeTimers();\n+    })\n+\n+    afterEach(() => {\n+        jest.runOnlyPendingTimers()\n+        jest.useRealTimers();\n+    });\n+\n     test('default settings', async () => {\n-        const user = userEvent.setup()\n+        const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })\n \n         const key = 'simple'\n         const label = 'simple'\n@@ -172,7 +182,7 @@ describe('DOM testing', () => {\n             hint: 'value.match'\n         })\n \n-        const user = userEvent.setup()\n+        const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })\n \n         const key = 'simple'\n         const label = 'simple'\n@@ -215,6 +225,9 @@ describe('DOM testing', () => {\n         const invalidValue = 'ILoveApples'\n         await user.clear(input)\n         await user.type(input, invalidValue)\n+                \n+        // Fast-forward until all timers have been executed (handle year debounced value)\n+        await jest.runOnlyPendingTimersAsync();\n \n         expect(onFieldChange).toHaveBeenLastCalledWith(\n             expect.objectContaining({"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

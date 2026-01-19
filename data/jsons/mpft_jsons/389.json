@@ -1,0 +1,17 @@
+{
+  "id": 389,
+  "repo": "django",
+  "issue_url": "https://github.com/django/django/pull/16970",
+  "pr_url": "https://github.com/django/django/pull/16970",
+  "issue_description": "This fixes a failure that I have with #16965.",
+  "files_changed": [
+    {
+      "filename": "tests/admin_views/test_autocomplete_view.py",
+      "status": "modified",
+      "patch": "@@ -494,7 +494,8 @@ def test_select_multiple(self):\n             + reverse(\"autocomplete_admin:admin_views_question_add\")\n         )\n         elem = self.selenium.find_element(By.CSS_SELECTOR, \".select2-selection\")\n-        elem.click()  # Open the autocomplete dropdown.\n+        with self.select2_ajax_wait():\n+            elem.click()  # Open the autocomplete dropdown.\n         results = self.selenium.find_element(By.CSS_SELECTOR, \".select2-results\")\n         self.assertTrue(results.is_displayed())\n         option = self.selenium.find_element(By.CSS_SELECTOR, \".select2-results__option\")"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

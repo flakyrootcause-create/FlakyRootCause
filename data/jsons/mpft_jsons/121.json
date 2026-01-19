@@ -1,0 +1,17 @@
+{
+  "id": 121,
+  "repo": "vscode",
+  "issue_url": "https://github.com/microsoft/vscode/pull/248230",
+  "pr_url": "https://github.com/microsoft/vscode/pull/248230",
+  "issue_description": "[PR Linked Issue]\n<!-- \u26a0\ufe0f\u26a0\ufe0f Do Not Delete This! bug_report_template \u26a0\ufe0f\u26a0\ufe0f -->\n<!-- Please read our Rules of Conduct: https://opensource.microsoft.com/codeofconduct/ -->\n<!-- \ud83d\udd6e Read our guide about submitting issues: https://github.com/microsoft/vscode/wiki/Submitting-Bugs-and-Suggestions -->\n<!-- \ud83d\udd0e Search existing issues to avoid creating duplicates. -->\n<!-- \ud83e\uddea Test using the latest Insiders build to see if your issue has already been fixed: https://code.visualstudio.com/insiders/ -->\n<!-- \ud83d\udca1 Instead of creating your report here, use 'Report Issue' from the 'Help' menu in VS Code to pre-fill useful information. -->\n<!-- \ud83d\udd27 Launch with `code --disable-extensions` to check. -->\nDoes this issue occur when all extensions are disabled?: Yes/No\n\n<!-- \ud83e\ude93 If you answered No above, use 'Help: Start Extension Bisect' from Command Palette to try to identify the cause. -->\n<!-- \ud83d\udce3 Issues caused by an extension need to be reported directly to the extension publisher. The 'Help > Report Issue' dialog can assist with this. -->\n- VS Code Version: \n- OS Version: \n\nMy PR is failing to be merged due to windows unit tests failing surrounding composite tokens\n\nhttps://dev.azure.com/vscode/VSCode/_build/results?buildId=152385&view=logs&j=e4714b0f-e6ff-5e04-bac1-2dcbc509f151&t=5d351641-7442-59b2-8726-6d905a792029\n\n```\n  4442 passing (37s)\n  96 pending\n  1 failing\n\n  1) Composite***\n       \u2022 equals\n         \u2022 true\n           \u2022 composite tokens:\n     Error: Method not implemented.\n      at Test***.toString (file:///D:/a/_work/1/s/out/vs/editor/test/common/codecs/tokens/composite***.test.js:20:13)\n      at Base***.fullRange (file:///D:/a/_work/1/s/out/vs/editor/common/codecs/base***.js:87:54)\n      at new Composite*** (file:///D:/a/_work/1/s/out/vs/editor/common/codecs/composite***.js:4:21)\n      at new Test*** (file:///D:/a/_work/1/s/out/vs/editor/test/common/codecs/tokens/composite***.test.js:17:7)\n      at Context.<anonymous> (file:///D:/a/_work/1/s/out/vs/editor/test/common/codecs/tokens/composite***.test.js:126:24)\n      at process.processImmediate (node:internal/timers:483:21)\n\n```",
+  "files_changed": [
+    {
+      "filename": "src/vs/editor/test/common/codecs/tokens/compositeToken.test.ts",
+      "status": "modified",
+      "patch": "@@ -228,12 +228,12 @@ suite('CompositeToken', () => {\n \t\t\t\t// ensure there is at least one composite token\n \t\t\t\tconst lastToken = tokens[tokens.length - 1];\n \t\t\t\tconst compositeToken1 = new TestToken(randomTokens(\n-\t\t\t\t\trandomInt(5, 2),\n+\t\t\t\t\trandomInt(3, 1),\n \t\t\t\t\tlastToken.range.endLineNumber,\n \t\t\t\t\tlastToken.range.endColumn,\n \t\t\t\t));\n \t\t\t\tconst compositeToken2 = new TestToken(randomTokens(\n-\t\t\t\t\trandomInt(5, 2),\n+\t\t\t\t\trandomInt(6, 4),\n \t\t\t\t\tlastToken.range.endLineNumber,\n \t\t\t\t\tlastToken.range.endColumn,\n \t\t\t\t));"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,47 @@
+{
+  "id": 54,
+  "repo": "django",
+  "issue_url": "https://github.com/django/django/commit/83be40760a2580db9e5673d111da04f01114aced",
+  "pr_url": "https://github.com/django/django/commit/83be40760a2580db9e5673d111da04f01114aced",
+  "issue_description": "Resolves a couple of issues with running Flatpages tests by...\n- Creating an example_site fixture\n- Overriding project SITE_ID setting to 1\n- Normalizing the use of the hardcoded (1) site_id to settings.SITE_ID\n",
+  "files_changed": [
+    {
+      "filename": "AUTHORS",
+      "status": "modified",
+      "patch": "@@ -566,6 +566,7 @@ answer newbie questions, and generally made Django that much better:\n     Gasper Zejn <zejn@kiberpipa.org>\n     Jarek Zgoda <jarek.zgoda@gmail.com>\n     Cheng Zhang\n+    Jens Page\n \n A big THANK YOU goes to:\n "
+    },
+    {
+      "filename": "django/contrib/flatpages/fixtures/example_site.json",
+      "status": "added",
+      "patch": "@@ -0,0 +1,11 @@\n+[\n+  {\n+    \"pk\": 1, \n+    \"model\": \"sites.site\", \n+    \"fields\": {\n+      \"domain\": \"example.com\", \n+      \"name\": \"example.com\"\n+    }\n+  }\n+]\n+"
+    },
+    {
+      "filename": "django/contrib/flatpages/tests/csrf.py",
+      "status": "modified",
+      "patch": "@@ -18,9 +18,10 @@\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageCSRFTests(TestCase):\n-    fixtures = ['sample_flatpages']\n+    fixtures = ['sample_flatpages', 'example_site']\n     urls = 'django.contrib.flatpages.tests.urls'\n \n     def setUp(self):"
+    },
+    {
+      "filename": "django/contrib/flatpages/tests/forms.py",
+      "status": "modified",
+      "patch": "@@ -5,7 +5,10 @@\n from django.test.utils import override_settings\n from django.utils import translation\n \n+@override_settings(SITE_ID=1)\n class FlatpageAdminFormTests(TestCase):\n+    fixtures = ['example_site']\n+    \n     def setUp(self):\n         self.form_data = {\n             'title': \"A test page\","
+    },
+    {
+      "filename": "django/contrib/flatpages/tests/middleware.py",
+      "status": "modified",
+      "patch": "@@ -19,9 +19,10 @@\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageMiddlewareTests(TestCase):\n-    fixtures = ['sample_flatpages']\n+    fixtures = ['sample_flatpages', 'example_site']\n     urls = 'django.contrib.flatpages.tests.urls'\n \n     def test_view_flatpage(self):\n@@ -75,7 +76,7 @@ def test_fallback_flatpage_special_chars(self):\n             enable_comments=False,\n             registration_required=False,\n         )\n-        fp.sites.add(1)\n+        fp.sites.add(settings.SITE_ID)\n \n         response = self.client.get('/some.very_special~chars-here/')\n         self.assertEqual(response.status_code, 200)\n@@ -96,9 +97,10 @@ def test_fallback_flatpage_special_chars(self):\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageMiddlewareAppendSlashTests(TestCase):\n-    fixtures = ['sample_flatpages']\n+    fixtures = ['sample_flatpages', 'example_site']\n     urls = 'django.contrib.flatpages.tests.urls'\n \n     def test_redirect_view_flatpage(self):\n@@ -130,7 +132,7 @@ def test_redirect_fallback_flatpage_special_chars(self):\n             enable_comments=False,\n             registration_required=False,\n         )\n-        fp.sites.add(1)\n+        fp.sites.add(settings.SITE_ID)\n \n         response = self.client.get('/some.very_special~chars-here')\n         self.assertRedirects(response, '/some.very_special~chars-here/', status_code=301)\n@@ -144,7 +146,7 @@ def test_redirect_fallback_flatpage_root(self):\n             enable_comments=False,\n             registration_required=False,\n         )\n-        fp.sites.add(1)\n+        fp.sites.add(settings.SITE_ID)\n \n         response = self.client.get('/')\n         self.assertEqual(response.status_code, 200)"
+    },
+    {
+      "filename": "django/contrib/flatpages/tests/templatetags.py",
+      "status": "modified",
+      "patch": "@@ -18,6 +18,7 @@\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageTemplateTagTests(TestCase):\n     fixtures = ['sample_flatpages']"
+    },
+    {
+      "filename": "django/contrib/flatpages/tests/views.py",
+      "status": "modified",
+      "patch": "@@ -19,9 +19,10 @@\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageViewTests(TestCase):\n-    fixtures = ['sample_flatpages']\n+    fixtures = ['sample_flatpages', 'example_site']\n     urls = 'django.contrib.flatpages.tests.urls'\n \n     def test_view_flatpage(self):\n@@ -85,9 +86,10 @@ def test_view_flatpage_special_chars(self):\n     TEMPLATE_DIRS=(\n         os.path.join(os.path.dirname(__file__), 'templates'),\n     ),\n+    SITE_ID=1,\n )\n class FlatpageViewAppendSlashTests(TestCase):\n-    fixtures = ['sample_flatpages']\n+    fixtures = ['sample_flatpages', 'example_site']\n     urls = 'django.contrib.flatpages.tests.urls'\n \n     def test_redirect_view_flatpage(self):\n@@ -119,7 +121,7 @@ def test_redirect_view_flatpage_special_chars(self):\n             enable_comments=False,\n             registration_required=False,\n         )\n-        fp.sites.add(1)\n+        fp.sites.add(settings.SITE_ID)\n \n         response = self.client.get('/flatpage_root/some.very_special~chars-here')\n         self.assertRedirects(response, '/flatpage_root/some.very_special~chars-here/', status_code=301)"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

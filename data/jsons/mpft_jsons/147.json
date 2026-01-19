@@ -1,0 +1,17 @@
+{
+  "id": 147,
+  "repo": "llvm-project",
+  "issue_url": "https://github.com/llvm/llvm-project/pull/108226",
+  "pr_url": "https://github.com/llvm/llvm-project/pull/108226",
+  "issue_description": "The test failed in\r\n<https://lab.llvm.org/buildbot/#/builders/162/builds/5785> due to frame variable not being in stop commands, even though the DAP log shows the command being present there. I'm pretty sure this is a race in the test the collection of the test log. I fix that by making sure we wait for the expected output, and also by increasing the timeout (1s is cutting it very close).\r\n\r\nThe arm failure link is no longer functional, but I'm fairly certain that this was the cause of those flakes as well.",
+  "files_changed": [
+    {
+      "filename": "lldb/test/API/tools/lldb-dap/attach/TestDAP_attach.py",
+      "status": "modified",
+      "patch": "@@ -116,9 +116,6 @@ def test_by_name_waitFor(self):\n \n     @skipIfDarwin\n     @skipIfNetBSD  # Hangs on NetBSD as well\n-    @skipIf(\n-        archs=[\"arm\", \"aarch64\"]\n-    )  # Example of a flaky run http://lab.llvm.org:8011/builders/lldb-aarch64-ubuntu/builds/5527/steps/test/logs/stdio\n     def test_commands(self):\n         \"\"\"\n         Tests the \"initCommands\", \"preRunCommands\", \"stopCommands\",\n@@ -152,7 +149,7 @@ def test_commands(self):\n         initCommands = [\"target list\", \"platform list\"]\n         preRunCommands = [\"image list a.out\", \"image dump sections a.out\"]\n         postRunCommands = [\"help trace\", \"help process trace\"]\n-        stopCommands = [\"frame variable\", \"bt\"]\n+        stopCommands = [\"frame variable\", \"thread backtrace\"]\n         exitCommands = [\"expr 2+3\", \"expr 3+4\"]\n         terminateCommands = [\"expr 4+2\"]\n         self.attach(\n@@ -179,7 +176,7 @@ def test_commands(self):\n         breakpoint_ids = self.set_function_breakpoints(functions)\n         self.assertEqual(len(breakpoint_ids), len(functions), \"expect one breakpoint\")\n         self.continue_to_breakpoints(breakpoint_ids)\n-        output = self.get_console(timeout=1.0)\n+        output = self.collect_console(timeout_secs=10, pattern=stopCommands[-1])\n         self.verify_commands(\"stopCommands\", output, stopCommands)\n \n         # Continue after launch and hit the \"pause()\" call and stop the target.\n@@ -189,7 +186,7 @@ def test_commands(self):\n         time.sleep(0.5)\n         self.dap_server.request_pause()\n         self.dap_server.wait_for_stopped()\n-        output = self.get_console(timeout=1.0)\n+        output = self.collect_console(timeout_secs=10, pattern=stopCommands[-1])\n         self.verify_commands(\"stopCommands\", output, stopCommands)\n \n         # Continue until the program exits\n@@ -198,7 +195,7 @@ def test_commands(self):\n         # \"exitCommands\" that were run after the second breakpoint was hit\n         # and the \"terminateCommands\" due to the debugging session ending\n         output = self.collect_console(\n-            timeout_secs=1.0,\n+            timeout_secs=10.0,\n             pattern=terminateCommands[0],\n         )\n         self.verify_commands(\"exitCommands\", output, exitCommands)"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

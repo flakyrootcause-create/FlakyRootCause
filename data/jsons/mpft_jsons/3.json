@@ -1,0 +1,11 @@
+{
+  "id": 3,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/commit/ac1820e8e2ef43d7f67d173ad34d95e9fe07788d",
+  "pr_url": "https://github.com/tensorflow/tensorflow/commit/ac1820e8e2ef43d7f67d173ad34d95e9fe07788d",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

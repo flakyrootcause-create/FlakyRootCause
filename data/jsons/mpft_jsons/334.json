@@ -1,0 +1,11 @@
+{
+  "id": 334,
+  "repo": "pekko",
+  "issue_url": "https://github.com/apache/pekko/commit/7184dadf4a1d57ac07cd4eb26b67b3f8b5ccf47d",
+  "pr_url": "https://github.com/apache/pekko/commit/7184dadf4a1d57ac07cd4eb26b67b3f8b5ccf47d",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

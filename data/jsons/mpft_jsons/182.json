@@ -1,0 +1,11 @@
+{
+  "id": 182,
+  "repo": "pulsar",
+  "issue_url": "https://github.com/apache/pulsar/commit/465281cd5e7017e2d6b70c3b7ff917a53241bb66",
+  "pr_url": "https://github.com/apache/pulsar/commit/465281cd5e7017e2d6b70c3b7ff917a53241bb66",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

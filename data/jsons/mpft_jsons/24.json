@@ -1,0 +1,11 @@
+{
+  "id": 24,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/1b7557ecbcd1f417c8d0e408d893f40c84fd5b93",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/1b7557ecbcd1f417c8d0e408d893f40c84fd5b93",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

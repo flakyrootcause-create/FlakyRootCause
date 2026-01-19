@@ -1,0 +1,17 @@
+{
+  "id": 409,
+  "repo": "bops",
+  "issue_url": "https://github.com/unboxed/bops/pull/2529",
+  "pr_url": "https://github.com/unboxed/bops/pull/2529",
+  "issue_description": "I moved this in a previous PR, but I think firstly it's only actually required by one of the tests, and more importantly it might be reloading the object before the page has finished submitting.",
+  "files_changed": [
+    {
+      "filename": "spec/system/enforcements/close_spec.rb",
+      "status": "modified",
+      "patch": "@@ -35,11 +35,12 @@\n   context do\n     before do\n       click_button \"Close case\"\n-      enforcement.reload\n     end\n \n     it \"can be closed\", :capybara do\n       expect(page).to have_content(\"Case successfully closed\")\n+\n+      enforcement.reload\n       expect(enforcement.status).to eq(\"closed\")\n       expect(enforcement.closed_reason).to eq(\"Because I want to\")\n     end"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

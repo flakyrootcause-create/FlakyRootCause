@@ -1,0 +1,17 @@
+{
+  "id": 295,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/pull/133380",
+  "pr_url": "https://github.com/elastic/elasticsearch/pull/133380",
+  "issue_description": "[PR Linked Issue]\n**Build Scans:**\n- [elasticsearch-intake #27235 / part4](https://gradle-enterprise.elastic.co/s/gf3w65zgpsugy)\n- [elasticsearch-pull-request #87067 / part-4](https://gradle-enterprise.elastic.co/s/ptir5haak4lju)\n- [elasticsearch-pull-request #87067 / part-4-fips](https://gradle-enterprise.elastic.co/s/2inhl3fgi7sae)\n\n**Reproduction Line:**\n```\n./gradlew \":x-pack:plugin:security:test\" --tests \"org.elasticsearch.xpack.security.authc.AuthenticationServiceTests.testInvalidToken\" -Dtests.seed=3801949404B71D88 -Dtests.locale=nl-SX -Dtests.timezone=Etc/Universal -Druntime.java=24\n```\n\n**Applicable branches:**\nmain\n\n**Reproduces locally?:**\nN/A\n\n**Failure History:**\n[See dashboard](https://es-delivery-stats.elastic.dev/app/dashboards#/view/dcec9e60-72ac-11ee-8f39-55975ded9e63?_g=(refreshInterval:(pause:!t,value:60000),time:(from:now-7d%2Fd,to:now))&_a=(controlGroupState:(initialChildControlState:('0c0c9cb8-ccd2-45c6-9b13-96bac4abc542':(dataViewId:fbbdc689-be23-4b3d-8057-aa402e9ed0c5,fieldName:task.keyword,order:0,selectedOptions:!(),title:'GradleTask',type:optionsListControl),'4e6ad9d6-6fdc-4fcc-bf1a-aa6ca79e0850':(dataViewId:fbbdc689-be23-4b3d-8057-aa402e9ed0c5,fieldName:className.keyword,order:1,selectedOptions:!(org.elasticsearch.xpack.security.authc.AuthenticationServiceTests),title:'Suite',type:optionsListControl),'144933da-5c1b-4257-a969-7f43455a7901':(dataViewId:fbbdc689-be23-4b3d-8057-aa402e9ed0c5,fieldName:name.keyword,order:2,selectedOptions:!('testInvalidToken'),title:'Test',type:optionsListControl)))))\n\n**Failure Message:**\n```\njava.lang.Exception: Test abandoned because suite timeout was reached.\n```\n\n**Issue Reasons:**\n- [main] 3 failures in test testInvalidToken (1.3% fail rate in 228 executions)\n\n**Note:**\nThis issue was created using new test triage automation. Please report issues or feedback to es-delivery.",
+  "files_changed": [
+    {
+      "filename": "x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/AuthenticationServiceTests.java",
+      "status": "modified",
+      "patch": "@@ -1980,6 +1980,11 @@ public void testInvalidToken() throws Exception {\n             when(projectIndex.getUnavailableReason(any())).thenReturn(new ElasticsearchException(getTestName()));\n         } else {\n             when(projectIndex.isAvailable(any())).thenReturn(true);\n+            doAnswer(invocationOnMock -> {\n+                Runnable runnable = (Runnable) invocationOnMock.getArguments()[1];\n+                runnable.run();\n+                return null;\n+            }).when(projectIndex).checkIndexVersionThenExecute(anyConsumer(), any(Runnable.class));\n             doAnswer(inv -> {\n                 final GetRequest request = inv.getArgument(0);\n                 final ActionListener<GetResponse> listener = inv.getArgument(1);"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

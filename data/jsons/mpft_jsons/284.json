@@ -1,0 +1,17 @@
+{
+  "id": 284,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/pull/20419",
+  "pr_url": "https://github.com/apache/kafka/pull/20419",
+  "issue_description": "What I observed is that if I run both combinations useNewProtocol=true,\nuseNewProtocol=false it would often fail the second time, but if I only\nrun the second variation useNewProtocol=false it works, and only the\nfirst variation useNewProtocol=true also works. So this points to some\nstate that is not cleared between the tests  - and indeed, the test\ncreates a topic \u201cinputTopic\u201d, produces to it, but doesn\u2019t delete it, so\nthe second variation will run with produce to it again and then run with\ntwice the data.\n\nI also reduced heartbeat interval and session timeout since some of the\ntests need to wait for the old consumer to leave which (sigh) Kafka\nStreams doesn't do, so we have to wait that it gets kicked out by\nsession timeout. So previously we waited for 45 seconds, now, we at\nleast wait only 1 second.\n\nReviewers: Bill Bejeck <bbejeck@apache.org>, Chia-Ping Tsai\n <chia7712@gmail.com>\n",
+  "files_changed": [
+    {
+      "filename": "streams/integration-tests/src/test/java/org/apache/kafka/streams/integration/RestoreIntegrationTest.java",
+      "status": "modified",
+      "patch": "@@ -175,6 +175,8 @@ private Properties props(final Properties extraProperties) {\n         streamsConfiguration.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.IntegerSerde.class);\n         streamsConfiguration.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.IntegerSerde.class);\n         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1000L);\n+        streamsConfiguration.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 500);\n+        streamsConfiguration.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 1000);\n         streamsConfiguration.put(StreamsConfig.consumerPrefix(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG), \"earliest\");\n         streamsConfiguration.putAll(extraProperties);\n \n@@ -191,6 +193,7 @@ public void shutdown() throws Exception {\n \n         IntegrationTestUtils.purgeLocalStreamsState(streamsConfigurations);\n         streamsConfigurations.clear();\n+        CLUSTER.deleteAllTopics();\n     }\n \n     @ParameterizedTest"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

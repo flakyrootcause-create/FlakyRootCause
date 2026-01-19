@@ -1,0 +1,22 @@
+{
+  "id": 158,
+  "repo": "emqx",
+  "issue_url": "https://github.com/emqx/emqx/pull/6120",
+  "pr_url": "https://github.com/emqx/emqx/pull/6120",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "apps/emqx/src/emqx_pool.erl",
+      "status": "modified",
+      "patch": "@@ -32,7 +32,7 @@\n         ]).\n \n -ifdef(TEST).\n--export([worker/0]).\n+-export([worker/0, flush_async_tasks/0]).\n -endif.\n \n %% gen_server callbacks\n@@ -139,3 +139,15 @@ run({F, A}) when is_function(F), is_list(A) ->\n run(Fun) when is_function(Fun) ->\n     Fun().\n \n+-ifdef(TEST).\n+%% This help function creates a large enough number of async tasks\n+%% to force flush the pool workers.\n+%% The number of tasks should be large enough to ensure all workers have\n+%% the chance to work on at least one of the tasks.\n+flush_async_tasks() ->\n+    Ref = make_ref(),\n+    Self = self(),\n+    L = lists:seq(1, 997),\n+    lists:foreach(fun(I) -> emqx_pool:async_submit(fun() -> Self ! {done, Ref, I} end, []) end, L),\n+    lists:foreach(fun(I) -> receive {done, Ref, I} -> ok end end, L).\n+-endif."
+    },
+    {
+      "filename": "apps/emqx_gateway/test/emqx_stomp_SUITE.erl",
+      "status": "modified",
+      "patch": "@@ -97,7 +97,8 @@ t_connect(_) ->\n     %                    {ok, Data} = gen_tcp:recv(Sock, 0),\n     %                    {ok, #stomp_frame{command = <<\"ERROR\">>,\n     %                                      headers = _,\n-    %                                      body    = <<\"Login or passcode error!\">>}, _, _} = parse(Data)\n+    %                                      body    = <<\"Login or passcode error!\">>}, _, _} =\n+    %                                                   parse(Data)\n     %                end),\n \n     %% Connect will be failed, because of bad version\n@@ -109,9 +110,12 @@ t_connect(_) ->\n                                       {<<\"passcode\">>, <<\"guest\">>},\n                                       {<<\"heart-beat\">>, <<\"1000,2000\">>}])),\n         {ok, Data} = gen_tcp:recv(Sock, 0),\n-        {ok, #stomp_frame{command = <<\"ERROR\">>,\n-                          headers = _,\n-                          body    = <<\"Login Failed: Supported protocol versions < 1.2\">>}, _, _} = parse(Data)\n+        {ok,\n+         #stomp_frame{command = <<\"ERROR\">>,\n+                      headers = _,\n+                      body    = <<\"Login Failed: Supported protocol versions < 1.2\">>},\n+         _,\n+         _ } = parse(Data)\n     end).\n \n t_heartbeat(_) ->\n@@ -403,6 +407,7 @@ t_rest_clienit_info(_) ->\n \n         %% kickout\n         {204, _} = request(delete, ClientPath),\n+        ok = emqx_pool:flush_async_tasks(),\n         {200, Clients2} = request(get, \"/gateway/stomp/clients\"),\n         ?assertEqual(0, length(maps:get(data, Clients2)))\n     end)."
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

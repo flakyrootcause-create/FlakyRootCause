@@ -1,0 +1,17 @@
+{
+  "id": 410,
+  "repo": "go-set",
+  "issue_url": "https://github.com/eccles/go-set/pull/32",
+  "pr_url": "https://github.com/eccles/go-set/pull/32",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "set_test.go",
+      "status": "modified",
+      "patch": "@@ -3,6 +3,7 @@ package set_test\n import (\n \t\"fmt\"\n \t\"maps\"\n+\t\"regexp\"\n \t\"slices\"\n \n \t\"github.com/eccles/go-set\"\n@@ -66,8 +67,10 @@ func ExampleFromSlice_struct() {\n \n func ExampleSet_String() {\n \ts := set.FromSlice(\"a\", \"b\")\n-\tfmt.Printf(\"%v\", s)\n-\t// Output: {a b}\n+\tname := s.String()\n+\tre := regexp.MustCompile(`^({a b}|{b a})$`)\n+\tfmt.Println(re.Match([]byte(name)))\n+\t// Output: true\n }\n \n func ExampleSet_String_nil() {\n@@ -77,9 +80,11 @@ func ExampleSet_String_nil() {\n }\n \n func ExampleSet_List() {\n-\ts := set.FromSlice(\"a\")\n-\tfmt.Printf(\"%v\", s.List())\n-\t// Output: [a]\n+\ts := set.FromSlice(\"a\", \"b\")\n+\tname := fmt.Sprintf(\"%v\", s.List())\n+\tre := regexp.MustCompile(`^(\\[a b\\]|\\[b a\\])$`)\n+\tfmt.Println(re.Match([]byte(name)))\n+\t// Output: true\n }\n \n func ExampleSet_Add() {\n@@ -99,11 +104,13 @@ func ExampleSet_Remove() {\n \ts := set.FromSlice(\"a\", \"b\", \"c\")\n \ts.Remove(\"b\", \"c\")\n \tfmt.Printf(\n-\t\t\"%d %t\",\n+\t\t\"%d %t %t %t\",\n \t\tlen(s),\n \t\ts.Contains(\"a\"),\n+\t\ts.Contains(\"b\"),\n+\t\ts.Contains(\"c\"),\n \t)\n-\t// Output: 1 true\n+\t// Output: 1 true false false\n }\n \n func ExampleSet_Iter() {\n@@ -231,12 +238,15 @@ func ExampleSet_Difference() {\n \tt := set.FromSlice(m...)\n \tu := s.Difference(t)\n \tfmt.Printf(\n-\t\t\"%d %t %t\",\n+\t\t\"%d %t %t %t %t %t\",\n \t\tlen(u),\n \t\tu.Contains(\"a\"),\n \t\tu.Contains(\"b\"),\n+\t\tu.Contains(\"c\"),\n+\t\tu.Contains(\"d\"),\n+\t\tu.Contains(\"e\"),\n \t)\n-\t// Output: 2 true true\n+\t// Output: 2 true true false false false\n }\n \n func ExampleSet_SymmetricDifference() {\n@@ -246,12 +256,13 @@ func ExampleSet_SymmetricDifference() {\n \tt := set.FromSlice(m...)\n \tu := s.SymmetricDifference(t)\n \tfmt.Printf(\n-\t\t\"%d %t %t %t %t\",\n+\t\t\"%d %t %t %t %t %t\",\n \t\tlen(u),\n \t\tu.Contains(\"a\"),\n \t\tu.Contains(\"b\"),\n+\t\tu.Contains(\"c\"),\n \t\tu.Contains(\"d\"),\n \t\tu.Contains(\"e\"),\n \t)\n-\t// Output: 4 true true true true\n+\t// Output: 4 true true false true true\n }"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

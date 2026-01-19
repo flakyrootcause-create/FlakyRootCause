@@ -1,0 +1,52 @@
+{
+  "id": 16,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/58e1cba200df9c1c70221d67d6038a7e7290b29c",
+  "pr_url": "https://github.com/nodejs/node/commit/58e1cba200df9c1c70221d67d6038a7e7290b29c",
+  "issue_description": "Given my home-directory is `/Users/rocko` - and I have a file named\n`npm.json` in it and also a repository with name `npm`, which is a\nfolder for the node-module.\n\nWhen try to require the `/Users/rocko/npm/index.js` two direcotry\nlevels down in the npm folder (e.g. `/Users/rocko/npm/test/tap`)\nwith require(\"../../\") node will load `/Users/rocko/npm/index.json`.\n\nWhen I use require(\"../..\") node will load `/Users/rocko/npm.json`\nwhich is fixed by this commit.\n\nOriginal PR: https://github.com/joyent/node/pull/7094\n",
+  "files_changed": [
+    {
+      "filename": "lib/module.js",
+      "status": "modified",
+      "patch": "@@ -172,19 +172,20 @@ Module._findPath = function(request, paths) {\n     var filename;\n \n     if (!trailingSlash) {\n+      var stats = statPath(basePath);\n       // try to join the request to the path\n       filename = tryFile(basePath);\n \n-      if (!filename && !trailingSlash) {\n+      if (!filename && stats && stats.isDirectory()) {\n+        filename = tryPackage(basePath, exts);\n+      }\n+\n+      if (!filename) {\n         // try it with each of the extensions\n         filename = tryExtensions(basePath, exts);\n       }\n     }\n \n-    if (!filename) {\n-      filename = tryPackage(basePath, exts);\n-    }\n-\n     if (!filename) {\n       // try it with each of the extensions at \"index\"\n       filename = tryExtensions(path.resolve(basePath, 'index'), exts);"
+    },
+    {
+      "filename": "test/fixtures/json-with-directory-name-module/module-stub.json",
+      "status": "added",
+      "patch": "@@ -0,0 +1 @@\n+{\"rocko\": \"artischocko\"}"
+    },
+    {
+      "filename": "test/fixtures/json-with-directory-name-module/module-stub/index.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,22 @@\n+// Copyright Joyent, Inc. and other Node contributors.\n+//\n+// Permission is hereby granted, free of charge, to any person obtaining a\n+// copy of this software and associated documentation files (the\n+// \"Software\"), to deal in the Software without restriction, including\n+// without limitation the rights to use, copy, modify, merge, publish,\n+// distribute, sublicense, and/or sell copies of the Software, and to permit\n+// persons to whom the Software is furnished to do so, subject to the\n+// following conditions:\n+//\n+// The above copyright notice and this permission notice shall be included\n+// in all copies or substantial portions of the Software.\n+//\n+// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE\n+// USE OR OTHER DEALINGS IN THE SOFTWARE.\n+\n+module.exports = \"hello from module-stub!\""
+    },
+    {
+      "filename": "test/fixtures/json-with-directory-name-module/module-stub/one-trailing-slash/two/three.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,22 @@\n+// Copyright Joyent, Inc. and other Node contributors.\n+//\n+// Permission is hereby granted, free of charge, to any person obtaining a\n+// copy of this software and associated documentation files (the\n+// \"Software\"), to deal in the Software without restriction, including\n+// without limitation the rights to use, copy, modify, merge, publish,\n+// distribute, sublicense, and/or sell copies of the Software, and to permit\n+// persons to whom the Software is furnished to do so, subject to the\n+// following conditions:\n+//\n+// The above copyright notice and this permission notice shall be included\n+// in all copies or substantial portions of the Software.\n+//\n+// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE\n+// USE OR OTHER DEALINGS IN THE SOFTWARE.\n+\n+module.exports = require('../../');"
+    },
+    {
+      "filename": "test/fixtures/json-with-directory-name-module/module-stub/one/two/three.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,22 @@\n+// Copyright Joyent, Inc. and other Node contributors.\n+//\n+// Permission is hereby granted, free of charge, to any person obtaining a\n+// copy of this software and associated documentation files (the\n+// \"Software\"), to deal in the Software without restriction, including\n+// without limitation the rights to use, copy, modify, merge, publish,\n+// distribute, sublicense, and/or sell copies of the Software, and to permit\n+// persons to whom the Software is furnished to do so, subject to the\n+// following conditions:\n+//\n+// The above copyright notice and this permission notice shall be included\n+// in all copies or substantial portions of the Software.\n+//\n+// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE\n+// USE OR OTHER DEALINGS IN THE SOFTWARE.\n+\n+module.exports = require('../..');"
+    },
+    {
+      "filename": "test/fixtures/json-with-directory-name-module/module-stub/package.json",
+      "status": "added",
+      "patch": "@@ -0,0 +1,7 @@\n+{\n+  \"version\": \"1.1.12\",\n+  \"name\": \"module-stub\",\n+  \"main\": \"./index.js\",\n+  \"description\": \"A stub for node tests\",\n+  \"author\": \"Robert Kowalski <rok@kowalski.gd>\"\n+}"
+    },
+    {
+      "filename": "test/simple/test-require-extensions-same-filename-as-dir-trailing-slash.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,29 @@\n+// Copyright Joyent, Inc. and other Node contributors.\n+//\n+// Permission is hereby granted, free of charge, to any person obtaining a\n+// copy of this software and associated documentation files (the\n+// \"Software\"), to deal in the Software without restriction, including\n+// without limitation the rights to use, copy, modify, merge, publish,\n+// distribute, sublicense, and/or sell copies of the Software, and to permit\n+// persons to whom the Software is furnished to do so, subject to the\n+// following conditions:\n+//\n+// The above copyright notice and this permission notice shall be included\n+// in all copies or substantial portions of the Software.\n+//\n+// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE\n+// USE OR OTHER DEALINGS IN THE SOFTWARE.\n+\n+var common = require('../common');\n+var assert = require('assert');\n+\n+var content = require(common.fixturesDir +\n+  '/json-with-directory-name-module/module-stub/one-trailing-slash/two/three.js');\n+\n+assert.notEqual(content.rocko, 'artischocko');\n+assert.equal(content, 'hello from module-stub!');"
+    },
+    {
+      "filename": "test/simple/test-require-extensions-same-filename-as-dir.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,29 @@\n+// Copyright Joyent, Inc. and other Node contributors.\n+//\n+// Permission is hereby granted, free of charge, to any person obtaining a\n+// copy of this software and associated documentation files (the\n+// \"Software\"), to deal in the Software without restriction, including\n+// without limitation the rights to use, copy, modify, merge, publish,\n+// distribute, sublicense, and/or sell copies of the Software, and to permit\n+// persons to whom the Software is furnished to do so, subject to the\n+// following conditions:\n+//\n+// The above copyright notice and this permission notice shall be included\n+// in all copies or substantial portions of the Software.\n+//\n+// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE\n+// USE OR OTHER DEALINGS IN THE SOFTWARE.\n+\n+var common = require('../common');\n+var assert = require('assert');\n+\n+var content = require(common.fixturesDir +\n+  '/json-with-directory-name-module/module-stub/one/two/three.js');\n+\n+assert.notEqual(content.rocko, 'artischocko');\n+assert.equal(content, 'hello from module-stub!');"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

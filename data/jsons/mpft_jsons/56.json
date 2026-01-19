@@ -1,0 +1,11 @@
+{
+  "id": 56,
+  "repo": "django",
+  "issue_url": "https://github.com/django/django/commit/b2cddeaaf448234713f393749ceb1dbe22101f39",
+  "pr_url": "https://github.com/django/django/commit/b2cddeaaf448234713f393749ceb1dbe22101f39",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

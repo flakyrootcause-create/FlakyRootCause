@@ -1,0 +1,17 @@
+{
+  "id": 63,
+  "repo": "arrow-rs",
+  "issue_url": "https://github.com/apache/arrow-rs/issues/4868",
+  "pr_url": "https://github.com/apache/arrow-rs/pull/4869",
+  "issue_description": "**Describe the bug**\r\n<!--\r\nA clear and concise description of what the bug is.\r\n-->\r\n\r\nI have seen this test fail a couple of times in CI lately, most recently\r\n\r\nhttps://github.com/apache/arrow-rs/actions/runs/6324042685/job/17172783580\r\n\r\nThis test was added in apache/arrow-rs#3824 by @metesynnada \r\n\r\n**To Reproduce**\r\n<!--\r\nSteps to reproduce the behavior:\r\n-->\r\n\r\n**Expected behavior**\r\n<!--\r\nA clear and concise description of what you expected to happen.\r\n-->\r\n\r\n**Additional context**\r\n<!--\r\nAdd any other context about the problem here.\r\n-->",
+  "files_changed": [
+    {
+      "filename": "object_store/src/local.rs",
+      "status": "modified",
+      "patch": "@@ -1545,11 +1545,13 @@ mod not_wasm_tests {\n         for d in &data {\n             writer.write_all(d).await.unwrap();\n         }\n+        writer.flush().await.unwrap();\n \n         let mut writer = integration.append(&location).await.unwrap();\n         for d in &data {\n             writer.write_all(d).await.unwrap();\n         }\n+        writer.flush().await.unwrap();\n \n         let read_data = integration\n             .get(&location)"
+    }
+  ],
+  "fix_category": "Flush file",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": "Flush"
+}

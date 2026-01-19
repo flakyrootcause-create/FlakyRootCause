@@ -1,0 +1,17 @@
+{
+  "id": 225,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/commit/4aa389fdb16a8d5e6811cb0ad0e53e94ce319a68",
+  "pr_url": "https://github.com/apache/spark/commit/4aa389fdb16a8d5e6811cb0ad0e53e94ce319a68",
+  "issue_description": "Previously, ZooKeeperPersistenceEngine would crash the whole Master process if\nthere was stored data from a prior Spark version. Now, we just delete these files.\n",
+  "files_changed": [
+    {
+      "filename": "core/src/main/scala/org/apache/spark/deploy/master/ZooKeeperPersistenceEngine.scala",
+      "status": "modified",
+      "patch": "@@ -64,11 +64,11 @@ class ZooKeeperPersistenceEngine(serialization: Serialization, conf: SparkConf)\n   override def readPersistedData(): (Seq[ApplicationInfo], Seq[DriverInfo], Seq[WorkerInfo]) = {\n     val sortedFiles = zk.getChildren().forPath(WORKING_DIR).toList.sorted\n     val appFiles = sortedFiles.filter(_.startsWith(\"app_\"))\n-    val apps = appFiles.map(deserializeFromFile[ApplicationInfo])\n+    val apps = appFiles.map(deserializeFromFile[ApplicationInfo]).flatten\n     val driverFiles = sortedFiles.filter(_.startsWith(\"driver_\"))\n-    val drivers = driverFiles.map(deserializeFromFile[DriverInfo])\n+    val drivers = driverFiles.map(deserializeFromFile[DriverInfo]).flatten\n     val workerFiles = sortedFiles.filter(_.startsWith(\"worker_\"))\n-    val workers = workerFiles.map(deserializeFromFile[WorkerInfo])\n+    val workers = workerFiles.map(deserializeFromFile[WorkerInfo]).flatten\n     (apps, drivers, workers)\n   }\n \n@@ -78,10 +78,18 @@ class ZooKeeperPersistenceEngine(serialization: Serialization, conf: SparkConf)\n     zk.create().withMode(CreateMode.PERSISTENT).forPath(path, serialized)\n   }\n \n-  def deserializeFromFile[T](filename: String)(implicit m: Manifest[T]): T = {\n+  def deserializeFromFile[T](filename: String)(implicit m: Manifest[T]): Option[T] = {\n     val fileData = zk.getData().forPath(WORKING_DIR + \"/\" + filename)\n     val clazz = m.runtimeClass.asInstanceOf[Class[T]]\n     val serializer = serialization.serializerFor(clazz)\n-    serializer.fromBinary(fileData).asInstanceOf[T]\n+    try {\n+      Some(serializer.fromBinary(fileData).asInstanceOf[T])\n+    } catch {\n+      case e: Exception => {\n+        logWarning(\"Exception while reading persisted file, deleting\", e)\n+        zk.delete().forPath(WORKING_DIR + \"/\" + filename)\n+        None\n+      }\n+    }\n   }\n }"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 391,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/59165",
+  "pr_url": "https://github.com/nodejs/node/pull/59165",
+  "issue_description": "[PR Linked Issue]\n### Test\n\nclient-proxy/test-https-proxy-request-handshake-failure\n\n### Platform\n\nLinux ARM64\n\n### Console output\n\n```console\nnot ok 27 client-proxy/test-https-proxy-request-handshake-failure\n  ---\n  duration_ms: 10890.37000\n  severity: fail\n  exitcode: 1\n  stack: |-\n    [CLOSE] 0 null\n    [STDERR] Request timed out\n    Request Error Error [ERR_PROXY_TUNNEL]: Connection to establish proxy tunnel timed out after 1000ms\n        at Socket.onTimeout (node:https:373:19)\n        at Object.onceWrapper (node:events:621:28)\n        at Socket.emit (node:events:519:35)\n        at Socket._onTimeout (node:net:604:8)\n        at listOnTimeout (node:internal/timers:608:17)\n        at process.processTimers (node:internal/timers:543:7) {\n      code: 'ERR_PROXY_TUNNEL',\n      proxyTunnelTimeout: 1000\n    }\n    \n    node:internal/modules/run_main:107\n        triggerUncaughtException(\n        ^\n    \n    AssertionError [ERR_ASSERTION]: The input did not match the regular expression /UNABLE_TO_VERIFY_LEAF_SIGNATURE/. Input:\n    \n    'Request timed out\\n' +\n      'Request Error Error [ERR_PROXY_TUNNEL]: Connection to establish proxy tunnel timed out after\n```\n\n### Build links\n\nhttps://github.com/nodejs/reliability/blob/main/reports/2025-07-22.md\n\n### Additional information\n\nIt's likely caused by the machine being too slow and they cannot finish the request in 1 second - the timeout is unnecessary in the test anyway. Fix in https://github.com/nodejs/node/pull/59165",
+  "files_changed": [
+    {
+      "filename": "test/client-proxy/test-https-proxy-request-handshake-failure.mjs",
+      "status": "modified",
+      "patch": "@@ -33,7 +33,6 @@ const requestUrl = `https://${serverHost}/test`;\n const { code, signal, stderr, stdout } = await runProxiedRequest({\n   NODE_USE_ENV_PROXY: 1,\n   REQUEST_URL: requestUrl,\n-  REQUEST_TIMEOUT: 1000,\n   HTTPS_PROXY: `http://localhost:${proxy.address().port}`,\n });\n "
+    }
+  ],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

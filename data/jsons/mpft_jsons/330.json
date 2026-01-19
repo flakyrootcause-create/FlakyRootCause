@@ -1,0 +1,17 @@
+{
+  "id": 330,
+  "repo": "electron",
+  "issue_url": "https://github.com/electron/electron/pull/23992",
+  "pr_url": "https://github.com/electron/electron/pull/23992",
+  "issue_description": "#### Description of Change\nI'm not sure what event to hook here, so poll instead.\n\n#### Checklist\n<!-- Remove items that do not apply. For completed items, change [ ] to [x]. -->\n\n- [x] PR description included and stakeholders cc'd\n- [x] `npm test` passes\n- [x] tests are [changed or added](https://github.com/electron/electron/blob/master/docs/development/testing.md)\n- [x] PR title follows semantic [commit guidelines](https://github.com/electron/electron/blob/master/docs/development/pull-requests.md#commit-message-guidelines)\n- [x] This is **NOT A BREAKING CHANGE**. Breaking changes may not be merged to master until 11-x-y is branched.\n\n#### Release Notes\n\nNotes: none\n",
+  "files_changed": [
+    {
+      "filename": "spec-main/api-ipc-renderer-spec.ts",
+      "status": "modified",
+      "patch": "@@ -190,14 +190,13 @@ describe('ipcRenderer module', () => {\n         const childIpc = child.require('electron').ipcRenderer;\n         child.close();\n         return new Promise(resolve => {\n-          setTimeout(() => {\n+          setInterval(() => {\n             try {\n               childIpc.send('hello');\n             } catch (e) {\n               resolve(e);\n             }\n-            resolve(false);\n-          }, 100);\n+          }, 16);\n         });\n       }})()`);\n       expect(error).to.have.property('message', 'IPC method called after context was released');"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

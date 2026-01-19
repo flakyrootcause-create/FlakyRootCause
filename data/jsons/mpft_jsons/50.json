@@ -1,0 +1,11 @@
+{
+  "id": 50,
+  "repo": "python-spanner",
+  "issue_url": "https://github.com/googleapis/python-spanner/commit/0406ded8b0abcdc93a7a2422247a14260f5c620c",
+  "pr_url": "https://github.com/googleapis/python-spanner/commit/0406ded8b0abcdc93a7a2422247a14260f5c620c",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

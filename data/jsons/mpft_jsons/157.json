@@ -1,0 +1,17 @@
+{
+  "id": 157,
+  "repo": "emqx",
+  "issue_url": "https://github.com/emqx/emqx/pull/15847",
+  "pr_url": "https://github.com/emqx/emqx/pull/15847",
+  "issue_description": "https://github.com/emqx/emqx/actions/runs/17472259934/job/49624282534?pr=15846#step:4:381\r\n",
+  "files_changed": [
+    {
+      "filename": "apps/emqx_bridge_iotdb/test/emqx_bridge_iotdb_SUITE.erl",
+      "status": "modified",
+      "patch": "@@ -496,7 +496,7 @@ t_device_id(TCConfig) ->\n         200,\n         10,\n         ?assertMatch(\n-            {200, #{<<\"values\">> := [[33]]}},\n+            {200, #{<<\"values\">> := [_ | _]}},\n             scan_table(DeviceId, TCConfig)\n         )\n     ),"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

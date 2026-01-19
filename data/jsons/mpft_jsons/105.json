@@ -1,0 +1,17 @@
+{
+  "id": 105,
+  "repo": "fory",
+  "issue_url": "https://github.com/apache/fory/pull/1968",
+  "pr_url": "https://github.com/apache/fory/pull/1968",
+  "issue_description": "## What does this PR do?\r\n\r\n`ExpressionVisitorTest#testTraverseExpression` relies on ordered traversal. However, the traversal depends on the order of `getDeclaredFields()` to be deterministic (see below). The Java specification explicitly marks `getDeclaredFields` as a function that can return field names in any order. In the wild, this is most likely to manifest on different architectures with different JVM versions.\r\n\r\nhttps://github.com/apache/fury/blob/54b62fb6ab5d7e557131efe07c7402c885f6e7c4/java/fury-core/src/main/java/org/apache/fury/reflect/ReflectionUtils.java#L368-L381\r\n\r\nUsing [NonDex](https://github.com/TestingResearchIllinois/NonDex), we can replicate the flaky behavior with the following command:\r\n\r\n```\r\nmvn edu.illinois:nondex-maven-plugin:2.1.7:nondex -pl fury-core/ -Dcheckstyle.skip -Dmaven.javadoc.skip -Dtest=org.apache.fury.codegen.ExpressionVisitorTest\r\n```\r\n\r\nThe fix, in this case, is to simply use HashSet equality instead of an ordered List equality. The above NonDex command should succeed after applying this patch.\r\n\r\nI do, however, note that there are other flaky tests (found by running NonDex on the entire `fury-core` project) that fail due to reliance on e.g. `PriorityQueue#toArray`, which is also explicity marked to return nondeterministically ordered arrays.\r\n\r\n## Does this PR introduce any user-facing change?\r\n\r\nNo",
+  "files_changed": [
+    {
+      "filename": "java/fury-core/src/test/java/org/apache/fury/codegen/ExpressionVisitorTest.java",
+      "status": "modified",
+      "patch": "@@ -26,7 +26,9 @@\n import java.lang.reflect.Method;\n import java.util.ArrayList;\n import java.util.Arrays;\n+import java.util.HashSet;\n import java.util.List;\n+import java.util.Set;\n import org.apache.fury.codegen.Expression.Literal;\n import org.apache.fury.reflect.ReflectionUtils;\n import org.apache.fury.reflect.TypeRef;\n@@ -63,7 +65,11 @@ public void testTraverseExpression() throws InvocationTargetException, IllegalAc\n     assertEquals(serializedLambda.getCapturedArgCount(), 1);\n     ExpressionVisitor.ExprHolder exprHolder =\n         (ExpressionVisitor.ExprHolder) (serializedLambda.getCapturedArg(0));\n-    assertEquals(\n-        expressions, Arrays.asList(forLoop, start, end, step, e1, ref, exprHolder.get(\"e2\")));\n+\n+    // Traversal relies on getDeclaredFields(), nondeterministic order.\n+    Set<Expression> expressionsSet = new HashSet<>(expressions);\n+    Set<Expression> expressionsSet2 =\n+        new HashSet<>(Arrays.asList(forLoop, e1, ref, exprHolder.get(\"e2\"), end, start, step));\n+    assertEquals(expressionsSet, expressionsSet2);\n   }\n }"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

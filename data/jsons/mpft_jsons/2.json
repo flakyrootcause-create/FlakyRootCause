@@ -1,0 +1,11 @@
+{
+  "id": 2,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/commit/dad786f9638bc7be6d79e0d4bb087a955d973a6a",
+  "pr_url": "https://github.com/tensorflow/tensorflow/commit/dad786f9638bc7be6d79e0d4bb087a955d973a6a",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 368,
+  "repo": "rocketmq",
+  "issue_url": "https://github.com/apache/rocketmq/pull/5509",
+  "pr_url": "https://github.com/apache/rocketmq/pull/5509",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

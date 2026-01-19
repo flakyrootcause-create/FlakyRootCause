@@ -1,0 +1,17 @@
+{
+  "id": 58,
+  "repo": "lychee",
+  "issue_url": "https://github.com/lycheeverse/lychee/issues/448",
+  "pr_url": "https://github.com/andygrunwald/andygrunwald.com/pull/4",
+  "issue_description": "It seems like our workaround for checking tweets doesn't work anymore.\r\nCurrently I'm getting a 429 with the Googlebot useragent.\r\nIt seems to work _sometimes_ however, indicating that it could be a temporary issue.\r\nI asked on Twitter:\r\nhttps://twitter.com/matthiasendler/status/1479224185125748737\r\n\r\nIn the meantime let's disable Twitter checking to avoid flaky builds as in #446.",
+  "files_changed": [
+    {
+      "filename": ".github/workflows/links.yml",
+      "status": "modified",
+      "patch": "@@ -29,7 +29,7 @@ jobs:\n         id: lychee\n         uses: lycheeverse/lychee-action@v1.4.1\n         with:\n-          args: --exclude sms-digital.com linkedin -- public\n+          args: --exclude-mail --exclude php.net twitter.com sms-digital.com linkedin https://github.com/andygrunwald/your-connection-deserves-a-name -- public\n         env:\n           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}\n "
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (CI)"
+}

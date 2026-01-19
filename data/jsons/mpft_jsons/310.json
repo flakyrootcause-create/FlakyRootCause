@@ -1,0 +1,27 @@
+{
+  "id": 310,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/pull/4590",
+  "pr_url": "https://github.com/getsentry/sentry-python/pull/4590",
+  "issue_description": "The changes in #4577 introduced a bit of flakiness on pre-3.10 due to a weird interaction of `capsys`, `stderr` logging and our object lifecycles.\r\n\r\nIn this PR, I'm removing all the explicit `__del__` `kill`s since we [call them all explicitly in `client.close`](https://github.com/getsentry/sentry-python/blob/09c2e32cc7a618e49f5d8ae59e22d8b12f253687/sentry_sdk/client.py#L1001-L1021) anyway and that's already cleaner. Having logic in `__del__` causes non-deterministic GC behavior, especially with threaded code.\r\n\r\nStacktrace is linked in a comment below where you can see the `transport.__del__` method is causing the weird `reentrant` logging bug to `stderr`.\r\n  ",
+  "files_changed": [
+    {
+      "filename": "sentry_sdk/monitor.py",
+      "status": "modified",
+      "patch": "@@ -118,7 +118,3 @@ def downsample_factor(self):\n     def kill(self):\n         # type: () -> None\n         self._running = False\n-\n-    def __del__(self):\n-        # type: () -> None\n-        self.kill()"
+    },
+    {
+      "filename": "sentry_sdk/sessions.py",
+      "status": "modified",
+      "patch": "@@ -271,7 +271,3 @@ def add_session(\n     def kill(self):\n         # type: (...) -> None\n         self.__shutdown_requested.set()\n-\n-    def __del__(self):\n-        # type: (...) -> None\n-        self.kill()"
+    },
+    {
+      "filename": "sentry_sdk/transport.py",
+      "status": "modified",
+      "patch": "@@ -158,13 +158,6 @@ def is_healthy(self):\n         # type: (Self) -> bool\n         return True\n \n-    def __del__(self):\n-        # type: (Self) -> None\n-        try:\n-            self.kill()\n-        except Exception:\n-            pass\n-\n \n def _parse_rate_limits(header, now=None):\n     # type: (str, Optional[datetime]) -> Iterable[Tuple[Optional[EventDataCategory], datetime]]"
+    }
+  ],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

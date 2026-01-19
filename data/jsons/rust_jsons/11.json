@@ -1,0 +1,32 @@
+{
+  "id": 11,
+  "repo": "influxdb",
+  "issue_url": "https://github.com/influxdata/influxdb/issues/16330",
+  "pr_url": "https://github.com/influxdata/influxdb/pull/16392",
+  "issue_description": "Query Builder Grouping (#16226) either introduced or exposed issues in the Explorer tests.\r\n\r\nThe issues were centered around the CodeMirror editor not loading properly or speedily enough, and the incorrect input being typed into the text area.\r\n\r\nhttps://github.com/influxdata/influxdb/blob/master/ui/cypress/e2e/explorer.test.ts#L450\r\n\r\nAn errored out run (link may expire):\r\nhttps://circleci.com/gh/influxdata/influxdb/78933?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link\r\n\r\n![DataExplorer -- editing mode switching -- can switch to and from script editor mode (failed)](https://user-images.githubusercontent.com/146112/71486613-15285d80-27cc-11ea-807a-e487c9af4f99.png)\r\n",
+  "files_changed": [
+    {
+      "filename": "ui/Makefile",
+      "status": "modified",
+      "patch": "@@ -10,7 +10,7 @@ node_modules:\n \n e2e: node_modules\n \tyarn generate\n-\tyarn test:junit\n+\tyarn test:e2e\n \n build: node_modules $(UISOURCES)\n \tyarn build"
+    },
+    {
+      "filename": "ui/cypress/e2e/explorer.test.ts",
+      "status": "modified",
+      "patch": "@@ -349,8 +349,7 @@ describe('DataExplorer', () => {\n     })\n   })\n \n-  // todo: investigate flakiness of this test: https://github.com/influxdata/influxdb/issues/16330\n-  describe.skip('raw script editing', () => {\n+  describe('raw script editing', () => {\n     beforeEach(() => {\n       cy.getByTestID('switch-to-script-editor').click()\n     })\n@@ -359,16 +358,16 @@ describe('DataExplorer', () => {\n       cy.getByTestID('time-machine-submit-button').should('be.disabled')\n \n       cy.getByTestID('flux-editor').within(() => {\n-        cy.get('textarea').type('yo', {force: true})\n+        cy.get('.CodeMirror').type('yo')\n         cy.getByTestID('time-machine-submit-button').should('not.be.disabled')\n       })\n     })\n \n     it('disables submit when a query is deleted', () => {\n       cy.getByTestID('time-machine--bottom').then(() => {\n-        cy.get('textarea').type('from(bucket: \"foo\")', {force: true})\n+        cy.get('.CodeMirror').type('from(bucket: \"foo\")')\n         cy.getByTestID('time-machine-submit-button').should('not.be.disabled')\n-        cy.get('textarea').type('{selectall} {backspace}', {force: true})\n+        cy.get('.CodeMirror').type('{selectall} {backspace}')\n       })\n \n       cy.getByTestID('time-machine-submit-button').should('be.disabled')\n@@ -450,11 +449,10 @@ describe('DataExplorer', () => {\n \n     it('shows the empty state when the query returns no results', () => {\n       cy.getByTestID('time-machine--bottom').within(() => {\n-        cy.get('textarea').type(\n+        cy.get('.CodeMirror').type(\n           `from(bucket: \"defbuck\")\n   |> range(start: -10s)\n-  |> filter(fn: (r) => r._measurement == \"no exist\")`,\n-          {force: true}\n+  |> filter(fn: (r) => r._measurement == \"no exist\")`\n         )\n         cy.getByTestID('time-machine-submit-button').click()\n       })\n@@ -466,11 +464,10 @@ describe('DataExplorer', () => {\n       const taskName = 'tax'\n       // begin flux\n       cy.getByTestID('flux-editor').within(() => {\n-        cy.get('textarea').type(\n+        cy.get('.CodeMirror').type(\n           `from(bucket: \"defbuck\")\n   |> range(start: -15m, stop: now())\n-  |> filter(fn: (r) => r._measurement == `,\n-          {force: true}\n+  |> filter(fn: (r) => r._measurement == `\n         )\n       })\n \n@@ -479,7 +476,7 @@ describe('DataExplorer', () => {\n       cy.get('.variables-toolbar--label').click()\n       // finish flux\n       cy.getByTestID('flux-editor').within(() => {\n-        cy.get('textarea').type(`)`, {force: true})\n+        cy.get('.CodeMirror').type(`)`)\n       })\n \n       cy.getByTestID('save-query-as').click()"
+    },
+    {
+      "filename": "ui/package.json",
+      "status": "modified",
+      "patch": "@@ -29,10 +29,10 @@\n     \"test:watch\": \"jest --watch --verbose false\",\n     \"test:update\": \"jest --updateSnapshot\",\n     \"test:debug\": \"node --inspect-brk $(npm bin)/jest --runInBand --watch --verbose false\",\n-    \"test:junit\": \"CYPRESS_baseUrl=http://localhost:9999 cypress run --browser chrome --reporter junit --reporter-options 'mochaFile=junit-results/test-output-[hash].xml'\",\n-    \"test:ju:report\": \"junit-viewer --results=junit-results --save-file=cypress/site/junit-report.html\",\n-    \"test:ju:clean\": \"rm junit-results/*.xml\",\n-    \"test:ju:all\": \"yarn test:ju:clean && yarn test:junit; yarn test:ju:report;\",\n+    \"test:e2e\": \"CYPRESS_baseUrl=http://localhost:9999 cypress run --browser chrome --reporter junit --reporter-options 'mochaFile=junit-results/test-output-[hash].xml'\",\n+    \"test:e2e:report\": \"junit-viewer --results=junit-results --save-file=cypress/site/junit-report.html\",\n+    \"test:e2e:clean\": \"rm junit-results/*.xml\",\n+    \"test:e2e:all\": \"yarn test:e2e:clean && yarn test:e2e; yarn test:e2e:report;\",\n     \"test:circleci\": \"yarn run test:ci --maxWorkers=2\",\n     \"test:ci\": \"JEST_JUNIT_OUTPUT_DIR=\\\"./coverage\\\" jest --ci --coverage\",\n     \"lint\": \"yarn tsc && yarn prettier && yarn eslint\","
+    },
+    {
+      "filename": "ui/src/dataLoaders/components/verifyStep/DataListening.test.tsx",
+      "status": "modified",
+      "patch": "@@ -12,7 +12,8 @@ describe('Onboarding.Components.DataListening', () => {\n   describe('if button is clicked', () => {\n     it('displays connection information', () => {\n       const {getByTitle, getByText} = renderWithRedux(\n-        <DataListening bucket=\"bucket\" />)\n+        <DataListening bucket=\"bucket\" />\n+      )\n \n       const button = getByTitle('Listen for Data')\n "
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (TS)"
+}

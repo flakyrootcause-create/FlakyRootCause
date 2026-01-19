@@ -1,0 +1,11 @@
+{
+  "id": 145,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/commit/e40e4d3",
+  "pr_url": "https://github.com/pytorch/pytorch/commit/e40e4d3",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

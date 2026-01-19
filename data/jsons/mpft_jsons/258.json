@@ -1,0 +1,11 @@
+{
+  "id": 258,
+  "repo": "letta",
+  "issue_url": "https://github.com/letta-ai/letta/commit/c581b063c224f2202cd2bcc8f86df125aae5dd35",
+  "pr_url": "https://github.com/letta-ai/letta/commit/c581b063c224f2202cd2bcc8f86df125aae5dd35",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

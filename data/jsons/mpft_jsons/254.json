@@ -1,0 +1,22 @@
+{
+  "id": 254,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/pull/51070",
+  "pr_url": "https://github.com/pandas-dev/pandas/pull/51070",
+  "issue_description": "Noticed `test_basic_series_frame_alignment` and `test_raw_roundtrip` can occasitionally fail in the CI. Marking as xfail strict=False and clearing the clipboard respectively",
+  "files_changed": [
+    {
+      "filename": "pandas/tests/computation/test_eval.py",
+      "status": "modified",
+      "patch": "@@ -860,6 +860,19 @@ def test_basic_frame_series_alignment(\n     def test_basic_series_frame_alignment(\n         self, request, engine, parser, index_name, r_idx_type, c_idx_type\n     ):\n+        if (\n+            engine == \"numexpr\"\n+            and parser == \"pandas\"\n+            and index_name == \"index\"\n+            and r_idx_type == \"i\"\n+            and c_idx_type == \"s\"\n+        ):\n+            reason = (\n+                f\"Flaky column ordering when engine={engine}, \"\n+                f\"parser={parser}, index_name={index_name}, \"\n+                f\"r_idx_type={r_idx_type}, c_idx_type={c_idx_type}\"\n+            )\n+            request.node.add_marker(pytest.mark.xfail(reason=reason, strict=False))\n         df = tm.makeCustomDataframe(\n             10, 7, data_gen_f=f, r_idx_type=r_idx_type, c_idx_type=c_idx_type\n         )"
+    },
+    {
+      "filename": "pandas/tests/io/test_clipboard.py",
+      "status": "modified",
+      "patch": "@@ -1,10 +1,15 @@\n import os\n+import subprocess\n from textwrap import dedent\n \n import numpy as np\n import pytest\n \n-from pandas.compat import is_platform_mac\n+from pandas.compat import (\n+    is_ci_environment,\n+    is_platform_linux,\n+    is_platform_mac,\n+)\n from pandas.errors import (\n     PyperclipException,\n     PyperclipWindowsException,\n@@ -409,6 +414,9 @@ def test_raw_roundtrip(self, data):\n         # PR #25040 wide unicode wasn't copied correctly on PY3 on windows\n         clipboard_set(data)\n         assert data == clipboard_get()\n+        if is_ci_environment() and is_platform_linux():\n+            # Clipboard can sometimes keep previous param causing flaky CI failures\n+            subprocess.run([\"xsel\", \"--delete\", \"--clipboard\"], check=True)\n \n     @pytest.mark.parametrize(\"dtype_backend\", [\"pandas\", \"pyarrow\"])\n     @pytest.mark.parametrize(\"engine\", [\"c\", \"python\"])"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

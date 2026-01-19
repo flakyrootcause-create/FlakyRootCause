@@ -1,0 +1,11 @@
+{
+  "id": 399,
+  "repo": "android-cuttlefish",
+  "issue_url": "https://github.com/google/android-cuttlefish/commit/5245e130521f74305d6963a65fb95e30355a7844",
+  "pr_url": "https://github.com/google/android-cuttlefish/commit/5245e130521f74305d6963a65fb95e30355a7844",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

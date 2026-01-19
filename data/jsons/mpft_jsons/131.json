@@ -1,0 +1,32 @@
+{
+  "id": 131,
+  "repo": "PowerToys",
+  "issue_url": "https://github.com/microsoft/PowerToys/pull/13248",
+  "pr_url": "https://github.com/microsoft/PowerToys/pull/13248",
+  "issue_description": "## Summary of the Pull Request\r\n\r\n**What is this about:**\r\nThe pdf unit tests use a mock of the IStream interface which fails if it can't copy the contents of the stream in a single pass.\r\n\r\n**What is include in the PR:** \r\nFixes for the mock to run correctly even when it receives a smaller buffer side.\r\nAlso run Pdf Thumbnail tests as part of the automated tests.\r\nTook the chance to also add PDF modules to the bug report template.\r\n\r\n**How does someone test / validate:** \r\nTests run successfully.\r\n\r\n## Quality Checklist\r\n\r\n- [x] **Linked issue:** #13247\r\n- [ ] **Communication:** I've discussed this with core contributors in the issue. \r\n- [ ] **Tests:** Added/updated and all pass\r\n- [ ] **Installer:** Added/updated and all pass\r\n- [ ] **Localization:** All end user facing strings can be localized\r\n- [ ] **Docs:** Added/ updated\r\n- [x] **Binaries:** Any new files are added to WXS / YML\r\n   - [x] No new binaries\r\n   - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/master/.pipelines/pipeline.user.windows.yml#L68) for new binaries\r\n   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/master/installer/PowerToysSetup/Product.wxs) for new binaries\r\n",
+  "files_changed": [
+    {
+      "filename": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "status": "modified",
+      "patch": "@@ -39,6 +39,8 @@ body:\n       - Image Resizer\n       - Keyboard Manager\n       - MD Preview\n+      - PDF Preview\n+      - PDF Thumbnail\n       - PowerRename\n       - PowerToys Run\n       - Shortcut Guide"
+    },
+    {
+      "filename": ".pipelines/ci/templates/build-powertoys-steps.yml",
+      "status": "modified",
+      "patch": "@@ -121,6 +121,7 @@ steps:\n     testSelector: 'testAssemblies'\n     testAssemblyVer2: |\n       **\\UnitTests-SvgThumbnailProvider.dll\n+      **\\UnitTests-PdfThumbnailProvider.dll\n       **\\Microsoft.PowerToys.Settings.UI.UnitTests.dll\n       **\\UnitTests-MarkdownPreviewHandler.dll\n       **\\UnitTests-PdfPreviewHandler.dll"
+    },
+    {
+      "filename": "src/modules/previewpane/UnitTests-PdfPreviewHandler/PdfPreviewHandlerTest.cs",
+      "status": "modified",
+      "patch": "@@ -66,16 +66,18 @@ public void PdfPreviewHandlerControlShouldAddValidInfoBarIfPdfPreviewThrows()\n         private static IStream GetMockStream(byte[] sourceArray)\n         {\n             var streamMock = new Mock<IStream>();\n-            var firstCall = true;\n+            int bytesRead = 0;\n+\n             streamMock\n                 .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))\n                 .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>\n                 {\n-                    if (firstCall)\n+                    int actualCountToRead = Math.Min(sourceArray.Length - bytesRead, countToRead);\n+                    if (actualCountToRead > 0)\n                     {\n-                        Array.Copy(sourceArray, 0, buffer, 0, sourceArray.Length);\n-                        Marshal.WriteInt32(bytesReadPtr, sourceArray.Length);\n-                        firstCall = false;\n+                        Array.Copy(sourceArray, bytesRead, buffer, 0, actualCountToRead);\n+                        Marshal.WriteInt32(bytesReadPtr, actualCountToRead);\n+                        bytesRead += actualCountToRead;\n                     }\n                     else\n                     {"
+    },
+    {
+      "filename": "src/modules/previewpane/UnitTests-PdfThumbnailProvider/PdfThumbnailProviderTests.cs",
+      "status": "modified",
+      "patch": "@@ -70,16 +70,18 @@ public void GetThumbnailToBigPDF()\n         private static IStream GetMockStream(byte[] sourceArray)\n         {\n             var streamMock = new Mock<IStream>();\n-            var firstCall = true;\n+            int bytesRead = 0;\n+\n             streamMock\n                 .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))\n                 .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>\n                 {\n-                    if (firstCall)\n+                    int actualCountToRead = Math.Min(sourceArray.Length - bytesRead, countToRead);\n+                    if (actualCountToRead > 0)\n                     {\n-                        Array.Copy(sourceArray, 0, buffer, 0, sourceArray.Length);\n-                        Marshal.WriteInt32(bytesReadPtr, sourceArray.Length);\n-                        firstCall = false;\n+                        Array.Copy(sourceArray, bytesRead, buffer, 0, actualCountToRead);\n+                        Marshal.WriteInt32(bytesReadPtr, actualCountToRead);\n+                        bytesRead += actualCountToRead;\n                     }\n                     else\n                     {"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

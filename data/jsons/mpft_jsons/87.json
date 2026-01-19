@@ -1,0 +1,11 @@
+{
+  "id": 87,
+  "repo": "mono",
+  "issue_url": "https://github.com/mono/mono/pull/18760/commits",
+  "pr_url": "https://github.com/mono/mono/pull/18760/commits",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make structure thread local",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

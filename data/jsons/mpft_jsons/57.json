@@ -1,0 +1,11 @@
+{
+  "id": 57,
+  "repo": "keras",
+  "issue_url": "https://github.com/keras-team/keras/commit/962cc5bb4de9d385509fcd096d345caa4f8d2d54",
+  "pr_url": "https://github.com/keras-team/keras/commit/962cc5bb4de9d385509fcd096d345caa4f8d2d54",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

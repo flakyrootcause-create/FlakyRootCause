@@ -1,0 +1,11 @@
+{
+  "id": 29,
+  "repo": "next.js",
+  "issue_url": "https://github.com/vercel/next.js/commit/bbe2786b5e3d7968380f15c80595a8191afb4a85",
+  "pr_url": "https://github.com/vercel/next.js/commit/bbe2786b5e3d7968380f15c80595a8191afb4a85",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

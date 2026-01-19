@@ -1,0 +1,11 @@
+{
+  "id": 218,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/commit/a29c206d071bbd9b41a5cea77692e385cc48ca6c",
+  "pr_url": "https://github.com/pandas-dev/pandas/commit/a29c206d071bbd9b41a5cea77692e385cc48ca6c",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 273,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/2f8444917d1705624ca80deb9c71a2972427d030",
+  "pr_url": "https://github.com/nodejs/node/commit/2f8444917d1705624ca80deb9c71a2972427d030",
+  "issue_description": "Take 3: on win32 we use empty.txt in the fixtures directory, otherwise we use a file constructed specifically for this test due to POSIX socket path length limitations, in which case we need to do appropriate cleanup. Cleaning up empty.txt in fixtures causes downstream problems for other tests using it (currently the next test is test-zlib).\n",
+  "files_changed": [
+    {
+      "filename": "test/simple/test-net-pipe-connect-errors.js",
+      "status": "modified",
+      "patch": "@@ -42,19 +42,20 @@ if (process.platform === 'win32') {\n   // use common.PIPE to ensure we stay within POSIX socket path length\n   // restrictions, even on CI\n   emptyTxt = common.PIPE + '.txt';\n-}\n \n-function cleanup() {\n-  try {\n-    fs.unlinkSync(emptyTxt);\n-  } catch (e) {\n-    if (e.code != 'ENOENT')\n-      throw e;\n+  function cleanup() {\n+    try {\n+      fs.unlinkSync(emptyTxt);\n+    } catch (e) {\n+      if (e.code != 'ENOENT')\n+        throw e;\n+    }\n   }\n+  process.on('exit', cleanup);\n+  cleanup();\n+  fs.writeFileSync(emptyTxt, '');\n }\n-process.on('exit', cleanup);\n-cleanup();\n-fs.writeFileSync(emptyTxt, '');\n+\n var notSocketClient = net.createConnection(emptyTxt, function() {\n   assert.ok(false);\n });"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

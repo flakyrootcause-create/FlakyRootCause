@@ -1,0 +1,52 @@
+{
+  "id": 68,
+  "repo": "spiceai",
+  "issue_url": "https://github.com/spiceai/spiceai/issues/263",
+  "pr_url": "https://github.com/spiceai/spiceai/pull/265",
+  "issue_description": null,
+  "files_changed": [
+    {
+      "filename": "go.mod",
+      "status": "modified",
+      "patch": "@@ -16,7 +16,7 @@ require (\n \tgithub.com/spf13/cast v1.4.1 // indirect\n \tgithub.com/spf13/cobra v1.2.1\n \tgithub.com/spf13/viper v1.8.1\n-\tgithub.com/spiceai/data-components-contrib v0.0.0-20210928065358-de9ca23d7fba\n+\tgithub.com/spiceai/data-components-contrib v0.0.0-20210929022049-99326a37be88\n \tgithub.com/stretchr/testify v1.7.0\n \tgithub.com/valyala/fasthttp v1.28.0\n \tgo.uber.org/atomic v1.9.0 // indirect"
+    },
+    {
+      "filename": "go.sum",
+      "status": "modified",
+      "patch": "@@ -998,10 +998,8 @@ github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5q\n github.com/spf13/viper v1.7.1/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=\n github.com/spf13/viper v1.8.1 h1:Kq1fyeebqsBfbjZj4EL7gj2IO0mMaiyjYUWcUsl2O44=\n github.com/spf13/viper v1.8.1/go.mod h1:o0Pch8wJ9BVSWGQMbra6iw0oQ5oktSIBaujf1rJH9Ns=\n-github.com/spiceai/data-components-contrib v0.0.0-20210927063826-7e7a998616f0 h1:q4wBSzMOEjJaKuO1OYdfFK4EhnEq7GYjPV1WoGHo+Tk=\n-github.com/spiceai/data-components-contrib v0.0.0-20210927063826-7e7a998616f0/go.mod h1:OPMWWw556IFGqId8lr+rhxbDu75zAJyD5Qri0ItYcAQ=\n-github.com/spiceai/data-components-contrib v0.0.0-20210928065358-de9ca23d7fba h1:Wsd1OcuWg7tGt7uL+qDwY0Q/eNsUrK6AQdw0PG8EB3Q=\n-github.com/spiceai/data-components-contrib v0.0.0-20210928065358-de9ca23d7fba/go.mod h1:OPMWWw556IFGqId8lr+rhxbDu75zAJyD5Qri0ItYcAQ=\n+github.com/spiceai/data-components-contrib v0.0.0-20210929022049-99326a37be88 h1:CxTcW0Z7aCkQAzcpkhDWqyRkd4l7IAahSf1KzYD+kUM=\n+github.com/spiceai/data-components-contrib v0.0.0-20210929022049-99326a37be88/go.mod h1:9vPmlXJckpxfqnVM5d/RKSbh1XT7qnwBSS7U4FvuPHQ=\n github.com/src-d/gcfg v1.4.0/go.mod h1:p/UMsR43ujA89BJY9duynAwIpvqEujIH/jFlfL7jWoI=\n github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=\n github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw="
+    },
+    {
+      "filename": "pkg/aiengine/init.go",
+      "status": "modified",
+      "patch": "@@ -65,7 +65,7 @@ func getPodInitForTraining(pod *pods.Pod) *aiengine_pb.InitRequest {\n \tvar laws []string\n \n \tvar dsInitSpecs []*aiengine_pb.DataSource\n-\tfor _, ds := range pod.DataSources() {\n+\tfor _, ds := range pod.DataSpaces() {\n \t\tfor fqField, fqFieldInitializer := range ds.Fields() {\n \t\t\tfieldName := strings.ReplaceAll(fqField, \".\", \"_\")\n \t\t\tfields[fieldName] = fqFieldInitializer"
+    },
+    {
+      "filename": "pkg/environment/environment.go",
+      "status": "modified",
+      "patch": "@@ -9,6 +9,12 @@ import (\n \t\"golang.org/x/sync/errgroup\"\n )\n \n+var firstInitCompleted bool = false\n+\n+func FirstInitializationCompleted() bool {\n+\treturn firstInitCompleted\n+}\n+\n func InitDataConnectors() error {\n \terrGroup, _ := errgroup.WithContext(context.Background())\n \tfor _, pod := range pods.Pods() {\n@@ -17,7 +23,11 @@ func InitDataConnectors() error {\n \t\t\treturn InitPodDataConnector(p)\n \t\t})\n \t}\n-\treturn errGroup.Wait()\n+\terr := errGroup.Wait()\n+\tif err == nil {\n+\t\tfirstInitCompleted = true\n+\t}\n+\treturn err\n }\n \n func InitPodDataConnector(pod *pods.Pod) error {"
+    },
+    {
+      "filename": "pkg/http/server.go",
+      "status": "modified",
+      "patch": "@@ -39,7 +39,7 @@ var (\n \n func healthHandler(ctx *fasthttp.RequestCtx) {\n \tif !aiengine.ServerReady() {\n-\t\tfmt.Fprintf(ctx, \"initializing\")\n+\t\tfmt.Fprintf(ctx, \"ai engine initializing\")\n \t\treturn\n \t}\n \n@@ -50,6 +50,11 @@ func healthHandler(ctx *fasthttp.RequestCtx) {\n \t\treturn\n \t}\n \n+\tif !environment.FirstInitializationCompleted() {\n+\t\tfmt.Fprintf(ctx, \"environment initializing\")\n+\t\treturn\n+\t}\n+\n \tfmt.Fprintf(ctx, \"ok\")\n }\n \n@@ -116,7 +121,7 @@ func apiPostDataspaceHandler(ctx *fasthttp.RequestCtx) {\n \tdataspaceName := ctx.UserValue(\"dataspace_name\").(string)\n \n \tvar selectedDataspace *dataspace.Dataspace\n-\tfor _, dataspace := range pod.DataSources() {\n+\tfor _, dataspace := range pod.DataSpaces() {\n \t\tif dataspace.DataspaceSpec.From == dataspaceFrom && dataspace.DataspaceSpec.Name == dataspaceName {\n \t\t\tselectedDataspace = dataspace\n \t\t\tbreak"
+    },
+    {
+      "filename": "pkg/pods/pod.go",
+      "status": "modified",
+      "patch": "@@ -94,7 +94,7 @@ func (pod *Pod) Episodes() int {\n \n func (pod *Pod) CachedState() []*state.State {\n \tvar cachedState []*state.State\n-\tfor _, ds := range pod.DataSources() {\n+\tfor _, ds := range pod.DataSpaces() {\n \t\tdsState := ds.CachedState()\n \t\tif dsState != nil {\n \t\t\tcachedState = append(cachedState, dsState...)\n@@ -167,7 +167,7 @@ func (pod *Pod) CachedCsv() string {\n \treturn csv.String()\n }\n \n-func (pod *Pod) DataSources() []*dataspace.Dataspace {\n+func (pod *Pod) DataSpaces() []*dataspace.Dataspace {\n \treturn pod.dataSources\n }\n \n@@ -194,7 +194,7 @@ func (pod *Pod) AddFlight(flightId string, flight *flights.Flight) {\n func (pod *Pod) Actions() map[string]string {\n \tallDataSourceActions := make(map[string]string)\n \tvar dataSourcePrefixes []string\n-\tfor _, ds := range pod.DataSources() {\n+\tfor _, ds := range pod.DataSpaces() {\n \t\tfor fqActionName, fqAction := range ds.Actions() {\n \t\t\tallDataSourceActions[fqActionName] = fqAction\n \t\t\tdataSourcePrefixes = append(dataSourcePrefixes, fmt.Sprintf(\"%s.%s\", ds.DataspaceSpec.From, ds.DataspaceSpec.Name))\n@@ -375,7 +375,7 @@ func (pod *Pod) InitDataConnectors(handler state.StateHandler) error {\n \n \terrGroup, _ := errgroup.WithContext(context.Background())\n \n-\tfor _, ds := range pod.DataSources() {\n+\tfor _, ds := range pod.DataSpaces() {\n \t\tdsp := ds\n \t\terrGroup.Go(func() error {\n \t\t\tdsp.RegisterStateHandler(handler)"
+    },
+    {
+      "filename": "pkg/runtime/runtime.go",
+      "status": "modified",
+      "patch": "@@ -206,7 +206,7 @@ func initializePod(manifestPath string) (*pods.Pod, error) {\n \t\treturn nil, err\n \t}\n \n-\tfor _, ds := range newPod.DataSources() {\n+\tfor _, ds := range newPod.DataSpaces() {\n \t\tfmt.Printf(\"Loaded dataspace %s\\n\", aurora.BrightCyan(ds.Name()))\n \t}\n "
+    },
+    {
+      "filename": "test/e2e/runtime.go",
+      "status": "modified",
+      "patch": "@@ -252,15 +252,17 @@ func (r *runtimeServer) internalGet(url string, data interface{}) error {\n func (r *runtimeServer) waitForServerHealthy() error {\n \tmaxAttempts := 20\n \tattemptCount := 0\n+\tvar lastErr error\n \tfor {\n \t\ttime.Sleep(time.Millisecond * 250)\n \n \t\tif attemptCount++; attemptCount > 4*maxAttempts {\n-\t\t\treturn fmt.Errorf(\"failed to verify health of %s after %d attempts\", r.baseUrl, attemptCount)\n+\t\t\treturn fmt.Errorf(\"failed to verify health of %s after %d attempts: %w\", r.baseUrl, attemptCount, lastErr)\n \t\t}\n \n \t\terr := util.IsRuntimeServerHealthy(r.baseUrl, http.DefaultClient)\n \t\tif err != nil {\n+\t\t\tlastErr = err\n \t\t\tcontinue\n \t\t}\n "
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Go)"
+}

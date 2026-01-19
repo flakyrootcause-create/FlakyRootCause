@@ -1,0 +1,17 @@
+{
+  "id": 19,
+  "repo": "relay",
+  "issue_url": "https://github.com/getsentry/relay/issues/3171",
+  "pr_url": "https://github.com/getsentry/relay/pull/3239",
+  "issue_description": "### Flakiness Type\n\nAssertion failure\n\n### Name of Test\n\nextractors::start_time::tests::start_time_from_timestamp\n\n### Link to Test Run\n\nhttps://github.com/getsentry/relay/actions/runs/8050926586/job/21987677539\n\n### Details\n\nSeems like an issue between the generation of the `now` timestamp and the `system_time` timestamp.  We're likely crossing from second `n` to second `n+1` between calls.\r\n\r\n```\r\n---- extractors::start_time::tests::start_time_from_timestamp stdout ----\r\nthread 'extractors::start_time::tests::start_time_from_timestamp' panicked at relay-server\\src\\extractors\\start_time.rs:74:9:\r\nassertion `left == right` failed\r\n  left: 9\r\n right: 10\r\n\r\n\r\nfailures:\r\n    extractors::start_time::tests::start_time_from_timestamp\r\n\r\ntest result: FAILED. 225 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.77s\r\n\r\nerror: test failed, to rerun pass `-p relay-server --lib`\r\n```",
+  "files_changed": [
+    {
+      "filename": "relay-server/src/extractors/start_time.rs",
+      "status": "modified",
+      "patch": "@@ -63,14 +63,14 @@ mod tests {\n \n     #[test]\n     fn start_time_from_timestamp() {\n-        let elapsed = 10;\n+        let elapsed = Duration::from_secs(10);\n         let now = Instant::now();\n-        let system_time =\n-            SystemTime::now().duration_since(UNIX_EPOCH).unwrap() - Duration::from_secs(elapsed);\n+        let system_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap() - elapsed;\n         let start_time =\n             StartTime::from_timestamp_millis(system_time.as_millis() as u64).into_inner();\n \n         // Check that the difference between the now and generated start_time is about 10s.\n-        assert_eq!((now - start_time).as_secs(), elapsed);\n+        assert!((now - start_time) < elapsed + Duration::from_millis(50));\n+        assert!((now - start_time) > elapsed - Duration::from_millis(50));\n     }\n }"
+    }
+  ],
+  "fix_category": "Robustness",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": "Off by one"
+}

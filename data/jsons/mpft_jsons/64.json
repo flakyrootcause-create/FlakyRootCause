@@ -1,0 +1,11 @@
+{
+  "id": 64,
+  "repo": "ansible",
+  "issue_url": "https://github.com/ansible/ansible/commit/869cd6f72953b72b15fd996ce8d510e896fcc73c",
+  "pr_url": "https://github.com/ansible/ansible/commit/869cd6f72953b72b15fd996ce8d510e896fcc73c",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

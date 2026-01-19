@@ -1,0 +1,17 @@
+{
+  "id": 339,
+  "repo": "jenkins",
+  "issue_url": "https://github.com/jenkinsci/jenkins/pull/3769",
+  "pr_url": "https://github.com/jenkinsci/jenkins/pull/3769",
+  "issue_description": "Sometimes the execution last exactly SLEEP milliseconds so it becomes a failure.\r\n\r\nSee [JENKINS-54459](https://issues.jenkins-ci.org/browse/JENKINS-54459).\r\n\r\n<!-- Comment: \r\nIf the issue is not fully described in the ticket, add more information here (justification, pull request links, etc.).\r\n\r\n * We do not require JIRA issues for minor improvements.\r\n * Bugfixes should have a JIRA issue (backporting process).\r\n * Major new features should have a JIRA issue reference.\r\n-->\r\n\r\n### Proposed changelog entries\r\n\r\nN/A\r\n\r\n<!-- Comment: \r\nThe changelogs will be integrated by the core maintainers after the merge.  See the changelog examples here: https://jenkins.io/changelog/ -->\r\n\r\n### Submitter checklist\r\n\r\n- [X] JIRA issue is well described\r\n- [X] Changelog entry appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)\r\n      * Use the `Internal: ` prefix if the change has no user-visible impact (API, test frameworks, etc.)\r\n- [X] Appropriate autotests or explanation to why this change has no tests\r\n- [ ] N/A For dependency updates: links to external changelogs and, if possible, full diffs\r\n\r\n<!-- For new API and extension points: Link to the reference implementation in open-source (or example in Javadoc) -->\r\n\r\n### Desired reviewers\r\n\r\n@reviewbybees \r\n\r\n<!-- Comment:\r\nIf you need an accelerated review process by the community (e.g., for critical bugs), mention @jenkinsci/code-reviewers\r\n-->\r\n",
+  "files_changed": [
+    {
+      "filename": "core/src/test/java/hudson/util/RetrierTest.java",
+      "status": "modified",
+      "patch": "@@ -97,7 +97,7 @@ public void sleepWorksTest() throws Exception {\n         long timeElapsed = Duration.between(start, finish).toMillis();\n \n         // Check delay works\n-        Assert.assertTrue(timeElapsed > SLEEP);\n+        Assert.assertTrue(timeElapsed >= SLEEP);\n \n         // Check result is true\n         Assert.assertTrue(finalResult == null ? false : finalResult);"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

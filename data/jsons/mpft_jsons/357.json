@@ -1,0 +1,11 @@
+{
+  "id": 357,
+  "repo": "amazon-vpc-cni-plugins",
+  "issue_url": "https://github.com/aws/amazon-vpc-cni-plugins/commit/be5214353252f8315a1341f4df9ffbd8cf69000c",
+  "pr_url": "https://github.com/aws/amazon-vpc-cni-plugins/commit/be5214353252f8315a1341f4df9ffbd8cf69000c",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

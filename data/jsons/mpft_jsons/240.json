@@ -1,0 +1,22 @@
+{
+  "id": 240,
+  "repo": "rocksdb",
+  "issue_url": "https://github.com/facebook/rocksdb/pull/13374",
+  "pr_url": "https://github.com/facebook/rocksdb/pull/13374",
+  "issue_description": "This test is flaky likely due to synchronization of the file ingestion thread and the live write thread with test sync points are not working as expected sometimes. Very occasionally, the live write thread can enter the write queue after file ingestion job already dequeued. Or it entered and waited for a very short period of time and quickly returned in the fast path: https://github.com/facebook/rocksdb/blob/833a2266a394fe5f140d2a22f406c82bb605c726/db/write_thread.cc#L83-L86\r\n\r\nTo fix the flakiness, I moved the test sync points to make sure the write thread is already linked into the write queue before the file ingestion writer get dequeued, so it definitely would need to wait some time in order to do its write.\r\n\r\nTest plan:\r\nI'm able to reproduce the flakiness with this command before the fix  with every two or three runs:\r\n./gtest-parallel external_sst_file_basic_test --gtest_filter=ExternalSSTFileBasicTest.Basic --repeat=10000 --workers=100\r\n\r\nAfter the fix, I have tried the command for 10 runs, and there is no failure detected.",
+  "files_changed": [
+    {
+      "filename": "db/db_impl/db_impl.cc",
+      "status": "modified",
+      "patch": "@@ -5952,6 +5952,7 @@ Status DBImpl::IngestExternalFiles(\n \n     num_running_ingest_file_ += static_cast<int>(num_cfs);\n     TEST_SYNC_POINT(\"DBImpl::IngestExternalFile:AfterIncIngestFileCounter\");\n+    TEST_SYNC_POINT(\"DBImpl::IngestExternalFile:AfterIncIngestFileCounter:2\");\n \n     bool at_least_one_cf_need_flush = false;\n     std::vector<bool> need_flush(num_cfs, false);"
+    },
+    {
+      "filename": "db/external_sst_file_basic_test.cc",
+      "status": "modified",
+      "patch": "@@ -265,8 +265,8 @@ TEST_F(ExternalSSTFileBasicTest, Basic) {\n   SyncPoint::GetInstance()->LoadDependency({\n       {\"DBImpl::IngestExternalFile:AfterIncIngestFileCounter\",\n        \"ExternalSSTFileBasicTest.LiveWriteStart\"},\n-      {\"ExternalSSTFileBasicTest.LiveWriteStart\",\n-       \"DBImpl::IngestExternalFiles:InstallSVForFirstCF:0\"},\n+      {\"WriteThread::JoinBatchGroup:Wait\",\n+       \"DBImpl::IngestExternalFile:AfterIncIngestFileCounter:2\"},\n   });\n   SyncPoint::GetInstance()->EnableProcessing();\n   PerfContext* write_thread_perf_context;"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

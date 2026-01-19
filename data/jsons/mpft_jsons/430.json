@@ -1,0 +1,22 @@
+{
+  "id": 430,
+  "repo": "deno",
+  "issue_url": "https://github.com/denoland/deno/pull/28209",
+  "pr_url": "https://github.com/denoland/deno/pull/28209",
+  "issue_description": "The bucket counts can vary run to run. Also don't hardcode the port",
+  "files_changed": [
+    {
+      "filename": "tests/specs/cli/otel_basic/http_metric.out",
+      "status": "modified",
+      "patch": "@@ -20,7 +20,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -78,7 +78,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -136,7 +136,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -194,7 +194,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -252,7 +252,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -310,7 +310,7 @@\n         {\n           \"key\": \"url.full\",\n           \"value\": {\n-            \"stringValue\": \"http://localhost:8080/\"\n+            \"stringValue\": \"http://localhost:[WILDLINE]/\"\n           }\n         },\n         {\n@@ -493,21 +493,21 @@\n             \"count\": 3,\n             \"sum\": [WILDCARD],\n             \"bucketCounts\": [\n-              3,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE]\n             ],\n             \"explicitBounds\": [\n               0.005,\n@@ -573,16 +573,16 @@\n             \"count\": 3,\n             \"sum\": 0,\n             \"bucketCounts\": [\n-              3,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0,\n-              0\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE],\n+              [WILDLINE]\n             ],\n             \"explicitBounds\": [\n               0,"
+    },
+    {
+      "filename": "tests/specs/cli/otel_basic/http_metric.ts",
+      "status": "modified",
+      "patch": "@@ -1,10 +1,16 @@\n+let port;\n const server = Deno.serve(\n-  { port: 8080, onListen: () => {} },\n+  {\n+    port: 0,\n+    onListen: (addr) => {\n+      port = addr.port;\n+    },\n+  },\n   () => new Response(\"foo\"),\n );\n \n for (let i = 0; i < 3; i++) {\n-  await fetch(`http://localhost:8080`);\n+  await fetch(`http://localhost:${port}`);\n }\n \n await server.shutdown();"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

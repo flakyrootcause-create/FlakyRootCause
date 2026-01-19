@@ -1,0 +1,11 @@
+{
+  "id": 214,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/commit/9848a6029813582a889cee434f6184882769505b",
+  "pr_url": "https://github.com/elastic/elasticsearch/commit/9848a6029813582a889cee434f6184882769505b",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

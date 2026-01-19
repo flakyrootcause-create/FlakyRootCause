@@ -1,0 +1,11 @@
+{
+  "id": 325,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/commit/3552dc0c4533a5eafafe859f5afd29a7ce063e03",
+  "pr_url": "https://github.com/pandas-dev/pandas/commit/3552dc0c4533a5eafafe859f5afd29a7ce063e03",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

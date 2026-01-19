@@ -1,0 +1,17 @@
+{
+  "id": 395,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/53993",
+  "pr_url": "https://github.com/nodejs/node/pull/53993",
+  "issue_description": "[PR Linked Issue]\n### Test\n\ntest-child-process-cwd\n\n### Platform\n\nWindows\n\n### Console output\n\n```console\nnode:assert:126\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n+ actual - expected\r\n\r\n+ 'C:\\\\Windows'\r\n- 'C:\\\\WINDOWS'\r\n        ^\r\n    at ChildProcess.<anonymous> (C:\\Users\\admin\\WebstormProjects\\node\\test\\parallel\\test-child-process-cwd.js:55:26)\r\n    at ChildProcess.<anonymous> (C:\\Users\\admin\\WebstormProjects\\node\\test\\common\\index.js:487:15)\r\n    at ChildProcess.emit (node:events:520:28)\r\n    at maybeClose (node:internal/child_process:1105:16)\r\n    at Socket.<anonymous> (node:internal/child_process:457:11)\r\n    at Socket.emit (node:events:520:28)\r\n    at Pipe.<anonymous> (node:net:337:12) {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 'C:\\\\Windows',\r\n  expected: 'C:\\\\WINDOWS',\r\n  operator: 'strictEqual'\r\n}\r\n\r\nNode.js v23.0.0-pre\n```\n\n\n### Build links\n\n- \n\n### Additional information\n\n### Issue Description\r\n\r\nI built Node.js on my local computer using the `vcbuild.bat` script. After the build was completed, I verified it through the `Release\\node` directory. However, when running `.\\vcbuild test`, I consistently encountered the same error. The error seems to be caused by Windows not distinguishing between uppercase and lowercase folder names.\r\n",
+  "files_changed": [
+    {
+      "filename": "test/parallel/test-child-process-cwd.js",
+      "status": "modified",
+      "patch": "@@ -52,7 +52,14 @@ function testCwd(options, expectPidType, expectCode = 0, expectData) {\n   });\n \n   child.on('close', common.mustCall(function() {\n-    expectData && assert.strictEqual(data.trim(), expectData);\n+    if (expectData) {\n+      // In Windows, compare without considering case\n+      if (common.isWindows) {\n+        assert.strictEqual(data.trim().toLowerCase(), expectData.toLowerCase());\n+      } else {\n+        assert.strictEqual(data.trim(), expectData);\n+      }\n+    }\n   }));\n \n   return child;"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,22 @@
+{
+  "id": 6,
+  "repo": "neon",
+  "issue_url": "https://github.com/neondatabase/neon/issues/2856",
+  "pr_url": "https://github.com/neondatabase/neon/pull/6587",
+  "issue_description": "CI failure https://neon-github-public-dev.s3.amazonaws.com/reports/pr-2853/debug/3496013811/index.html#suites/c19bc2126511ef8cb145cca25c438215/d9d82f9ed0d73cdd/:\r\n```\r\ntest_runner/regress/test_gc_cutoff.py:41: in test_gc_cutoff\r\n    pg_bin.run_capture([\"pgbench\", \"-N\", \"-c5\", \"-T100\", \"-Mprepared\", connstr])\r\nE   Failed: DID NOT RAISE <class 'Exception'>\r\n```\r\nWe made the test more strict in commit d013a2b227. The test performs 5 iterations of 100-second pgbench runs, and it expects GC to hit a failpoint on each iteration, aborting the pgbench run. Before commit d013a2b227, it would still pass even if the failpoint was not hit on every iteration.\r\n",
+  "files_changed": [
+    {
+      "filename": "pageserver/src/tenant/timeline.rs",
+      "status": "modified",
+      "patch": "@@ -4373,10 +4373,6 @@ impl Timeline {\n \n             guard.finish_gc_timeline(&gc_layers);\n \n-            if result.layers_removed != 0 {\n-                fail_point!(\"after-timeline-gc-removed-layers\");\n-            }\n-\n             #[cfg(feature = \"testing\")]\n             {\n                 result.doomed_layers = gc_layers;"
+    },
+    {
+      "filename": "test_runner/regress/test_gc_cutoff.py",
+      "status": "removed",
+      "patch": "@@ -1,47 +0,0 @@\n-import subprocess\n-\n-import pytest\n-from fixtures.neon_fixtures import NeonEnvBuilder, PgBin\n-\n-\n-# Test gc_cutoff\n-#\n-# This test sets fail point at the end of GC, and checks that pageserver\n-# normally restarts after it. Also, there should be GC ERRORs in the log,\n-# but the fixture checks the log for any unexpected ERRORs after every\n-# test anyway, so it doesn't need any special attention here.\n-@pytest.mark.timeout(600)\n-def test_gc_cutoff(neon_env_builder: NeonEnvBuilder, pg_bin: PgBin):\n-    env = neon_env_builder.init_start(\n-        initial_tenant_conf={\n-            \"gc_period\": \"10 s\",\n-            \"gc_horizon\": f\"{1024 ** 2}\",\n-            \"checkpoint_distance\": f\"{1024 ** 2}\",\n-            \"compaction_period\": \"5 s\",\n-            # set PITR interval to be small, so we can do GC\n-            \"pitr_interval\": \"1 s\",\n-            \"compaction_threshold\": \"3\",\n-            \"image_creation_threshold\": \"2\",\n-        }\n-    )\n-\n-    pageserver_http = env.pageserver.http_client()\n-\n-    # Use aggressive GC and checkpoint settings, so that we also exercise GC during the test\n-    tenant_id = env.initial_tenant\n-    endpoint = env.endpoints.create_start(\"main\", tenant_id=tenant_id)\n-    connstr = endpoint.connstr(options=\"-csynchronous_commit=off\")\n-    pg_bin.run_capture([\"pgbench\", \"-i\", \"-s10\", connstr])\n-\n-    pageserver_http.configure_failpoints((\"after-timeline-gc-removed-layers\", \"exit\"))\n-\n-    # Because this test does a rapid series of restarts of the same node, it's possible that\n-    # we are restarted again before we can clean up deletion lists form the previous generation,\n-    # resulting in a subsequent startup logging a warning.\n-    env.pageserver.allowed_errors.append(\".*Dropping stale deletions for tenant.*\")\n-\n-    for _ in range(5):\n-        with pytest.raises(subprocess.SubprocessError):\n-            pg_bin.run_capture([\"pgbench\", \"-P1\", \"-N\", \"-c5\", \"-T500\", \"-Mprepared\", connstr])\n-        env.pageserver.stop()\n-        env.pageserver.start(extra_env_vars={\"FAILPOINTS\": \"after-timeline-gc-removed-layers=exit\"})"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "Test removed"
+}

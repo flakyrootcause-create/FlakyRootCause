@@ -1,0 +1,17 @@
+{
+  "id": 235,
+  "repo": "trio",
+  "issue_url": "https://github.com/python-trio/trio/pull/2888",
+  "pr_url": "https://github.com/python-trio/trio/pull/2888",
+  "issue_description": "[PR Linked Issue]\nFixing existing runs:\r\n- [x] Don't run Jedi on PyPy. (see https://github.com/python-trio/trio/pull/2887 and https://github.com/python-trio/trio/pull/3075) (need to update `test_static_tool_sees_class_members` too)\r\n- [x] Only run autodeps in `python-trio/trio` (see https://github.com/python-trio/trio/pull/2892)\r\n- [x] Add a `gc.collect()` to the top of `test_for_leaking_fds` (this seems to address test flakiness I've seen elsewhere) (see https://github.com/python-trio/trio/pull/2888)\r\n- [x] Start running `mypy` on PyPy. (see https://github.com/python-trio/trio/pull/3075)\r\n- [x] switch macos to run on m1 (see https://github.com/python-trio/trio/pull/2953)\r\n\r\nAdding more runs:\r\n- [ ] Add an anaconda run\r\n- [x] Alpine run (see https://github.com/python-trio/trio/pull/2933)\r\n- [ ] Try out qemu for a freebsd\r\n- [x] Cython run (see https://github.com/python-trio/trio/pull/2942)\r\n  - [ ] Run full test suite on Cython\r\n- [x] Update MacOS and Windows Python matrix to support 3.11 and 3.12. (see https://github.com/python-trio/trio/pull/3017)\r\n- [x] Add CPython 3.13 (see https://github.com/python-trio/trio/pull/3005)\r\n- [ ] ... Android run??? (https://github.com/marketplace/actions/android-emulator-runner ??)\r\n- [x] pypy nightly 3.11 (not possible)\r\n- [x] add pypy runs for macos (see https://github.com/python-trio/trio/pull/3074)\r\n- [x] add pypy runs for windows (see #2776 and #2678) (see https://github.com/python-trio/trio/pull/3074)\r\n\r\nRemoving runs:\r\n- [x] Don't run PyPy nightlies less than 3.11 (see https://github.com/python-trio/trio/pull/2952)\r\n\r\nThese feel like they will take more motivation than I currently have :(",
+  "files_changed": [
+    {
+      "filename": "src/trio/_tests/test_subprocess.py",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,6 @@\n from __future__ import annotations\n \n+import gc\n import os\n import random\n import signal\n@@ -620,6 +621,8 @@ async def test_run_process_background_fail() -> None:\n     reason=\"requires a way to iterate through open files\",\n )\n async def test_for_leaking_fds() -> None:\n+    gc.collect()  # address possible flakiness on PyPy\n+\n     starting_fds = set(SyncPath(\"/dev/fd\").iterdir())\n     await run_process(EXIT_TRUE)\n     assert set(SyncPath(\"/dev/fd\").iterdir()) == starting_fds"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

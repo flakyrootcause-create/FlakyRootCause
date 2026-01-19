@@ -1,0 +1,11 @@
+{
+  "id": 264,
+  "repo": "continue",
+  "issue_url": "https://github.com/continuedev/continue/commit/1be8ed69ecab06faced15882e425c562cfae3dd1",
+  "pr_url": "https://github.com/continuedev/continue/commit/1be8ed69ecab06faced15882e425c562cfae3dd1",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

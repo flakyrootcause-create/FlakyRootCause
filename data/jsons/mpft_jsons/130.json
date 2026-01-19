@@ -1,0 +1,17 @@
+{
+  "id": 130,
+  "repo": "PowerToys",
+  "issue_url": "https://github.com/microsoft/PowerToys/pull/18731",
+  "pr_url": "https://github.com/microsoft/PowerToys/pull/18731",
+  "issue_description": "## Summary of the Pull Request\r\nThis might be the problem why from time to time `MarkdownPreviewHandlerControlAddsBrowserToFormWhenDoPreviewIsCalled ` test fails - timeouts after 10s\r\n\r\n**What is this about:**\r\n\r\n**What is included in the PR:** \r\n\r\n**How does someone test / validate:** \r\n\r\n## Quality Checklist\r\n\r\n- [ ] **Linked issue:** #xxx\r\n- [ ] **Communication:** I've discussed this with core contributors in the issue. \r\n- [ ] **Tests:** Added/updated and all pass\r\n- [ ] **Installer:** Added/updated and all pass\r\n- [ ] **Localization:** All end user facing strings can be localized\r\n- [ ] **Docs:** Added/ updated\r\n- [ ] **Binaries:** Any new files are added to WXS / YML\r\n   - [ ] No new binaries\r\n   - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/pipeline.user.windows.yml#L68) for new binaries\r\n   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries\r\n\r\n## Contributor License Agreement (CLA)\r\nA CLA must be signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA.\r\n",
+  "files_changed": [
+    {
+      "filename": "src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithExternalImage.txt",
+      "status": "modified",
+      "patch": "@@ -1,2 +1,2 @@\n-\ufeff![Minion](https://octodex.github.com/images/minion.png)\n+\ufeff![Some title](./a.png)\n <script>alert(\"hello\")</script>\n\\ No newline at end of file"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 155,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/a76d7e2",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/a76d7e2",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Lock atomic region",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

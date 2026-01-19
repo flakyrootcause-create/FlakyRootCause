@@ -1,0 +1,11 @@
+{
+  "id": 181,
+  "repo": "argo-cd",
+  "issue_url": "https://github.com/crenshaw-dev/argo-cd/commit/f3c56a5b68847d82e6b19c381707a0dc777a70a9",
+  "pr_url": "https://github.com/crenshaw-dev/argo-cd/commit/f3c56a5b68847d82e6b19c381707a0dc777a70a9",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

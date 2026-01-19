@@ -1,0 +1,27 @@
+{
+  "id": 38,
+  "repo": "xgboost",
+  "issue_url": "https://github.com/dmlc/xgboost/pull/8244",
+  "pr_url": "https://github.com/dmlc/xgboost/pull/8244",
+  "issue_description": "[PR Linked Issue]\n```\r\nFalsifying example: test_gpu_data_iterator(\r\n    n_samples_per_batch=57, n_features=1, n_batches=9, subsample=False,\r\n)\r\n```\r\n\r\nIt's caused by one different element in the generated cuts.  We need to change the test to adapt to the differences in the models.",
+  "files_changed": [
+    {
+      "filename": "tests/python-gpu/test_gpu_data_iterator.py",
+      "status": "modified",
+      "patch": "@@ -19,7 +19,7 @@ def test_gpu_single_batch() -> None:\n @given(\n     strategies.integers(0, 1024),\n     strategies.integers(1, 7),\n-    strategies.integers(0, 13),\n+    strategies.integers(0, 8),\n     strategies.booleans(),\n )\n @settings(deadline=None, print_blob=True)"
+    },
+    {
+      "filename": "tests/python/test_data_iterator.py",
+      "status": "modified",
+      "patch": "@@ -92,6 +92,12 @@ def run_data_iterator(\n         assert non_increasing(results_from_it[\"Train\"][\"rmse\"])\n \n     X, y, w = it.as_arrays()\n+    if use_cupy:\n+        _y = y.get()\n+    else:\n+        _y = y\n+    np.testing.assert_allclose(Xy.get_label(), _y)\n+\n     Xy = xgb.DMatrix(X, y, weight=w)\n     assert Xy.num_row() == n_samples_per_batch * n_batches\n     assert Xy.num_col() == n_features"
+    },
+    {
+      "filename": "tests/python/testing.py",
+      "status": "modified",
+      "patch": "@@ -12,6 +12,7 @@\n import pytest\n import gc\n import xgboost as xgb\n+from xgboost.core import ArrayLike\n import numpy as np\n from scipy import sparse\n import platform\n@@ -212,13 +213,16 @@ def reset(self) -> None:\n \n     def as_arrays(\n         self,\n-    ) -> Tuple[Union[np.ndarray, sparse.csr_matrix], np.ndarray, np.ndarray]:\n+    ) -> Tuple[Union[np.ndarray, sparse.csr_matrix], ArrayLike, ArrayLike]:\n         if isinstance(self.X[0], sparse.csr_matrix):\n             X = sparse.vstack(self.X, format=\"csr\")\n         else:\n             X = np.concatenate(self.X, axis=0)\n         y = np.concatenate(self.y, axis=0)\n-        w = np.concatenate(self.w, axis=0)\n+        if self.w:\n+            w = np.concatenate(self.w, axis=0)\n+        else:\n+            w = None\n         return X, y, w\n \n "
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Floating point operations",
+  "root_cause_subcategory": NaN
+}

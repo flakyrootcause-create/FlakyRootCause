@@ -1,0 +1,17 @@
+{
+  "id": 73,
+  "repo": "nearcore",
+  "issue_url": "https://github.com/near/nearcore/issues/3133",
+  "pr_url": "https://github.com/near/nearcore/pull/3160",
+  "issue_description": "Often fail with connection refused, e.g:\r\n\r\ngc_after_sync.py (connection refused):\r\nhttp://52.149.162.182:3000/#/test/7746\r\nhttp://52.149.162.182:3000/#/test/7626\r\n\r\ngc_after_sync1.py (rpc timeout)\r\nhttp://52.149.162.182:3000/#/test/4627\r\n\r\ngc_sync_after_sync.py (connection refused):\r\nhttp://52.149.162.182:3000/#/test/7748\r\nhttp://52.149.162.182:3000/#/test/7628\r\nhttp://52.149.162.182:3000/#/test/7508",
+  "files_changed": [
+    {
+      "filename": "chain/chain/src/chain.rs",
+      "status": "modified",
+      "patch": "@@ -529,17 +529,16 @@ impl Chain {\n         }\n         let prev_epoch_id = self.get_block_header(&head.prev_block_hash)?.epoch_id();\n         let epoch_change = prev_epoch_id != &head.epoch_id;\n-        let fork_tail = if epoch_change {\n+        let mut fork_tail = self.store.fork_tail()?;\n+        if epoch_change && fork_tail < gc_stop_height {\n             // if head doesn't change on the epoch boundary, we may update fork tail several times\n             // but that is fine since it doesn't affect correctness and also we limit the number of\n             // heights that fork cleaning goes through so it doesn't slow down client either.\n             let mut chain_store_update = self.store.store_update();\n             chain_store_update.update_fork_tail(gc_stop_height);\n             chain_store_update.commit()?;\n-            gc_stop_height\n-        } else {\n-            self.store.fork_tail()?\n-        };\n+            fork_tail = gc_stop_height;\n+        }\n         let mut gc_blocks_remaining = gc_blocks_limit;\n \n         // Forks Cleaning\n@@ -925,7 +924,8 @@ impl Chain {\n         // Get header we were syncing into.\n         let header = self.get_block_header(&sync_hash)?;\n         let prev_hash = *header.prev_hash();\n-        let gc_height = std::cmp::min(head.height + 1, header.height());\n+        let sync_height = header.height();\n+        let gc_height = std::cmp::min(head.height + 1, sync_height);\n \n         // GC all the data from current tail up to `gc_height`\n         let tail = self.store.tail()?;\n@@ -946,7 +946,9 @@ impl Chain {\n \n         // Clear Chunks data\n         let mut chain_store_update = self.mut_store().store_update();\n-        chain_store_update.clear_chunk_data(gc_height)?;\n+        // The largest height of chunk we have in storage is head.height + 1\n+        let chunk_height = std::cmp::min(head.height + 2, sync_height);\n+        chain_store_update.clear_chunk_data(chunk_height)?;\n         chain_store_update.commit()?;\n \n         // clear all trie data\n@@ -996,6 +998,7 @@ impl Chain {\n         // New Tail can not be earlier than `prev_block.header.inner_lite.height`\n         chain_store_update.update_tail(new_tail);\n         // New Chunk Tail can not be earlier than minimum of height_created in Block `prev_block`\n+        println!(\"resetting chunk tail to {}\", new_chunk_tail);\n         chain_store_update.update_chunk_tail(new_chunk_tail);\n         chain_store_update.commit()?;\n "
+    }
+  ],
+  "fix_category": "Missing case (logic)",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": "Non-deterministic environment"
+}

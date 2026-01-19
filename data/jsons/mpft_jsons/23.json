@@ -1,0 +1,11 @@
+{
+  "id": 23,
+  "repo": "tokio",
+  "issue_url": "https://github.com/tokio-rs/tokio/commit/f1d3b065b6c41925f9ac859156eb89043812ae35",
+  "pr_url": "https://github.com/tokio-rs/tokio/commit/f1d3b065b6c41925f9ac859156eb89043812ae35",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

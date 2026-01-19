@@ -1,0 +1,17 @@
+{
+  "id": 135,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/pull/47994",
+  "pr_url": "https://github.com/apache/spark/pull/47994",
+  "issue_description": "### What changes were proposed in this pull request?\r\nThis PR increases the max time we wait for a connect server to come up for testing. The current threshold is too low, and is causing flakyness.\r\n\r\n### Why are the changes needed?\r\nIt makes connect tests less flaky.\r\n\r\n### Does this PR introduce _any_ user-facing change?\r\nNo.\r\n\r\n### How was this patch tested?\r\nIt is test infra code.\r\n\r\n### Was this patch authored or co-authored using generative AI tooling?\r\nNo.",
+  "files_changed": [
+    {
+      "filename": "connector/connect/client/jvm/src/test/scala/org/apache/spark/sql/test/RemoteSparkSession.scala",
+      "status": "modified",
+      "patch": "@@ -24,6 +24,9 @@ import java.util.concurrent.TimeUnit\n import scala.concurrent.duration.FiniteDuration\n \n import org.scalatest.{BeforeAndAfterAll, Suite}\n+import org.scalatest.concurrent.Eventually.eventually\n+import org.scalatest.concurrent.Futures.timeout\n+import org.scalatest.time.SpanSugar._\n \n import org.apache.spark.SparkBuildInfo\n import org.apache.spark.sql.SparkSession\n@@ -184,12 +187,14 @@ object SparkConnectServerUtils {\n           .port(port)\n           .retryPolicy(RetryPolicy\n             .defaultPolicy()\n-            .copy(maxRetries = Some(7), maxBackoff = Some(FiniteDuration(10, \"s\"))))\n+            .copy(maxRetries = Some(10), maxBackoff = Some(FiniteDuration(30, \"s\"))))\n           .build())\n       .create()\n \n     // Execute an RPC which will get retried until the server is up.\n-    assert(spark.version == SparkBuildInfo.spark_version)\n+    eventually(timeout(1.minute)) {\n+      assert(spark.version == SparkBuildInfo.spark_version)\n+    }\n \n     // Auto-sync dependencies.\n     SparkConnectServerUtils.syncTestDependencies(spark)"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

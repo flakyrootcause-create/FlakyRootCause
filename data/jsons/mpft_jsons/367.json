@@ -1,0 +1,17 @@
+{
+  "id": 367,
+  "repo": "rocketmq",
+  "issue_url": "https://github.com/apache/rocketmq/pull/7631",
+  "pr_url": "https://github.com/apache/rocketmq/pull/7631",
+  "issue_description": "<!-- Please make sure the target branch is right. In most case, the target branch should be `develop`. -->\r\n\r\n### Which Issue(s) This PR Fixes\r\n\r\n<!-- Please ensure that the related issue has already been created, and [link this pull request to that issue using keywords](<https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword>) to ensure automatic closure. -->\r\n\r\nFixes #7627\r\n\r\n### Brief Description\r\n\r\n<!-- Write a brief description for your pull request to help the maintainer understand the reasons behind your changes. -->\r\n\r\n### How Did You Test This Change?\r\n\r\n<!-- In order to ensure the code quality of Apache RocketMQ, we expect every pull request to have undergone thorough testing. -->\r\n",
+  "files_changed": [
+    {
+      "filename": "store/src/test/java/org/apache/rocketmq/store/HATest.java",
+      "status": "modified",
+      "patch": "@@ -213,12 +213,15 @@ public void testSemiSyncReplicaWhenAdaptiveDegradation() throws Exception {\n             assertEquals(PutMessageStatus.PUT_OK, result.getPutMessageStatus());\n             //message has been replicated to slave's commitLog, but maybe not dispatch to ConsumeQueue yet\n             //so direct read from commitLog by physical offset\n-            MessageExt slaveMsg = slaveMessageStore.lookMessageByOffset(result.getAppendMessageResult().getWroteOffset());\n-            assertNotNull(slaveMsg);\n-            assertArrayEquals(msg.getBody(), slaveMsg.getBody());\n-            assertEquals(msg.getTopic(), slaveMsg.getTopic());\n-            assertEquals(msg.getTags(), slaveMsg.getTags());\n-            assertEquals(msg.getKeys(), slaveMsg.getKeys());\n+            final MessageExt[] slaveMsg = {null};\n+            await().atMost(Duration.ofSeconds(3)).until(() -> {\n+                slaveMsg[0] = slaveMessageStore.lookMessageByOffset(result.getAppendMessageResult().getWroteOffset());\n+                return slaveMsg[0] != null;\n+            });\n+            assertArrayEquals(msg.getBody(), slaveMsg[0].getBody());\n+            assertEquals(msg.getTopic(), slaveMsg[0].getTopic());\n+            assertEquals(msg.getTags(), slaveMsg[0].getTags());\n+            assertEquals(msg.getKeys(), slaveMsg[0].getKeys());\n         }\n \n         //shutdown slave, putMessage should return IN_SYNC_REPLICAS_NOT_ENOUGH"
+    }
+  ],
+  "fix_category": "Lock atomic region",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

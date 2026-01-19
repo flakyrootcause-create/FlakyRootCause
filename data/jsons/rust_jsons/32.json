@@ -1,0 +1,17 @@
+{
+  "id": 32,
+  "repo": "neon",
+  "issue_url": "https://github.com/neondatabase/neon/issues/7691",
+  "pr_url": "https://github.com/neondatabase/neon/pull/7712",
+  "issue_description": "This test was added recently, and is failing ~3% of the time.\r\n\r\nAn example failure:\r\n- https://neon-github-public-dev.s3.amazonaws.com/reports/pr-7663/9022743601/index.html#testresult/45c20a5d0b81d6cd/retries\r\n\r\n```\r\ntest_runner/regress/test_storage_controller.py:1312: in test_lock_time_tracing\r\n    env.storage_controller.assert_log_contains(\r\ntest_runner/fixtures/neon_fixtures.py:2003: in assert_log_contains\r\n    assert res is not None\r\nE   assert None is not None\r\n```",
+  "files_changed": [
+    {
+      "filename": "test_runner/regress/test_storage_controller.py",
+      "status": "modified",
+      "patch": "@@ -1284,7 +1284,7 @@ def test_lock_time_tracing(neon_env_builder: NeonEnvBuilder):\n \n     # Apply failpoint\n     env.storage_controller.configure_failpoints(\n-        (\"tenant-update-policy-exclusive-lock\", \"return(31000)\")\n+        (\"tenant-update-policy-exclusive-lock\", \"return(35000)\")\n     )\n \n     # This will hold the exclusive for enough time to cause an warning\n@@ -1306,7 +1306,7 @@ def update_tenent_policy():\n     env.storage_controller.pageserver_api().timeline_create(\n         pg_version=PgVersion.NOT_SET, tenant_id=tenant_id, new_timeline_id=timeline_id\n     )\n-    thread_update_tenant_policy.join(timeout=10)\n+    thread_update_tenant_policy.join()\n \n     env.storage_controller.assert_log_contains(\"Lock on UpdatePolicy was held for\")\n     env.storage_controller.assert_log_contains("
+    }
+  ],
+  "fix_category": "Remove timeout",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Wait/Join"
+}

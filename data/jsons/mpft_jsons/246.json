@@ -1,0 +1,47 @@
+{
+  "id": 246,
+  "repo": "hadoop",
+  "issue_url": "https://github.com/apache/hadoop/pull/5445",
+  "pr_url": "https://github.com/apache/hadoop/pull/5445",
+  "issue_description": "As a follow-up to HDFS-16935, we should provide utility to trigger heartbeat and wait until BP thread queue is fully processed. This would ensure 100% consistency w.r.t active namenode being able to receive bad block reports from the given datanode. This utility would resolve flakes for the tests that rely on namenode's awareness of the reported bad blocks by datanodes.",
+  "files_changed": [
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "status": "modified",
+      "patch": "@@ -660,6 +660,23 @@ void triggerHeartbeatForTests() throws IOException {\n     }\n   }\n \n+  /**\n+   * Run an immediate heartbeat from all actors. Wait until heartbeat is processed and BP thread\n+   * queue is also processed. This should be used when we need to trigger the heartbeat and also\n+   * wait for bpThreadQueue to be fully processed.\n+   * Used by tests.\n+   *\n+   * @throws InterruptedException if interrupted while waiting for the queue to be processed.\n+   * @throws IOException if the retries are exhausted and the BP thread queue could not be\n+   * successfully processed.\n+   */\n+  @VisibleForTesting\n+  void triggerHeartbeatAndWaitQueueProcessedForTests() throws InterruptedException, IOException {\n+    for (BPServiceActor actor : bpServices) {\n+      actor.triggerHeartbeatAndWaitUntilQueueProcessed();\n+    }\n+  }\n+\n   boolean processCommandFromActor(DatanodeCommand cmd,\n       BPServiceActor actor) throws IOException {\n     assert bpServices.contains(actor);"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "status": "modified",
+      "patch": "@@ -32,6 +32,7 @@\n import java.util.LinkedList;\n import java.util.List;\n import java.util.Map;\n+import java.util.Queue;\n import java.util.SortedSet;\n import java.util.TreeSet;\n import java.util.concurrent.BlockingQueue;\n@@ -365,6 +366,35 @@ void triggerHeartbeatForTests() {\n     }\n   }\n \n+  /**\n+   * Trigger the heartbeat and wait for BP thread queue to be fully processed.\n+   * To be used as a test utility.\n+   *\n+   * @throws InterruptedException if interrupted while waiting for the queue to be processed.\n+   * @throws IOException if the retries are exhausted and the BP thread queue could not be\n+   * successfully processed.\n+   */\n+  @VisibleForTesting\n+  void triggerHeartbeatAndWaitUntilQueueProcessed() throws InterruptedException, IOException {\n+    Queue<BPServiceActorAction> bpServiceActorActions;\n+    synchronized (bpThreadQueue) {\n+      bpServiceActorActions = new LinkedList<>(bpThreadQueue);\n+    }\n+    triggerHeartbeatForTests();\n+    while (!bpServiceActorActions.isEmpty()) {\n+      BPServiceActorAction bpServiceActorAction = bpServiceActorActions.remove();\n+      int retries = 5;\n+      while (!bpServiceActorAction.isReportSuccessfullySent() && retries > 0) {\n+        LOG.info(\"{} has not yet successfully sent report\", bpServiceActorAction);\n+        Thread.sleep(1000);\n+        retries--;\n+      }\n+      if (retries == 0) {\n+        throw new IOException(\"BP service actor action could not be completed successfully\");\n+      }\n+    }\n+  }\n+\n   private int getMaxBlockReportSize() {\n     int maxBlockReportSize = 0;\n     if (!blockReportSizes.isEmpty()) {"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActorAction.java",
+      "status": "modified",
+      "patch": "@@ -27,6 +27,10 @@\n  * to take several actions.\n  */\n public interface BPServiceActorAction {\n-  public void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n-    DatanodeRegistration bpRegistration) throws BPServiceActorActionException;\n+\n+  void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n+      DatanodeRegistration bpRegistration) throws BPServiceActorActionException;\n+\n+  boolean isReportSuccessfullySent();\n+\n }"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/ErrorReportAction.java",
+      "status": "modified",
+      "patch": "@@ -34,7 +34,8 @@ public class ErrorReportAction implements BPServiceActorAction {\n \n   final int errorCode;\n   final String errorMessage;\n-  \n+  private boolean isReportSuccessfullySent = false;\n+\n   public ErrorReportAction(int errorCode, String errorMessage) {\n     this.errorCode = errorCode;\n     this.errorMessage = errorMessage;\n@@ -45,6 +46,7 @@ public void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n     DatanodeRegistration bpRegistration) throws BPServiceActorActionException {\n     try {\n       bpNamenode.errorReport(bpRegistration, errorCode, errorMessage);\n+      isReportSuccessfullySent = true;\n     } catch (RemoteException re) {\n       DataNode.LOG.info(\"trySendErrorReport encountered RemoteException  \"\n           + \"errorMessage: \" + errorMessage + \"  errorCode: \" + errorCode, re);\n@@ -54,6 +56,11 @@ public void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n     }\n   }\n \n+  @Override\n+  public boolean isReportSuccessfullySent() {\n+    return isReportSuccessfullySent;\n+  }\n+\n   @Override\n   public int hashCode() {\n     final int prime = 31;"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/ReportBadBlockAction.java",
+      "status": "modified",
+      "patch": "@@ -40,6 +40,7 @@ public class ReportBadBlockAction implements BPServiceActorAction {\n   private final ExtendedBlock block;\n   private final String storageUuid;\n   private final StorageType storageType;\n+  private boolean isReportSuccessfullySent = false;\n \n   public ReportBadBlockAction(ExtendedBlock block, String storageUuid, \n       StorageType storageType) {\n@@ -63,6 +64,7 @@ public void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n \n     try {\n       bpNamenode.reportBadBlocks(locatedBlock);\n+      isReportSuccessfullySent = true;\n     } catch (RemoteException re) {\n       DataNode.LOG.info(\"reportBadBlock encountered RemoteException for \"\n           + \"block:  \" + block , re);\n@@ -72,6 +74,11 @@ public void reportTo(DatanodeProtocolClientSideTranslatorPB bpNamenode,\n     }\n   }\n \n+  @Override\n+  public boolean isReportSuccessfullySent() {\n+    return isReportSuccessfullySent;\n+  }\n+\n   @Override\n   public int hashCode() {\n     final int prime = 31;"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/DataNodeTestUtils.java",
+      "status": "modified",
+      "patch": "@@ -91,7 +91,22 @@ public static void triggerHeartbeat(DataNode dn) throws IOException {\n       bpos.triggerHeartbeatForTests();\n     }\n   }\n-  \n+\n+  /**\n+   * Trigger the heartbeat and return only when all BP thread queue are successfully processed\n+   * i.e. any bad block has been successfully reported to the active namenode.\n+   * @param dn datanode\n+   * @throws InterruptedException if interrupted while waiting for the queue to be processed.\n+   * @throws IOException if the retries are exhausted and the BP thread queue could not be\n+   * successfully processed.\n+   */\n+  public static void triggerHeartbeatAndWaitQueueProcessedForTests(DataNode dn)\n+      throws InterruptedException, IOException {\n+    for (BPOfferService bpos : dn.getAllBpOs()) {\n+      bpos.triggerHeartbeatAndWaitQueueProcessedForTests();\n+    }\n+  }\n+\n   public static void triggerBlockReport(DataNode dn) throws IOException {\n     for (BPOfferService bpos : dn.getAllBpOs()) {\n       bpos.triggerBlockReportForTests();"
+    },
+    {
+      "filename": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/TestFsDatasetImpl.java",
+      "status": "modified",
+      "patch": "@@ -1100,7 +1100,7 @@ public void testReportBadBlocks() throws Exception {\n       block = DFSTestUtil.getFirstBlock(fs, filePath);\n       // Test for the overloaded method reportBadBlocks\n       dataNode.reportBadBlocks(block, dataNode.getFSDataset().getFsVolumeReferences().get(0));\n-      DataNodeTestUtils.triggerHeartbeat(dataNode);\n+      DataNodeTestUtils.triggerHeartbeatAndWaitQueueProcessedForTests(dataNode);\n       BlockManagerTestUtil.updateState(cluster.getNamesystem().getBlockManager());\n       assertEquals(\"Corrupt replica blocks could not be reflected with the heartbeat\", 1,\n           cluster.getNamesystem().getCorruptReplicaBlocks());"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

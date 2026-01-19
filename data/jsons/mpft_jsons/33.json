@@ -1,0 +1,17 @@
+{
+  "id": 33,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/pull/143878",
+  "pr_url": "https://github.com/pytorch/pytorch/pull/143878",
+  "issue_description": "Stack from [ghstack](https://github.com/ezyang/ghstack) (oldest at bottom):\n* __->__ #143878\n* #143865\n\nSummary:\nTest erroneously assumed that input/output sizes are same and that all\nstates are matchable.\n\nFixes issue #143798\n\nTest Plan:\nTest passes\n\nReviewers\nTest passes\n\ncc @H-Huang @awgu @kwen2501 @wanchaol @fegin @fduwjj @wz337 @wconstab @d4l3k",
+  "files_changed": [
+    {
+      "filename": "test/distributed/flight_recorder/test_fr_analysis.py",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,6 @@\n # Owner(s): [\"oncall: distributed\"]\n \n+import math\n import pathlib\n import sys\n \n@@ -113,14 +114,22 @@ def test_match_one_event(self):\n \n     def test_all_events(self):\n         for collective in sorted(COLLECTIVES):\n+            input_sizes = [[4, 4]]\n+            output_sizes = [[4, 4]]\n+            expectedState = MatchState.FULLY_MATCHED\n+            if collective == \"_reduce_scatter_base\":\n+                input_sizes = [[4, 4]]\n+                output_sizes = [[input_sizes[0][0] * 2]]\n+            if collective == \"all_gather\":\n+                output_sizes = [[math.prod(input_sizes[0]) * 2]]\n+            if collective == \"all_to_all\":\n+                expectedState = MatchState.UNDECIDED\n             event = create_one_event(\n-                collective, (\"0\", \"default\"), [[4, 4]], [[4, 4]], \"scheduled\", 1\n+                collective, (\"0\", \"default\"), input_sizes, output_sizes, \"scheduled\", 1\n             )\n             membership = {\"0\": {0, 1}}\n-            self.assertEqual(\n-                match_one_event(event, event, membership, \"0\"), MatchState.FULLY_MATCHED\n-            )\n-            break\n+            result = match_one_event(event, event, membership, \"0\")\n+            self.assertEqual(result, expectedState)\n \n \n if __name__ == \"__main__\":"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

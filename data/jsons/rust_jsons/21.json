@@ -1,0 +1,17 @@
+{
+  "id": 21,
+  "repo": "neon",
+  "issue_url": "https://github.com/neondatabase/neon/issues/4374",
+  "pr_url": "https://github.com/neondatabase/neon/pull/4379",
+  "issue_description": "Noticed a new kind of flakyness:\r\n\r\n```\r\nERROR test_runner/regress/test_timeline_delete.py::test_timeline_resurrection_on_attach[release-pg14-True-mock_s3] - AssertionError: assert not ['2023-05-30T12:54:31.842158Z ERROR compaction_loop{tenant_id=2c768f27e47546fad60025da63b54338}: Compaction failed, retrying in 2s: queue is in state Stopped\\n']\r\n```\r\n\r\nAllure: https://neon-github-public-dev.s3.amazonaws.com/reports/pr-4372/5121613817/index.html#suites/f588e0a787c49e67b29490359c589fae/1ee34a64a74d46f9\r\n\r\nThose nagging compaction failed ... but I wonder if we should just allow this globally? This believe this was added in is_deleted PR.\r\n\r\n_Originally posted by @koivunej in https://github.com/neondatabase/neon/issues/4372#issuecomment-1568391729_\r\n            ",
+  "files_changed": [
+    {
+      "filename": "test_runner/fixtures/neon_fixtures.py",
+      "status": "modified",
+      "patch": "@@ -1621,6 +1621,8 @@ def __init__(self, env: NeonEnv, port: PageserverPort, config_override: Optional\n             \".*Compaction failed, retrying in [^:]+: Cannot run compaction iteration on inactive tenant\",\n             # these can happen anytime we do compactions from background task and shutdown pageserver\n             r\".*ERROR.*ancestor timeline \\S+ is being stopped\",\n+            # this is expected given our collaborative shutdown approach for the UploadQueue\n+            \".*Compaction failed, retrying in .*: queue is in state Stopped.*\",\n         ]\n \n     def start("
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Python)"
+}

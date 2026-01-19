@@ -1,0 +1,11 @@
+{
+  "id": 279,
+  "repo": "rust",
+  "issue_url": "https://github.com/rust-lang/rust/commit/3516e25eedcf7438e04b6c1f5a7a926ac2c893bc",
+  "pr_url": "https://github.com/rust-lang/rust/commit/3516e25eedcf7438e04b6c1f5a7a926ac2c893bc",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

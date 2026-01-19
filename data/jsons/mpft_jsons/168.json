@@ -1,0 +1,11 @@
+{
+  "id": 168,
+  "repo": "hugo",
+  "issue_url": "https://github.com/gohugoio/hugo/pull/10356/files",
+  "pr_url": "https://github.com/gohugoio/hugo/pull/10356/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

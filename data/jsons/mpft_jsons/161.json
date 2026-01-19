@@ -1,0 +1,32 @@
+{
+  "id": 161,
+  "repo": "jedis",
+  "issue_url": "https://github.com/redis/jedis/pull/3972",
+  "pr_url": "https://github.com/redis/jedis/pull/3972",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "pom.xml",
+      "status": "modified",
+      "patch": "@@ -143,6 +143,13 @@\n \t\t\t<scope>test</scope>\n \t\t</dependency>\n \n+\t\t<dependency>\n+\t\t\t<groupId>org.awaitility</groupId>\n+\t\t\t<artifactId>awaitility</artifactId>\n+\t\t\t<version>4.2.2</version>\n+\t\t\t<scope>test</scope>\n+\t\t</dependency>\n+\n \t\t<!-- circuit breaker / failover -->\n \t\t<dependency>\n \t\t\t<groupId>io.github.resilience4j</groupId>"
+    },
+    {
+      "filename": "src/test/java/redis/clients/jedis/PipeliningTest.java",
+      "status": "modified",
+      "patch": "@@ -20,12 +20,14 @@\n import java.util.Map;\n import java.util.Set;\n import java.util.UUID;\n+import java.util.concurrent.TimeUnit;\n \n import org.hamcrest.Matcher;\n import org.hamcrest.Matchers;\n import org.junit.Test;\n import org.junit.runner.RunWith;\n import org.junit.runners.Parameterized;\n+import org.awaitility.Awaitility;\n \n import redis.clients.jedis.commands.ProtocolCommand;\n import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;\n@@ -342,7 +344,8 @@ public void waitAof() {\n \n     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {\n       j.auth(endpoint.getPassword());\n-      assertEquals(\"aof\", j.get(\"wait\"));\n+      Awaitility.await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)\n+          .untilAsserted(() -> assertEquals(\"aof\", j.get(\"wait\")));\n     }\n   }\n "
+    },
+    {
+      "filename": "src/test/java/redis/clients/jedis/csc/UnifiedJedisClientSideCacheTestBase.java",
+      "status": "modified",
+      "patch": "@@ -3,9 +3,11 @@\n import static org.junit.Assert.assertEquals;\n import static org.junit.Assert.assertNotSame;\n import static org.junit.Assert.assertNull;\n+import static org.awaitility.Awaitility.await;\n \n import java.util.Arrays;\n import java.util.List;\n+import java.util.concurrent.TimeUnit;\n \n import org.junit.After;\n import org.junit.Before;\n@@ -39,7 +41,8 @@ public void simple() {\n       control.set(\"foo\", \"bar\");\n       assertEquals(\"bar\", jedis.get(\"foo\"));\n       control.del(\"foo\");\n-      assertNull(jedis.get(\"foo\"));\n+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)\n+          .untilAsserted(() -> assertNull(jedis.get(\"foo\")));\n     }\n   }\n \n@@ -53,9 +56,8 @@ public void simpleWithSimpleMap() {\n       assertEquals(1, cache.getSize());\n       control.del(\"foo\");\n       assertEquals(1, cache.getSize());\n-      assertNull(jedis.get(\"foo\"));\n-      assertEquals(1, cache.getSize());\n-      assertNull(jedis.get(\"foo\"));\n+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)\n+          .untilAsserted(() -> assertNull(jedis.get(\"foo\")));\n       assertEquals(1, cache.getSize());\n     }\n   }\n@@ -67,7 +69,8 @@ public void flushAll() {\n       control.set(\"foo\", \"bar\");\n       assertEquals(\"bar\", jedis.get(\"foo\"));\n       control.flushAll();\n-      assertNull(jedis.get(\"foo\"));\n+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)\n+          .untilAsserted(() -> assertNull(jedis.get(\"foo\")));\n     }\n   }\n \n@@ -81,9 +84,8 @@ public void flushAllWithSimpleMap() {\n       assertEquals(1, cache.getSize());\n       control.flushAll();\n       assertEquals(1, cache.getSize());\n-      assertNull(jedis.get(\"foo\"));\n-      assertEquals(1, cache.getSize());\n-      assertNull(jedis.get(\"foo\"));\n+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)\n+          .untilAsserted(() -> assertNull(jedis.get(\"foo\")));\n       assertEquals(1, cache.getSize());\n     }\n   }"
+    },
+    {
+      "filename": "src/test/java/redis/clients/jedis/util/AssertUtil.java",
+      "status": "modified",
+      "patch": "@@ -7,10 +7,8 @@\n import java.util.Collection;\n import java.util.Iterator;\n import java.util.List;\n-import java.util.Map;\n import java.util.Objects;\n import java.util.Set;\n-\n import org.junit.ComparisonFailure;\n import redis.clients.jedis.RedisProtocol;\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

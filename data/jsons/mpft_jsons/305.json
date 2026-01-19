@@ -1,0 +1,17 @@
+{
+  "id": 305,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/pull/80585",
+  "pr_url": "https://github.com/tensorflow/tensorflow/pull/80585",
+  "issue_description": "Further lower threshold for F64 in //xla/service/gpu/model:hlo_op_profiler_test\n\nThis was originally proposed in https://github.com/openxla/xla/pull/16102, but I still ran into issue where it failed by slight margin:\n\n```\nExpected: (profiler.MeasureClockCyclesPerOp(HloOpcode::kDivide, F64) .value() .clock_cycles()) > (300), actual: 296 vs 300\n```\n\nThat said, I ran 1000 tests and did not encounter this issue. Reducing the threshold to 280 since the bound seems very close and flaky test is no good either way.\n",
+  "files_changed": [
+    {
+      "filename": "third_party/xla/xla/service/gpu/model/hlo_op_profiler_test.cc",
+      "status": "modified",
+      "patch": "@@ -45,7 +45,7 @@ TEST_F(HloOpProfilerTest, BasicMeasurementsAreCorrect) {\n   EXPECT_GT(profiler.MeasureClockCyclesPerOp(HloOpcode::kDivide, F64)\n                 .value()\n                 .clock_cycles(),\n-            300);\n+            280);\n   // c128 sqrt is slow.\n   EXPECT_GT(profiler.MeasureClockCyclesPerOp(HloOpcode::kSqrt, C128)\n                 .value()"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Floating point operations",
+  "root_cause_subcategory": NaN
+}

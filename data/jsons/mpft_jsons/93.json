@@ -1,0 +1,22 @@
+{
+  "id": 93,
+  "repo": "openapi",
+  "issue_url": "https://github.com/speakeasy-api/openapi/commit/4ee41f6c189c53787c71265d24d1eb740abd795f",
+  "pr_url": "https://github.com/speakeasy-api/openapi/commit/4ee41f6c189c53787c71265d24d1eb740abd795f",
+  "issue_description": "Reference: https://spec.openapis.org/arazzo/v1.0.0#literals\r\n\r\nThis enables basic parsing of string literals as values in conditions, which in Arazzo are contained in single quote (') characters.",
+  "files_changed": [
+    {
+      "filename": "arazzo/criterion/condition.go",
+      "status": "modified",
+      "patch": "@@ -44,7 +44,19 @@ func newCondition(rawCondition string) (*Condition, error) {\n \t\treturn nil, fmt.Errorf(\"condition must at least be in the format [expression] [operator] [value]\")\n \t}\n \n-\tif len(parts) > 3 || strings.ContainsAny(rawCondition, \"&|\") {\n+\tif strings.ContainsAny(rawCondition, \"&|\") {\n+\t\t// TODO this is a complex condition that we don't currently support\n+\t\treturn nil, nil\n+\t}\n+\n+\t// String literal value handling (single quotes) until parsing is tokenized.\n+\t// Reference: https://spec.openapis.org/arazzo/v1.0.0#literals\n+\tif len(parts) > 3 && strings.HasPrefix(parts[2], \"'\") && strings.HasSuffix(parts[len(parts)-1], \"'\") {\n+\t\tparts[2] = strings.Join(parts[2:], \" \")\n+\t\tparts = parts[:3]\n+\t}\n+\n+\tif len(parts) > 3 {\n \t\t// TODO this is a complex condition that we don't currently support\n \t\treturn nil, nil\n \t}"
+    },
+    {
+      "filename": "arazzo/criterion/condition_test.go",
+      "status": "added",
+      "patch": "@@ -0,0 +1,64 @@\n+package criterion\n+\n+import (\n+\t\"fmt\"\n+\t\"testing\"\n+\n+\t\"github.com/speakeasy-api/openapi/arazzo/expression\"\n+\t\"github.com/stretchr/testify/assert\"\n+)\n+\n+func TestNewCondition(t *testing.T) {\n+\tt.Parallel()\n+\n+\ttestCases := map[string]struct {\n+\t\traw           string\n+\t\texpected      *Condition\n+\t\texpectedError error\n+\t}{\n+\t\t\"empty string\": {\n+\t\t\traw:      \"\",\n+\t\t\texpected: nil,\n+\t\t},\n+\t\t\"expression only\": {\n+\t\t\traw:           \"$statusCode\",\n+\t\t\texpected:      nil,\n+\t\t\texpectedError: fmt.Errorf(\"condition must at least be in the format [expression] [operator] [value]\"),\n+\t\t},\n+\t\t\"expression and operator only\": {\n+\t\t\traw:           \"$statusCode ==\",\n+\t\t\texpected:      nil,\n+\t\t\texpectedError: fmt.Errorf(\"condition must at least be in the format [expression] [operator] [value]\"),\n+\t\t},\n+\t\t\"$statusCode == 200\": {\n+\t\t\traw: \"$statusCode == 200\",\n+\t\t\texpected: &Condition{\n+\t\t\t\tExpression: expression.Expression(\"$statusCode\"),\n+\t\t\t\tOperator:   OperatorEQ,\n+\t\t\t\tValue:      \"200\",\n+\t\t\t},\n+\t\t},\n+\t\t\"$response.body#/test == 'string literal with spaces'\": {\n+\t\t\traw: \"$response.body#/test == 'string literal with spaces'\",\n+\t\t\texpected: &Condition{\n+\t\t\t\tExpression: expression.Expression(\"$response.body#/test\"),\n+\t\t\t\tOperator:   OperatorEQ,\n+\t\t\t\tValue:      \"'string literal with spaces'\",\n+\t\t\t},\n+\t\t},\n+\t}\n+\n+\tfor testName, testCase := range testCases {\n+\t\tt.Run(testName, func(t *testing.T) {\n+\t\t\tt.Parallel()\n+\n+\t\t\tactual, actualError := newCondition(testCase.raw)\n+\n+\t\t\tif testCase.expectedError != nil {\n+\t\t\t\tassert.EqualError(t, actualError, testCase.expectedError.Error())\n+\t\t\t}\n+\n+\t\t\tassert.EqualExportedValues(t, testCase.expected, actual)\n+\t\t})\n+\t}\n+}"
+    }
+  ],
+  "fix_category": "Lock atomic region",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

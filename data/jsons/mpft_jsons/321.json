@@ -1,0 +1,11 @@
+{
+  "id": 321,
+  "repo": "airflow",
+  "issue_url": "https://github.com/apache/airflow/commit/484bf409d510ef31a9323fb29dbbacdb018d3229",
+  "pr_url": "https://github.com/apache/airflow/commit/484bf409d510ef31a9323fb29dbbacdb018d3229",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

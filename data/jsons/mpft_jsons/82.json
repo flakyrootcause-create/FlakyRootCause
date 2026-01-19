@@ -1,0 +1,11 @@
+{
+  "id": 82,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/pull/162472/commits",
+  "pr_url": "https://github.com/pytorch/pytorch/pull/162472/commits",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

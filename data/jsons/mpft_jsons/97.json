@@ -1,0 +1,11 @@
+{
+  "id": 97,
+  "repo": "spree",
+  "issue_url": "https://github.com/spree/spree/commit/b05ffbcc1f6497b95eeaab52ec5633e5396d9a73",
+  "pr_url": "https://github.com/spree/spree/commit/b05ffbcc1f6497b95eeaab52ec5633e5396d9a73",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

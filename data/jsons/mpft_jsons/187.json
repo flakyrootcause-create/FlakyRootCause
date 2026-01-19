@@ -1,0 +1,22 @@
+{
+  "id": 187,
+  "repo": "envoy",
+  "issue_url": "https://github.com/envoyproxy/envoy/pull/29616",
+  "pr_url": "https://github.com/envoyproxy/envoy/pull/29616",
+  "issue_description": "<!--\r\n!!!ATTENTION!!!\r\n\r\nIf you are fixing *any* crash or *any* potential security issue, *do not*\r\nopen a pull request in this repo. Please report the issue via emailing\r\nenvoy-security@googlegroups.com where the issue will be triaged appropriately.\r\nThank you in advance for helping to keep Envoy secure.\r\n\r\n!!!ATTENTION!!!\r\n\r\nFor an explanation of how to fill out the fields, please see the relevant section\r\nin [PULL_REQUESTS.md](https://github.com/envoyproxy/envoy/blob/main/PULL_REQUESTS.md)\r\n-->\r\n\r\nFix #29595 \r\n\r\nIt is possible that we will get data + rst from the wrapped transport socket since there is a `do {} while` loop. We should trigger the `onRead` if there is any processed data.\r\n\r\nDo not flake anymore.\r\n```\r\nbazel test test/integration:protocol_integration_test --test_filter=\"*LargeRequestMethod*\" --test_arg=\"-l trace\" -c opt --runs_per_test=1000\r\n```\r\n\r\nCommit Message:\r\nAdditional Description:\r\nRisk Level:\r\nTesting:\r\nDocs Changes:\r\nRelease Notes:\r\nPlatform Specific Features:\r\n[Optional Runtime guard:]\r\n[Optional Fixes #Issue]\r\n[Optional Fixes commit #PR or SHA]\r\n[Optional Deprecated:]\r\n[Optional [API Considerations](https://github.com/envoyproxy/envoy/blob/main/api/review_checklist.md):]\r\n",
+  "files_changed": [
+    {
+      "filename": "source/common/network/connection_impl.cc",
+      "status": "modified",
+      "patch": "@@ -685,6 +685,9 @@ void ConnectionImpl::onReadReady() {\n   if (enable_rst_detect_send_ && result.err_code_.has_value() &&\n       result.err_code_ == Api::IoError::IoErrorCode::ConnectionReset) {\n     ENVOY_CONN_LOG(trace, \"read: rst close from peer\", *this);\n+    if (result.bytes_processed_ != 0) {\n+      onRead(new_buffer_size);\n+    }\n     setDetectedCloseType(DetectedCloseType::RemoteReset);\n     closeSocket(ConnectionEvent::RemoteClose);\n     return;"
+    },
+    {
+      "filename": "test/common/network/connection_impl_test.cc",
+      "status": "modified",
+      "patch": "@@ -2794,6 +2794,45 @@ TEST_F(MockTransportConnectionImplTest, ResumeWhileAndAfterReadDisable) {\n             connection_->readDisable(false));\n }\n \n+// Test the connection correctly handle the transport socket read (data + RST) case.\n+TEST_F(MockTransportConnectionImplTest, ServerLargeReadResetClose) {\n+  InSequence s;\n+\n+  std::shared_ptr<MockReadFilter> read_filter(new StrictMock<MockReadFilter>());\n+  connection_->addReadFilter(read_filter);\n+\n+  EXPECT_CALL(*transport_socket_, doRead(_))\n+      .WillOnce(Invoke([](Buffer::Instance& buffer) -> IoResult {\n+        buffer.add(\"01234\");\n+        return {PostIoAction::KeepOpen, 5, false};\n+      }));\n+\n+  EXPECT_CALL(*read_filter, onNewConnection()).WillOnce(Return(FilterStatus::Continue));\n+  EXPECT_CALL(*read_filter, onData(_, _))\n+      .WillOnce(Invoke([&](Buffer::Instance& data, bool) -> FilterStatus {\n+        EXPECT_EQ(5, data.length());\n+        data.drain(data.length());\n+        return FilterStatus::Continue;\n+      }));\n+  file_ready_cb_(Event::FileReadyType::Read);\n+\n+  // This simulates the socket do {...} while read when there is processed data\n+  // with the last rest flag.\n+  EXPECT_CALL(*transport_socket_, doRead(_))\n+      .WillOnce(Invoke([](Buffer::Instance& buffer) -> IoResult {\n+        buffer.add(\"5678\");\n+        return {PostIoAction::Close, 4, false, Api::IoError::IoErrorCode::ConnectionReset};\n+      }));\n+\n+  EXPECT_CALL(*read_filter, onData(_, _))\n+      .WillOnce(Invoke([&](Buffer::Instance& data, bool) -> FilterStatus {\n+        EXPECT_EQ(4, data.length());\n+        data.drain(data.length());\n+        return FilterStatus::Continue;\n+      }));\n+  file_ready_cb_(Event::FileReadyType::Read);\n+}\n+\n // Test that BytesSentCb is invoked at the correct times\n TEST_F(MockTransportConnectionImplTest, BytesSentCallback) {\n   uint64_t bytes_sent = 0;"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

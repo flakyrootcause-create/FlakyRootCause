@@ -1,0 +1,17 @@
+{
+  "id": 188,
+  "repo": "envoy",
+  "issue_url": "https://github.com/envoyproxy/envoy/pull/40346",
+  "pr_url": "https://github.com/envoyproxy/envoy/pull/40346",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "test/extensions/filters/http/wasm/BUILD",
+      "status": "modified",
+      "patch": "@@ -18,7 +18,7 @@ envoy_package()\n \n envoy_extension_cc_test(\n     name = \"wasm_filter_test\",\n-    size = \"large\",\n+    size = \"enormous\",\n     srcs = [\"wasm_filter_test.cc\"],\n     data = envoy_select_wasm_cpp_tests([\n         \"//test/extensions/filters/http/wasm/test_data:test_cpp.wasm\",\n@@ -82,7 +82,7 @@ envoy_extension_cc_test(\n \n envoy_extension_cc_test(\n     name = \"wasm_filter_integration_test\",\n-    size = \"large\",\n+    size = \"enormous\",\n     srcs = [\"wasm_filter_integration_test.cc\"],\n     data = envoy_select_wasm_cpp_tests([\n         \"//test/extensions/filters/http/wasm/test_data:test_cpp.wasm\","
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

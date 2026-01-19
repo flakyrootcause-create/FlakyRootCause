@@ -1,0 +1,17 @@
+{
+  "id": 55,
+  "repo": "django",
+  "issue_url": "https://github.com/django/django/commit/99d2469e75f1567cbe5ee753563edb68cd51d74a",
+  "pr_url": "https://github.com/django/django/commit/99d2469e75f1567cbe5ee753563edb68cd51d74a",
+  "issue_description": "Used the `render` shortcut in the \"using a form in a view\" example to ensure that the CSRF is properly enabled.\n",
+  "files_changed": [
+    {
+      "filename": "docs/topics/forms/index.txt",
+      "status": "modified",
+      "patch": "@@ -99,7 +99,7 @@ The standard pattern for processing a form in a view looks like this:\n        else:\n            form = ContactForm() # An unbound form\n \n-       return render_to_response('contact.html', {\n+       return render(request, 'contact.html', {\n            'form': form,\n        })\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

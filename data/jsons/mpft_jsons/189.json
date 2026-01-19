@@ -1,0 +1,22 @@
+{
+  "id": 189,
+  "repo": "envoy",
+  "issue_url": "https://github.com/envoyproxy/envoy/pull/35633",
+  "pr_url": "https://github.com/envoyproxy/envoy/pull/35633",
+  "issue_description": "<!--\r\n!!!ATTENTION!!!\r\n\r\nIf you are fixing *any* crash or *any* potential security issue, *do not*\r\nopen a pull request in this repo. Please report the issue via emailing\r\nenvoy-security@googlegroups.com where the issue will be triaged appropriately.\r\nThank you in advance for helping to keep Envoy secure.\r\n\r\n!!!ATTENTION!!!\r\n\r\nFor an explanation of how to fill out the fields, please see the relevant section\r\nin [PULL_REQUESTS.md](https://github.com/envoyproxy/envoy/blob/main/PULL_REQUESTS.md)\r\n-->\r\n\r\nCommit Message: aws: fix test flake when no IMDS can be found\r\nAdditional Description: Lack of IMDS (169.254.169.254 address) can cause a race condition and crash during testing due to the shutdown of cluster manager. This scenario should not occur normally, as cluster manager will still exist and the lack of IMDS is handled gracefully.\r\nRisk Level: Low\r\nTesting: N/A\r\nDocs Changes:\r\nRelease Notes:\r\nPlatform Specific Features:\r\n[Optional Runtime guard:]\r\n[Optional Fixes #Issue]\r\n[Optional Fixes commit #PR or SHA]\r\n[Optional Deprecated:]\r\n[Optional [API Considerations](https://github.com/envoyproxy/envoy/blob/main/api/review_checklist.md):]\r\n",
+  "files_changed": [
+    {
+      "filename": "source/extensions/common/aws/metadata_fetcher.cc",
+      "status": "modified",
+      "patch": "@@ -52,6 +52,12 @@ class MetadataFetcherImpl : public MetadataFetcher,\n     ASSERT(!request_);\n     complete_ = false;\n     receiver_ = makeOptRef(receiver);\n+\n+    // Stop processing if we are shutting down\n+    if (cm_.isShutdown()) {\n+      return;\n+    }\n+\n     const auto thread_local_cluster = cm_.getThreadLocalCluster(cluster_name_);\n     if (thread_local_cluster == nullptr) {\n       ENVOY_LOG(error, \"{} AWS Metadata failed: [cluster = {}] not found\", __func__, cluster_name_);"
+    },
+    {
+      "filename": "test/extensions/common/aws/metadata_fetcher_test.cc",
+      "status": "modified",
+      "patch": "@@ -77,6 +77,20 @@ MATCHER_P(OptionsHasRetryPolicy, policyMatcher, \"\") {\n class MetadataFetcherTest : public testing::Test {\n public:\n   void setupFetcher() {\n+\n+    mock_factory_ctx_.server_factory_context_.cluster_manager_.initializeThreadLocalClusters(\n+        {\"cluster_name\"});\n+    fetcher_ = MetadataFetcher::create(mock_factory_ctx_.server_factory_context_.cluster_manager_,\n+                                       \"cluster_name\");\n+    EXPECT_TRUE(fetcher_ != nullptr);\n+  }\n+\n+  void setupFetcherShutDown() {\n+    ON_CALL(mock_factory_ctx_.server_factory_context_.cluster_manager_, getThreadLocalCluster(_))\n+        .WillByDefault(Return(nullptr));\n+    ON_CALL(mock_factory_ctx_.server_factory_context_.cluster_manager_, isShutdown())\n+        .WillByDefault(Return(true));\n+\n     mock_factory_ctx_.server_factory_context_.cluster_manager_.initializeThreadLocalClusters(\n         {\"cluster_name\"});\n     fetcher_ = MetadataFetcher::create(mock_factory_ctx_.server_factory_context_.cluster_manager_,\n@@ -103,6 +117,18 @@ TEST_F(MetadataFetcherTest, TestGetSuccess) {\n   fetcher_->fetch(message, parent_span_, receiver);\n }\n \n+TEST_F(MetadataFetcherTest, TestClusterShutdown) {\n+  // Setup\n+  setupFetcherShutDown();\n+  Http::RequestMessageImpl message;\n+  MockMetadataReceiver receiver;\n+  EXPECT_CALL(receiver, onMetadataSuccess(_)).Times(0);\n+  EXPECT_CALL(receiver, onMetadataError(_)).Times(0);\n+\n+  // Act\n+  fetcher_->fetch(message, parent_span_, receiver);\n+}\n+\n TEST_F(MetadataFetcherTest, TestRequestMatchAndSpanPassedDown) {\n   // Setup\n   setupFetcher();"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 122,
+  "repo": "vscode",
+  "issue_url": "https://github.com/microsoft/vscode/pull/238537",
+  "pr_url": "https://github.com/microsoft/vscode/pull/238537",
+  "issue_description": "<!-- Thank you for submitting a Pull Request. Please:\n* Read our Pull Request guidelines:\n  https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests\n* Associate an issue with the Pull Request.\n* Ensure that the code is up-to-date with the `main` branch.\n* Include a description of the proposed changes and how to test them.\n-->\n",
+  "files_changed": [
+    {
+      "filename": "test/automation/src/extensions.ts",
+      "status": "modified",
+      "patch": "@@ -52,8 +52,22 @@ export class Extensions extends Viewlet {\n \n \tasync installExtension(id: string, waitUntilEnabled: boolean): Promise<void> {\n \t\tawait this.searchForExtension(id);\n-\t\tawait this.code.waitAndClick(`div.extensions-viewlet[id=\"workbench.view.extensions\"] .monaco-list-row[data-extension-id=\"${id}\"] .extension-list-item .monaco-action-bar .action-item:not(.disabled) .extension-action.install`);\n-\t\tawait this.code.waitForElement(`.extension-editor .monaco-action-bar .action-item:not(.disabled) .extension-action.uninstall`);\n+\n+\t\t// try to install extension 3 times\n+\t\tlet attempt = 1;\n+\t\twhile (true) {\n+\t\t\tawait this.code.waitAndClick(`div.extensions-viewlet[id=\"workbench.view.extensions\"] .monaco-list-row[data-extension-id=\"${id}\"] .extension-list-item .monaco-action-bar .action-item:not(.disabled) .extension-action.install`);\n+\n+\t\t\ttry {\n+\t\t\t\tawait this.code.waitForElement(`.extension-editor .monaco-action-bar .action-item:not(.disabled) .extension-action.uninstall`);\n+\t\t\t\tbreak;\n+\t\t\t} catch (err) {\n+\t\t\t\tif (attempt++ === 3) {\n+\t\t\t\t\tthrow err;\n+\t\t\t\t}\n+\t\t\t}\n+\t\t}\n+\n \t\tif (waitUntilEnabled) {\n \t\t\tawait this.code.waitForElement(`.extension-editor .monaco-action-bar .action-item:not(.disabled) a[aria-label=\"Disable this extension\"]`);\n \t\t}"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

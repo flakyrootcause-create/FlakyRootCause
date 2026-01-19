@@ -1,0 +1,17 @@
+{
+  "id": 304,
+  "repo": "matplotlib",
+  "issue_url": "https://github.com/matplotlib/matplotlib/pull/16556",
+  "pr_url": "https://github.com/matplotlib/matplotlib/pull/16556",
+  "issue_description": "Ghostscript doesn't obey SOURCE_DATE_EPOCH\r\n(https://bugs.ghostscript.com/show_bug.cgi?id=696765) so locally\r\ntest_savefig_to_stringio is a bit flaky -- sometimes the string\r\ncomparisons fail due to differences in timestamps between two\r\nghostscript invocations (I'm actually a bit curious why this never fails\r\non CI).\r\nFix that by stripping out the timestamp.\r\n\r\n## PR Summary\r\n\r\n## PR Checklist\r\n\r\n- [ ] Has Pytest style unit tests\r\n- [ ] Code is [Flake 8](http://flake8.pycqa.org/en/latest/) compliant\r\n- [ ] New features are documented, with examples if plot related\r\n- [ ] Documentation is sphinx and numpydoc compliant\r\n- [ ] Added an entry to doc/users/next_whats_new/ if major new feature (follow instructions in README.rst there)\r\n- [ ] Documented in doc/api/api_changes.rst if API changed in a backward-incompatible way\r\n\r\n<!--\r\nThank you so much for your PR!  To help us review your contribution, please\r\nconsider the following points:\r\n\r\n- A development guide is available at https://matplotlib.org/devdocs/devel/index.html.\r\n\r\n- Help with git and github is available at\r\n  https://matplotlib.org/devel/gitwash/development_workflow.html.\r\n\r\n- Do not create the PR out of master, but out of a separate branch.\r\n\r\n- The PR title should summarize the changes, for example \"Raise ValueError on\r\n  non-numeric input to set_xlim\".  Avoid non-descriptive titles such as\r\n  \"Addresses issue #8576\".\r\n\r\n- The summary should provide at least 1-2 sentences describing the pull request\r\n  in detail (Why is this change required?  What problem does it solve?) and\r\n  link to any relevant issues.\r\n\r\n- If you are contributing fixes to docstrings, please pay attention to\r\n  http://matplotlib.org/devel/documenting_mpl.html#formatting.  In particular,\r\n  note the difference between using single backquotes, double backquotes, and\r\n  asterisks in the markup.\r\n\r\nWe understand that PRs can sometimes be overwhelming, especially as the\r\nreviews start coming in.  Please let us know if the reviews are unclear or\r\nthe recommended next step seems overly demanding, if you would like help in\r\naddressing a reviewer's comments, or if you have been waiting too long to hear\r\nback on your PR.\r\n-->\r\n",
+  "files_changed": [
+    {
+      "filename": "lib/matplotlib/tests/test_backend_ps.py",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,6 @@\n import io\n from pathlib import Path\n+import re\n import tempfile\n \n import pytest\n@@ -69,6 +70,13 @@ def test_savefig_to_stringio(format, use_log, rcParams, orientation,\n         s_val = s_buf.getvalue().encode('ascii')\n         b_val = b_buf.getvalue()\n \n+        if rcParams.get(\"ps.usedistiller\") or rcParams.get(\"text.usetex\"):\n+            # Strip out CreationDate betcase ghostscript doesn't obey\n+            # SOURCE_DATE_EPOCH.  Note that in usetex mode, we *always* call\n+            # gs_distill, even if ps.usedistiller is unset.\n+            s_val = re.sub(b\"(?<=\\n%%CreationDate: ).*\", b\"\", s_val)\n+            b_val = re.sub(b\"(?<=\\n%%CreationDate: ).*\", b\"\", b_val)\n+\n         assert s_val == b_val.replace(b'\\r\\n', b'\\n')\n \n "
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

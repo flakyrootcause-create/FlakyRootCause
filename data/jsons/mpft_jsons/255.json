@@ -1,0 +1,17 @@
+{
+  "id": 255,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/pull/46350",
+  "pr_url": "https://github.com/pandas-dev/pandas/pull/46350",
+  "issue_description": "- [x] [Tests added and passed](https://pandas.pydata.org/pandas-docs/dev/development/contributing_codebase.html#writing-tests) if fixing a bug or adding a new feature\r\n- [x] All [code checks passed](https://pandas.pydata.org/pandas-docs/dev/development/contributing_codebase.html#pre-commit).\r\n\r\nExample: https://app.circleci.com/pipelines/github/pandas-dev/pandas/8766/workflows/4a9ce4f4-0e1c-49aa-b035-ffcb6334be45/jobs/39610\r\n",
+  "files_changed": [
+    {
+      "filename": "pandas/tests/libs/test_hashtable.py",
+      "status": "modified",
+      "patch": "@@ -246,7 +246,16 @@ def test_lookup_overflow(self, writable):\n             (ht.Float64HashTable, ht.Float64Vector, \"float64\", False),\n             (ht.Int64HashTable, ht.Int64Vector, \"int64\", False),\n             (ht.Int32HashTable, ht.Int32Vector, \"int32\", False),\n-            (ht.UInt64HashTable, ht.UInt64Vector, \"uint64\", False),\n+            pytest.param(\n+                ht.UInt64HashTable,\n+                ht.UInt64Vector,\n+                \"uint64\",\n+                False,\n+                marks=pytest.mark.xfail(\n+                    reason=\"Sometimes doesn't raise.\",\n+                    strict=False,\n+                ),\n+            ),\n         ],\n     )\n     def test_vector_resize("
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

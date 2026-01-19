@@ -1,0 +1,17 @@
+{
+  "id": 69,
+  "repo": "emit",
+  "issue_url": "https://github.com/emit-rs/emit/issues/88",
+  "pr_url": "https://github.com/emit-rs/emit/pull/89",
+  "issue_description": "Looks like we\u2019ve got a flaky batcher test:\r\n\r\n```\r\nthread 'sync::tests::send_full_capacity' panicked at batcher/src/sync.rs:303:9:\r\n  assertion `left == right` failed\r\n    left: [5, 6, 7, 8, 9]\r\n   right: [0, 1, 2, 3, 4]\r\n```",
+  "files_changed": [
+    {
+      "filename": "batcher/src/sync.rs",
+      "status": "modified",
+      "patch": "@@ -167,16 +167,11 @@ mod tests {\n     use std::{sync::mpsc, thread};\n \n     enum SenderCommand<T> {\n-        Send(T),\n         BlockingSend(T, Duration),\n         Stop,\n     }\n \n     impl<T> SenderCommand<T> {\n-        fn send(msg: T) -> Self {\n-            SenderCommand::Send(msg)\n-        }\n-\n         fn blocking_send(msg: T, timeout: Duration) -> Self {\n             SenderCommand::BlockingSend(msg, timeout)\n         }\n@@ -205,9 +200,6 @@ mod tests {\n \n         let handle = thread::spawn(move || loop {\n             match rx.recv().unwrap() {\n-                SenderCommand::Send(msg) => {\n-                    sender.send(msg);\n-                }\n                 SenderCommand::BlockingSend(msg, timeout) => {\n                     let _ = blocking_send(&sender, msg, timeout);\n                 }\n@@ -237,12 +229,11 @@ mod tests {\n \n         let (sender, receiver) = crate::bounded(10);\n \n-        let (sender, sender_handle) = spawn_sender(sender);\n         let (receiver, receiver_handle) = spawn_receiver(receiver);\n \n         // Send some messages\n         for _ in 0..10 {\n-            sender.send(SenderCommand::send(())).unwrap();\n+            sender.send(());\n         }\n \n         // Process the messages\n@@ -265,8 +256,7 @@ mod tests {\n         while { *received.lock().unwrap() } != 10 {}\n \n         // Shutdown\n-        sender.send(SenderCommand::stop()).unwrap();\n-        sender_handle.join().unwrap();\n+        drop(sender);\n         receiver_handle.join().unwrap();\n     }\n \n@@ -276,14 +266,14 @@ mod tests {\n \n         let (sender, receiver) = crate::bounded(5);\n \n-        let (sender, sender_handle) = spawn_sender(sender);\n-        let (receiver, receiver_handle) = spawn_receiver(receiver);\n-\n         // Send some messages\n         for i in 0..10 {\n-            sender.send(SenderCommand::send(i)).unwrap();\n+            sender.send(i);\n         }\n \n+        // Spawn the receiver after attempting to send all messages\n+        let (receiver, receiver_handle) = spawn_receiver(receiver);\n+\n         // Everything should be processed in a single batch\n         receiver\n             .send(ReceiverCommand::process_batch({\n@@ -299,12 +289,11 @@ mod tests {\n \n         // Only the last 5 messages should be processed\n         // The others were truncated\n-        while { received.lock().unwrap().len() } != 5 {}\n+        while { received.lock().unwrap().len() } == 0 {}\n         assert_eq!(vec![5, 6, 7, 8, 9], *received.lock().unwrap());\n \n         // Shutdown\n-        sender.send(SenderCommand::stop()).unwrap();\n-        sender_handle.join().unwrap();\n+        drop(sender);\n         receiver_handle.join().unwrap();\n     }\n "
+    }
+  ],
+  "fix_category": "Rearrange actors",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Channels"
+}

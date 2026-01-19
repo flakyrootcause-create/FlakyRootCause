@@ -1,0 +1,17 @@
+{
+  "id": 282,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/pull/51223",
+  "pr_url": "https://github.com/elastic/elasticsearch/pull/51223",
+  "issue_description": "API Key expiration value has millisecond precision as we use\r\n{@link Instant#toEpoqueMilli()} when creating the API key\r\ndocument.\r\nIt could often happen that `Instant.now()` Instant in the testCreateApiKey\r\nwas close enough to the ApiKeyService's `clock.instant()` Instant,\r\nwhen the nanos were removed from the latter ( due to the call\r\nto `toEpoqueMilli()` ) the result of comparing these two Instants\r\nwas a few nanos short of a 7 days.\r\n\r\nResolves: #47958",
+  "files_changed": [
+    {
+      "filename": "x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyIntegTests.java",
+      "status": "modified",
+      "patch": "@@ -131,9 +131,9 @@ private void awaitApiKeysRemoverCompletion() throws Exception {\n         }\n     }\n \n-    @AwaitsFix(bugUrl = \"https://github.com/elastic/elasticsearch/issues/47958\")\n     public void testCreateApiKey() throws Exception{\n-        final Instant start = Instant.now();\n+        // Get an instant without nanoseconds as the expiration has millisecond precision\n+        final Instant start = Instant.ofEpochMilli(Instant.now().toEpochMilli());\n         final RoleDescriptor descriptor = new RoleDescriptor(\"role\", new String[] { \"monitor\" }, null, null);\n         Client client = client().filterWithHeader(Collections.singletonMap(\"Authorization\",\n             UsernamePasswordToken.basicAuthHeaderValue(SecuritySettingsSource.TEST_SUPERUSER,\n@@ -148,6 +148,7 @@ public void testCreateApiKey() throws Exception{\n         assertNotNull(response.getId());\n         assertNotNull(response.getKey());\n         Instant expiration = response.getExpiration();\n+        // Expiration has millisecond precision\n         final long daysBetween = ChronoUnit.DAYS.between(start, expiration);\n         assertThat(daysBetween, is(7L));\n "
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

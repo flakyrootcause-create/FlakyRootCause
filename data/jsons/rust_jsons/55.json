@@ -1,0 +1,27 @@
+{
+  "id": 55,
+  "repo": "trin",
+  "issue_url": "https://github.com/ethereum/trin/issues/298",
+  "pr_url": "https://github.com/ethereum/trin/pull/303",
+  "issue_description": "I've been experiencing a significant increase in flaky tests recently. I'm guessing this is due to the `FindNodes` test added to `peertest`. Would be curious to get confirmation from others. But, this has also raised an issue that when CI runs peertest, if there is a failure, then it doesn't display the error message, it simply just says that the test run failed ([example](https://app.circleci.com/pipelines/github/ethereum/trin/1267/workflows/11b900c3-b67e-40d7-9de7-9c516303c714/jobs/2473)). This makes it more difficult to diagnose the source of flakiness, so we should update how the tests are run to make sure that an error message / stack trace is displayed if it occurs.",
+  "files_changed": [
+    {
+      "filename": ".circleci/config.yml",
+      "status": "modified",
+      "patch": "@@ -45,7 +45,7 @@ jobs:\n                 command: cargo build --workspace --jobs 2\n             - run:\n                 name: Test Trin workspace\n-                command: cargo test --workspace --jobs 2\n+                command: cargo test --workspace --jobs 2 -- --nocapture\n             - save_cache:\n                 key: cargo-{{ checksum \"Cargo.lock\" }}-v1\n                 paths:\n@@ -88,7 +88,7 @@ jobs:\n           command: cargo build --target x86_64-pc-windows-msvc\n       - run:\n           name: Cargo Test --target x86_64-pc-windows-msvc\n-          command: cargo test --target x86_64-pc-windows-msvc\n+          command: cargo test --target x86_64-pc-windows-msvc -- --nocapture\n       - save_cache:\n           key: cargo-{{ checksum \"Cargo.lock\" }}-v1\n           paths:"
+    },
+    {
+      "filename": "ethportal-peertest/src/lib.rs",
+      "status": "modified",
+      "patch": "@@ -34,6 +34,11 @@ pub async fn launch_node(id: u16, bootnode_enr: Option<&String>) -> anyhow::Resu\n     let discovery_port: u16 = 9000 + id;\n     let discovery_port: String = discovery_port.to_string();\n     let web3_ipc_path = format!(\"/tmp/ethportal-peertest-buddy-{id}.ipc\");\n+    // This specific private key scheme is chosen to enforce that the first peer node will be in\n+    // the 256 kbucket of the bootnode, to ensure consistent `FindNodes` tests.\n+    let mut private_key = vec![id as u8; 3];\n+    private_key.append(&mut vec![0u8; 29]);\n+    let private_key = hex::encode(private_key);\n     let trin_config_args: Vec<&str> = match bootnode_enr {\n         Some(enr) => vec![\n             \"trin\",\n@@ -44,6 +49,8 @@ pub async fn launch_node(id: u16, bootnode_enr: Option<&String>) -> anyhow::Resu\n             discovery_port.as_str(),\n             \"--web3-ipc-path\",\n             web3_ipc_path.as_str(),\n+            \"--unsafe-private-key\",\n+            private_key.as_str(),\n         ],\n         None => vec![\n             \"trin\",\n@@ -52,6 +59,8 @@ pub async fn launch_node(id: u16, bootnode_enr: Option<&String>) -> anyhow::Resu\n             discovery_port.as_str(),\n             \"--web3-ipc-path\",\n             web3_ipc_path.as_str(),\n+            \"--unsafe-private-key\",\n+            private_key.as_str(),\n         ],\n     };\n     let trin_config = TrinConfig::new_from(trin_config_args.iter()).unwrap();"
+    },
+    {
+      "filename": "trin-core/src/jsonrpc/types.rs",
+      "status": "modified",
+      "patch": "@@ -172,6 +172,7 @@ impl TryFrom<[&Value; 2]> for FindNodesParams {\n     }\n }\n \n+#[derive(Debug)]\n pub struct NodesParams {\n     pub total: u8,\n     pub enrs: Vec<SszEnr>,"
+    }
+  ],
+  "fix_category": "Hard-code configuration",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": "Non-deterministic environment"
+}

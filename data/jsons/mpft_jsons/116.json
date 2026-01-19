@@ -1,0 +1,17 @@
+{
+  "id": 116,
+  "repo": "cal.com",
+  "issue_url": "https://github.com/calcom/cal.com/pull/23668",
+  "pr_url": "https://github.com/calcom/cal.com/pull/23668",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "packages/app-store/googlecalendar/lib/__tests__/CalendarService.test.ts",
+      "status": "modified",
+      "patch": "@@ -1310,8 +1310,10 @@ describe(\"Date Optimization Benchmarks\", () => {\n         )}ms, Speedup: ${speedupRatio.toFixed(1)}x`\n       );\n \n-      const minSpeedup = process.env.CI ? 1.5 : 5; // Lower threshold for CI\n-      expect(speedupRatio).toBeGreaterThan(minSpeedup);\n+      if (!process.env.CI) {\n+        const minSpeedup = 5; // Assert significant performance improvement (at least 5x faster)\n+        expect(speedupRatio).toBeGreaterThan(minSpeedup);\n+      }\n     }\n   });\n "
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

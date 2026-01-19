@@ -1,0 +1,11 @@
+{
+  "id": 173,
+  "repo": "vllm",
+  "issue_url": "https://github.com/vllm-project/vllm/pull/22670/files",
+  "pr_url": "https://github.com/vllm-project/vllm/pull/22670/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

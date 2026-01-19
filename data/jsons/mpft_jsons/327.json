@@ -1,0 +1,11 @@
+{
+  "id": 327,
+  "repo": "hugo",
+  "issue_url": "https://github.com/gohugoio/hugo/commit/d25d89e653bceec53666cc9610137f9443551d72",
+  "pr_url": "https://github.com/gohugoio/hugo/commit/d25d89e653bceec53666cc9610137f9443551d72",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 393,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/58414",
+  "pr_url": "https://github.com/nodejs/node/pull/58414",
+  "issue_description": "[PR Linked Issue]\n### Test\n\n`test-blob-slice-with-large-size`\n\n### Platform\n\nSmartOS\n\n### Console output\n\n```console\n---\nduration_ms: 290.507\nexitcode: 1\nseverity: fail\nstack: |-\n  /home/iojs/build/workspace/node-test-commit-smartos/nodes/smartos23-x64/test/pummel/test-blob-slice-with-large-size.js:18\n      throw e;\n      ^\n\n  RangeError: Array buffer allocation failed\n      at new ArrayBuffer (<anonymous>)\n      at new Uint8Array (<anonymous>)\n      at new FastBuffer (node:internal/buffer:961:5)\n      at createUnsafeBuffer (node:internal/buffer:1097:12)\n      at allocate (node:buffer:445:10)\n      at Function.allocUnsafe (node:buffer:410:10)\n      at Object.<anonymous> (/home/iojs/build/workspace/node-test-commit-smartos/nodes/smartos23-x64/test/pummel/test-blob-slice-with-large-size.js:12:22)\n      at Module._compile (node:internal/modules/cjs/loader:1734:14)\n      at Object..js (node:internal/modules/cjs/loader:1899:10)\n      at Module.load (node:internal/modules/cjs/loader:1469:32)\n\n  Node.js v24.0.0-pre\n```\n\n### Build links\n\n- https://ci.nodejs.org/job/node-test-commit-smartos/59405/nodes=smartos23-x64/testReport/junit/(root)/pummel/test_blob_slice_with_large_size/\n\n### Additional information\n\nIt seems to reproduce quite rarely",
+  "files_changed": [
+    {
+      "filename": "test/pummel/test-blob-slice-with-large-size.js",
+      "status": "modified",
+      "patch": "@@ -1,4 +1,7 @@\n 'use strict';\n+\n+// This tests that Blob.prototype.slice() works correctly when the size of the\n+// Blob is outside the range of 32-bit signed integers.\n const common = require('../common');\n \n // Buffer with size > INT32_MAX\n@@ -14,8 +17,11 @@ try {\n   const slicedBlob = blob.slice(size - 1, size);\n   assert.strictEqual(slicedBlob.size, 1);\n } catch (e) {\n-  if (e.code !== 'ERR_MEMORY_ALLOCATION_FAILED') {\n-    throw e;\n+  if (e.code === 'ERR_MEMORY_ALLOCATION_FAILED') {\n+    common.skip('insufficient space for Buffer.allocUnsafe');\n+  }\n+  if (/Array buffer allocation failed/.test(e.message)) {\n+    common.skip('insufficient space for Blob.prototype.slice()');\n   }\n-  common.skip('insufficient space for Buffer.allocUnsafe');\n+  throw e;\n }"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

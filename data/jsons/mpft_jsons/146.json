@@ -1,0 +1,11 @@
+{
+  "id": 146,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/commit/2af7c67",
+  "pr_url": "https://github.com/pytorch/pytorch/commit/2af7c67",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

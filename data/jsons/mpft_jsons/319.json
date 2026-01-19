@@ -1,0 +1,17 @@
+{
+  "id": 319,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/2fa2c72581de641a8d62b8124209b75f75152b78",
+  "pr_url": "https://github.com/apache/kafka/commit/2fa2c72581de641a8d62b8124209b75f75152b78",
+  "issue_description": "This issue can be caused by a non-existing path but also a misunderstanding from the config file. A short example will help the user.\n",
+  "files_changed": [
+    {
+      "filename": "config/server.properties",
+      "status": "modified",
+      "patch": "@@ -101,7 +101,9 @@ log.cleanup.interval.mins=1\n # This is a comma separated host:port pairs, each corresponding to a zk\n # server. e.g. \"127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002\".\n # You can also append an optional chroot string to the urls to specify the\n-# root directory for all kafka znodes.\n+# root directory for all kafka znodes, e.g.\n+# \"127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002/kafka\". If you use a chroot\n+# string, be sure to manualy create this namespace in zookeeper.\n zk.connect=localhost:2181\n \n # Timeout in ms for connecting to zookeeper"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

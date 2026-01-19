@@ -1,0 +1,17 @@
+{
+  "id": 118,
+  "repo": "laa-court-data-ui-e2e-tests",
+  "issue_url": "https://github.com/ministryofjustice/laa-court-data-ui-e2e-tests/pull/16",
+  "pr_url": "https://github.com/ministryofjustice/laa-court-data-ui-e2e-tests/pull/16",
+  "issue_description": "The root cause was that `andIUnlinkTheDefendant` was navigating to the defendant details screen as part of its implementation. But it was only called after `andIClickThroughToTheDefendantDetailsScreen`, which _also_ navigates to the defendant details screen. For some reason most of the time playwright wasn't complaining about the double-click, but just occasionally, in Safari, it was. Keeping `andIUnlinkTheDefendant` to just filling out the unlink form fixes the flakiness.",
+  "files_changed": [
+    {
+      "filename": "steps/case_detail_steps.js",
+      "status": "modified",
+      "patch": "@@ -55,9 +55,6 @@ export class CaseDetailSteps {\n   }\n \n   async andIUnlinkTheDefendant() {\n-    await this.page.getByRole('link', { name: DEFENDANT_NAME })\n-              .click();\n-\n     await this.page.locator('summary:has-text(\"Remove link to court data\")') // Expand the summary section\n               .click();\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

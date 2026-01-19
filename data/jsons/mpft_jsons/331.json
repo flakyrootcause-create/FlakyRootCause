@@ -1,0 +1,11 @@
+{
+  "id": 331,
+  "repo": "electron",
+  "issue_url": "https://github.com/electron/electron/commit/31f8e7553b0f01bc3e18fd0826533e619ecb0ade",
+  "pr_url": "https://github.com/electron/electron/commit/31f8e7553b0f01bc3e18fd0826533e619ecb0ade",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

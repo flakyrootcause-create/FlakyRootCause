@@ -1,0 +1,17 @@
+{
+  "id": 423,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/pull/19824",
+  "pr_url": "https://github.com/apache/kafka/pull/19824",
+  "issue_description": "### About\nThis PR attempts to removed the flakiness in\n`testAlterReadCommittedToReadUncommittedIsolationLevelWithReleaseAck`\nand `testAlterReadCommittedToReadUncommittedIsolationLevelWithRejectAck`\n([link](https://develocity.apache.org/scans/tests?search.names=CI%20workflow%2CGit%20repository&search.relativeStartTime=P28D&search.rootProjectNames=kafka&search.tags=github%2Ctrunk&search.tasks=test&search.timeZoneId=Asia%2FCalcutta&search.values=CI%2Chttps:%2F%2Fgithub.com%2Fapache%2Fkafka&tests.container=org.apache.kafka.clients.consumer.ShareConsumerTest&tests.test=testAlterReadCommittedToReadUncommittedIsolationLevelWithReleaseAck()%5B2%5D)).\nThis flakiness could potentially be caused because we were not ensuring\nthat the aborted transaction record produce happened. In this PR, I have\nadded a blocking call to make sure the produce future completes before\nwe abort the transaction.\n\n### Testing\nThe fix was tested locally by running the tests\n\nReviewers: Andrew Schofield <aschofield@confluent.io>\n",
+  "files_changed": [
+    {
+      "filename": "clients/clients-integration-tests/src/test/java/org/apache/kafka/clients/consumer/ShareConsumerTest.java",
+      "status": "modified",
+      "patch": "@@ -2623,8 +2623,9 @@ private void produceAbortedTransaction(Producer<byte[], byte[]> transactionalPro\n         try {\n             transactionalProducer.beginTransaction();\n             ProducerRecord<byte[], byte[]> record = new ProducerRecord<>(tp.topic(), tp.partition(), null, message.getBytes(), message.getBytes());\n-            transactionalProducer.send(record);\n+            Future<RecordMetadata> future = transactionalProducer.send(record);\n             transactionalProducer.flush();\n+            future.get(); // Ensure producer send is complete before aborting\n             transactionalProducer.abortTransaction();\n         } catch (Exception e) {\n             transactionalProducer.abortTransaction();"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

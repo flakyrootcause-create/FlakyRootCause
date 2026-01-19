@@ -1,0 +1,11 @@
+{
+  "id": 216,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/commit/8bcecb92e88423acdd992ff94f959d49cb9daee1",
+  "pr_url": "https://github.com/elastic/elasticsearch/commit/8bcecb92e88423acdd992ff94f959d49cb9daee1",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Lock atomic operation",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

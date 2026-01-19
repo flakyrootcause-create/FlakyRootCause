@@ -1,0 +1,17 @@
+{
+  "id": 13,
+  "repo": "deltachat-core-rust",
+  "issue_url": "https://github.com/deltachat/deltachat-core-rust/issues/5662",
+  "pr_url": "https://github.com/deltachat/deltachat-core-rust/pull/5665",
+  "issue_description": "`src/smtp.rs::send_smtp_messages` logs and ignores SMTP errors when sending MDNs, then returns `Ok(())`. Then in `src/scheduler::smtp_loop` we reset `timeout` to `None`:\r\nhttps://github.com/deltachat/deltachat-core-rust/blob/21845ca5ea17acaad192989605b3688a46d908f5/src/scheduler.rs#L773\r\nand then log \"smtp has no messages to retry\" and wait for interrupt forever:\r\nhttps://github.com/deltachat/deltachat-core-rust/blob/21845ca5ea17acaad192989605b3688a46d908f5/src/scheduler.rs#L815-L816\r\nIt is not true that SMTP has no messages to retry in this case.\r\n\r\nThe worst part of this is that during high load postfix returns temporary error \"421 4.4.2 *** Error: timeout exceeded\": https://github.com/deltachat/chatmail/issues/315 Then tests time out in CI because they never retry sending.",
+  "files_changed": [
+    {
+      "filename": "src/smtp.rs",
+      "status": "modified",
+      "patch": "@@ -830,20 +830,26 @@ async fn send_mdn(context: &Context, smtp: &mut Smtp) -> Result<bool> {\n         .await\n         .context(\"failed to update MDN retries count\")?;\n \n-    let res = send_mdn_msg_id(context, msg_id, contact_id, smtp).await;\n-    if let Err(ref err) = res {\n-        // If there is an error, for example there is no message corresponding to the msg_id in the\n-        // database, do not try to send this MDN again.\n-        warn!(\n-            context,\n-            \"Error sending MDN for {msg_id}, removing it: {err:#}.\"\n-        );\n-        context\n-            .sql\n-            .execute(\"DELETE FROM smtp_mdns WHERE msg_id = ?\", (msg_id,))\n-            .await?;\n+    match send_mdn_msg_id(context, msg_id, contact_id, smtp).await {\n+        Err(err) => {\n+            // If there is an error, for example there is no message corresponding to the msg_id in the\n+            // database, do not try to send this MDN again.\n+            warn!(\n+                context,\n+                \"Error sending MDN for {msg_id}, removing it: {err:#}.\"\n+            );\n+            context\n+                .sql\n+                .execute(\"DELETE FROM smtp_mdns WHERE msg_id = ?\", (msg_id,))\n+                .await?;\n+            Err(err)\n+        }\n+        Ok(false) => {\n+            bail!(\"Temporary error while sending an MDN\");\n+        }\n+        Ok(true) => {\n+            // Successfully sent MDN.\n+            Ok(true)\n+        }\n     }\n-    // If there's a temporary error, pretend there are no more MDNs to send. It's unlikely that\n-    // other MDNs could be sent successfully in case of connectivity problems.\n-    res\n }"
+    }
+  ],
+  "fix_category": "Retry",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": "Retry"
+}

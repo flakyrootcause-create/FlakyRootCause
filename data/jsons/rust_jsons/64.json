@@ -1,0 +1,47 @@
+{
+  "id": 64,
+  "repo": "kafka-operator",
+  "issue_url": "https://github.com/stackabletech/kafka-operator/issues/486",
+  "pr_url": "https://github.com/stackabletech/kafka-operator/pull/492",
+  "issue_description": "**Which new version of Apache Kafka should we support?**\r\n\r\n3.3.1\r\n\r\n**Additional information**\r\n\r\nhttps://downloads.apache.org/kafka/3.3.0/RELEASE_NOTES.html\r\nhttps://downloads.apache.org/kafka/3.3.1/RELEASE_NOTES.html\r\n\r\n**Changes required**\r\n\r\nMaybe\r\n\r\n**Implementation checklist**\r\n\r\n- [x] Update the Docker image\r\n- [x] Update documentation to include supported version(s)\r\n- [x] Update operator to support the new version (if needed)\r\n- [x] Update integration tests to test use the new versions (in addition or replacing old versions\r\n- [x] Update examples to use new versions\r\n",
+  "files_changed": [
+    {
+      "filename": "CHANGELOG.md",
+      "status": "modified",
+      "patch": "@@ -7,8 +7,10 @@ All notable changes to this project will be documented in this file.\n ### Added\n \n - Added default resource requests (memory and cpu) for Kafka pods. ([#485])\n+- Support for Kafka 3.3.1 ([#492])\n \n [#485]: https://github.com/stackabletech/kafka-operator/pull/485\n+[#492]: https://github.com/stackabletech/kafka-operator/pull/492\n \n ### Changed\n "
+    },
+    {
+      "filename": "docs/modules/ROOT/partials/supported-versions.adoc",
+      "status": "modified",
+      "patch": "@@ -6,3 +6,4 @@\n - 2.8.1\n - 3.1.0\n - 3.2.0\n+- 3.3.1"
+    },
+    {
+      "filename": "docs/modules/getting_started/examples/code/kafka.yaml",
+      "status": "modified",
+      "patch": "@@ -4,7 +4,7 @@ kind: KafkaCluster\n metadata:\n   name: simple-kafka\n spec:\n-  version: 3.2.0-stackable0.1.0\n+  version: 3.3.1-stackable0.1.0\n   zookeeperConfigMapName: simple-kafka-znode\n   config:\n     tls: null"
+    },
+    {
+      "filename": "examples/opa/simple-kafka-cluster-opa-allow-all.yaml",
+      "status": "modified",
+      "patch": "@@ -53,7 +53,7 @@ kind: KafkaCluster\n metadata:\n   name: simple-kafka\n spec:\n-  version: 3.2.0-stackable0.1.0\n+  version: 3.3.1-stackable0.1.0\n   zookeeperConfigMapName: simple-kafka-znode\n   opa:\n     configMapName: simple-opa"
+    },
+    {
+      "filename": "examples/tls/simple-kafka-cluster-tls.yaml",
+      "status": "modified",
+      "patch": "@@ -62,7 +62,7 @@ kind: KafkaCluster\n metadata:\n   name: simple-kafka\n spec:\n-  version: 3.2.0-stackable0.1.0\n+  version: 3.3.1-stackable0.1.0\n   zookeeperConfigMapName: simple-kafka-znode\n   config:\n     tls:"
+    },
+    {
+      "filename": "tests/templates/kuttl/upgrade/03-assert.yaml.j2",
+      "status": "renamed",
+      "patch": "@@ -8,7 +8,7 @@ kind: StatefulSet\n metadata:\n   name: simple-kafka-broker-default\n   labels:\n-    app.kubernetes.io/version: 3.2.0-stackable0.1.0\n+    app.kubernetes.io/version: {{ test_scenario['values']['upgrade_new'] }}\n status:\n   readyReplicas: 1\n   replicas: 1"
+    },
+    {
+      "filename": "tests/test-definition.yaml",
+      "status": "modified",
+      "patch": "@@ -2,10 +2,10 @@\n dimensions:\n   - name: kafka\n     values:\n-      - 2.7.1-stackable0\n       - 2.8.1-stackable0\n       - 3.1.0-stackable0\n       - 3.2.0-stackable0.1.0\n+      - 3.3.1-stackable0.1.0\n   - name: zookeeper\n     values:\n       - 3.6.3-stackable0.7.1\n@@ -16,12 +16,12 @@ dimensions:\n       - 3.8.0-stackable0.7.1\n   - name: upgrade_old\n     values:\n-      - 2.7.1-stackable0\n       - 2.8.1-stackable0\n       - 3.1.0-stackable0\n+      - 3.2.0-stackable0.1.0\n   - name: upgrade_new\n     values:\n-      - 3.2.0-stackable0.1.0\n+      - 3.3.1-stackable0.1.0\n   - name: use-client-tls\n     values:\n       - \"true\""
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (CI)"
+}

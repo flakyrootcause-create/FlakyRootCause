@@ -1,0 +1,22 @@
+{
+  "id": 26,
+  "repo": "solana",
+  "issue_url": "https://github.com/solana-labs/solana/issues/18279",
+  "pr_url": "https://github.com/solana-labs/solana/pull/18333",
+  "issue_description": "#### Problem\r\n #18278 ignores 2 local-cluster tests failing consistently in CI\r\n\r\n\r\n#### Proposed Solution\r\nIdentify root cause of test failures, fix, and re-enable them\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "gossip/src/crds_gossip_pull.rs",
+      "status": "modified",
+      "patch": "@@ -18,13 +18,11 @@ use {\n         crds_gossip_error::CrdsGossipError,\n         crds_value::CrdsValue,\n         ping_pong::PingCache,\n+        weighted_shuffle::weighted_shuffle,\n     },\n     itertools::Itertools,\n     lru::LruCache,\n-    rand::{\n-        distributions::{Distribution, WeightedIndex},\n-        Rng,\n-    },\n+    rand::Rng,\n     rayon::{prelude::*, ThreadPool},\n     solana_runtime::bloom::{AtomicBloom, Bloom},\n     solana_sdk::{\n@@ -239,10 +237,10 @@ impl CrdsGossipPull {\n         }\n         let mut peers = {\n             let mut rng = rand::thread_rng();\n-            let num_samples = peers.len() * 2;\n-            let index = WeightedIndex::new(weights).unwrap();\n-            let sample_peer = move || peers[index.sample(&mut rng)];\n-            repeat_with(sample_peer).take(num_samples)\n+            let mut seed = [0u8; 32];\n+            rng.fill(&mut seed[..]);\n+            let index = weighted_shuffle(&weights, seed);\n+            index.into_iter().map(|i| peers[i])\n         };\n         let peer = {\n             let mut rng = rand::thread_rng();\n@@ -916,7 +914,7 @@ pub(crate) mod tests {\n             &node_keypair.pubkey(),\n             0,\n         )));\n-        let node = CrdsGossipPull::default();\n+        let mut node = CrdsGossipPull::default();\n         let mut pings = Vec::new();\n         let ping_cache = Mutex::new(PingCache::new(\n             Duration::from_secs(20 * 60), // ttl\n@@ -954,25 +952,47 @@ pub(crate) mod tests {\n             ),\n             Err(CrdsGossipError::NoPeers)\n         );\n-        let new = ContactInfo::new_localhost(&solana_sdk::pubkey::new_rand(), 0);\n+        let now = 1625029781069;\n+        let new = ContactInfo::new_localhost(&solana_sdk::pubkey::new_rand(), now);\n         ping_cache\n             .lock()\n             .unwrap()\n             .mock_pong(new.id, new.gossip, Instant::now());\n         let new = CrdsValue::new_unsigned(CrdsData::ContactInfo(new));\n-        crds.insert(new.clone(), 0).unwrap();\n+        crds.insert(new.clone(), now).unwrap();\n         let req = node.new_pull_request(\n             &thread_pool,\n             &crds,\n             &node_keypair,\n             0,\n+            now,\n+            None,\n+            &HashMap::new(),\n+            PACKET_DATA_SIZE,\n+            &ping_cache,\n+            &mut pings,\n+        );\n+        let (peer, _) = req.unwrap();\n+        assert_eq!(peer, *new.contact_info().unwrap());\n+\n+        node.mark_pull_request_creation_time(new.contact_info().unwrap().id, now);\n+        let offline = ContactInfo::new_localhost(&solana_sdk::pubkey::new_rand(), now);\n+        let offline = CrdsValue::new_unsigned(CrdsData::ContactInfo(offline));\n+        crds.insert(offline, now).unwrap();\n+        let req = node.new_pull_request(\n+            &thread_pool,\n+            &crds,\n+            &node_keypair,\n             0,\n+            now,\n             None,\n             &HashMap::new(),\n             PACKET_DATA_SIZE,\n             &ping_cache,\n             &mut pings,\n         );\n+        // Even though the offline node should have higher weight, we shouldn't request from it\n+        // until we receive a ping.\n         let (peer, _) = req.unwrap();\n         assert_eq!(peer, *new.contact_info().unwrap());\n     }"
+    },
+    {
+      "filename": "local-cluster/tests/local_cluster.rs",
+      "status": "modified",
+      "patch": "@@ -2848,14 +2848,12 @@ fn test_hard_fork_invalidates_tower() {\n \n #[test]\n #[serial]\n-#[ignore]\n fn test_no_optimistic_confirmation_violation_with_tower() {\n     do_test_optimistic_confirmation_violation_with_or_without_tower(true);\n }\n \n #[test]\n #[serial]\n-#[ignore]\n fn test_optimistic_confirmation_violation_without_tower() {\n     do_test_optimistic_confirmation_violation_with_or_without_tower(false);\n }"
+    }
+  ],
+  "fix_category": "Add ordering",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": "Weighting"
+}

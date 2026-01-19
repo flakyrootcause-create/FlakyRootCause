@@ -1,0 +1,17 @@
+{
+  "id": 191,
+  "repo": "okhttp",
+  "issue_url": "https://github.com/square/okhttp/pull/5800",
+  "pr_url": "https://github.com/square/okhttp/pull/5800",
+  "issue_description": "[PR Linked Issue]\nhttps://circleci.com/gh/square/okhttp/8330?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link\r\n\r\ncloseReasonMaximumLength - okhttp3.internal.ws.WebSocketHttpTest\r\n```\r\norg.junit.ComparisonFailure: expected:<[0]> but was:<[1]>\r\n\tat okhttp3.OkHttpClientTestRule.ensureAllConnectionsReleased(OkHttpClientTestRule.kt:91)\r\n\tat okhttp3.OkHttpClientTestRule$apply$1.evaluate(OkHttpClientTestRule.kt:121)\r\n```\r\n\r\nserverCloseThenClientClose - okhttp3.internal.ws.RealWebSocketTest\r\n```\r\njava.lang.AssertionError: \r\nExpecting empty but was:<[Closed[1000 Hello!]]>\r\n\tat okhttp3.internal.ws.WebSocketRecorder.assertExhausted(WebSocketRecorder.java:163)\r\n\tat okhttp3.internal.ws.RealWebSocketTest.tearDown(RealWebSocketTest.java:58)\r\n```",
+  "files_changed": [
+    {
+      "filename": "okhttp/src/test/java/okhttp3/internal/ws/RealWebSocketTest.java",
+      "status": "modified",
+      "patch": "@@ -130,9 +130,15 @@ public final class RealWebSocketTest {\n \n   @Test public void serverCloseThenClientClose() throws IOException {\n     server.webSocket.close(1000, \"Hello!\");\n+\n     client.processNextFrame();\n     client.listener.assertClosing(1000, \"Hello!\");\n     assertThat(client.webSocket.close(1000, \"Bye!\")).isTrue();\n+    client.listener.assertClosed(1000, \"Hello!\");\n+\n+    server.processNextFrame();\n+    server.listener.assertClosing(1000, \"Bye!\");\n+    server.listener.assertClosed(1000, \"Bye!\");\n   }\n \n   @Test public void emptyCloseInitiatesShutdown() throws IOException {"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

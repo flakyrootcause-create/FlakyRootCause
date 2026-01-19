@@ -1,0 +1,17 @@
+{
+  "id": 244,
+  "repo": "Pillow",
+  "issue_url": "https://github.com/python-pillow/Pillow/pull/6970",
+  "pr_url": "https://github.com/python-pillow/Pillow/pull/6970",
+  "issue_description": "After https://github.com/python-pillow/Pillow/actions/runs/4256800436/jobs/7406140055, this is a further PR for #6875",
+  "files_changed": [
+    {
+      "filename": "Tests/test_qt_image_qapplication.py",
+      "status": "modified",
+      "patch": "@@ -48,7 +48,7 @@ def __init__(self):\n def roundtrip(expected):\n     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))\n     # Qt saves all pixmaps as rgb\n-    assert_image_similar(result, expected.convert(\"RGB\"), 0.5)\n+    assert_image_similar(result, expected.convert(\"RGB\"), 1)\n \n \n @pytest.mark.skipif(not ImageQt.qt_is_installed, reason=\"Qt bindings are not installed\")"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Floating point operations",
+  "root_cause_subcategory": NaN
+}

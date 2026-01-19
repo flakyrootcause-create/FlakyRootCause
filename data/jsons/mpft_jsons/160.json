@@ -1,0 +1,22 @@
+{
+  "id": 160,
+  "repo": "jedis",
+  "issue_url": "https://github.com/redis/jedis/pull/4138",
+  "pr_url": "https://github.com/redis/jedis/pull/4138",
+  "issue_description": "The test JedisPoolTest.testCloseConnectionOnMakeObject occasionally fails with the following error:\r\n\r\n    `JedisPoolTest.testCloseConnectionOnMakeObject:403 expected:<4> but was:<5>`\r\n\r\n**Root Cause:**\r\nThe assertion is based on the output of getClientCount(jedis.clientList()), which is called immediately after closing a connection. However, Redis may take a short time to remove the closed connection from the client list, leading to a transient count mismatch and a flaky test result.\r\n\r\n**Example stack trace:**\r\n```\r\nError:  redis.clients.jedis.JedisPoolTest.testCloseConnectionOnMakeObject -- Time elapsed: 0.006 s <<< FAILURE!\r\njava.lang.AssertionError: expected:<4> but was:<5>\r\n\tat org.junit.Assert.fail(Assert.java:89)\r\n\tat org.junit.Assert.failNotEquals(Assert.java:835)\r\n\tat org.junit.Assert.assertEquals(Assert.java:647)\r\n\tat org.junit.Assert.assertEquals(Assert.java:633)\r\n\tat redis.clients.jedis.JedisPoolTest.testCloseConnectionOnMakeObject(JedisPoolTest.java:403)\r\n```\r\n\t\r\ncloses #4135",
+  "files_changed": [
+    {
+      "filename": "src/test/java/redis/clients/jedis/ACLJedisPoolTest.java",
+      "status": "modified",
+      "patch": "@@ -1,12 +1,15 @@\n package redis.clients.jedis;\n \n+import static java.util.concurrent.TimeUnit.MILLISECONDS;\n+import static org.awaitility.Awaitility.await;\n import static org.junit.Assert.assertEquals;\n import static org.junit.Assert.assertNull;\n import static org.junit.Assert.assertTrue;\n import static org.junit.Assert.fail;\n \n import java.net.URI;\n import java.net.URISyntaxException;\n+import java.time.Duration;\n \n import io.redis.test.annotations.SinceRedisVersion;\n import org.apache.commons.pool2.impl.GenericObjectPoolConfig;\n@@ -268,6 +271,8 @@ public void testCloseConnectionOnMakeObject() {\n         pool.getResource();\n         fail(\"Should throw exception as password is incorrect.\");\n       } catch (Exception e) {\n+        await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)\n+            .until(() -> getClientCount(jedis.clientList()) == currentClientCount);\n         assertEquals(currentClientCount, getClientCount(jedis.clientList()));\n       }\n     }"
+    },
+    {
+      "filename": "src/test/java/redis/clients/jedis/JedisPoolTest.java",
+      "status": "modified",
+      "patch": "@@ -1,5 +1,7 @@\n package redis.clients.jedis;\n \n+import static java.util.concurrent.TimeUnit.MILLISECONDS;\n+import static org.awaitility.Awaitility.await;\n import static org.junit.Assert.assertEquals;\n import static org.junit.Assert.assertNull;\n import static org.junit.Assert.assertSame;\n@@ -8,6 +10,7 @@\n \n import java.net.URI;\n import java.net.URISyntaxException;\n+import java.time.Duration;\n import java.util.concurrent.atomic.AtomicInteger;\n import org.apache.commons.pool2.PooledObject;\n import org.apache.commons.pool2.PooledObjectFactory;\n@@ -400,6 +403,8 @@ public void testCloseConnectionOnMakeObject() {\n         pool.getResource();\n         fail(\"Should throw exception as password is incorrect.\");\n       } catch (Exception e) {\n+        await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)\n+            .until(() -> getClientCount(jedis.clientList()) == currentClientCount);\n         assertEquals(currentClientCount, getClientCount(jedis.clientList()));\n       }\n     }"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

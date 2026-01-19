@@ -1,0 +1,11 @@
+{
+  "id": 224,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/commit/0aace88342e63f18cb79ae889fc010520ec2f90f",
+  "pr_url": "https://github.com/apache/spark/commit/0aace88342e63f18cb79ae889fc010520ec2f90f",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

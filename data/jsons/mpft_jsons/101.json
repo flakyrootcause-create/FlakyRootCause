@@ -1,0 +1,17 @@
+{
+  "id": 101,
+  "repo": "dubbo",
+  "issue_url": "https://github.com/apache/dubbo/pull/8401",
+  "pr_url": "https://github.com/apache/dubbo/pull/8401",
+  "issue_description": "Link to issue: #8390\r\n\r\n## What is the purpose of the change\r\n\r\nThis PR is to fix a non-idempotent test `org.apache.dubbo.rpc.filter.ExecuteLimitFilterTest.testExecuteLimitInvokeWitException` \r\n- The test does not remove `RpcStatus` after running, which pollutes the state shared among tests.\r\n- It may be better to clean state pollutions so that some other tests won't fail in the future due to the shared state pollution.\r\n\r\n## Brief changelog\r\nRemoves the status of RPC when the test ends.\r\n\r\n## Verifying this change\r\n\r\nWith the proposed fix, the test does not pollute the shared state (and passes when run twice in the same JVM).\r\n\r\n<!-- Follow this checklist to help us incorporate your contribution quickly and easily: -->\r\n\r\n## Checklist\r\n- [x] Make sure there is a [GitHub_issue](https://github.com/apache/dubbo/issues) field for the change (usually before you start working on it). Trivial changes like typos do not require a GitHub issue. Your pull request should address just this issue, without pulling in other changes - one PR resolves one issue.\r\n- [x] Each commit in the pull request should have a meaningful subject line and body.\r\n- [x] Write a pull request description that is detailed enough to understand what the pull request does, how, and why.\r\n- [x] Check if is necessary to patch to Dubbo 3 if you are work on Dubbo 2.7\r\n- [x] Write necessary unit-test to verify your logic correction, more mock a little better when cross module dependency exist. If the new feature or significant change is committed, please remember to add sample in [dubbo samples](https://github.com/apache/dubbo-samples) project.\r\n- [x] Add some description to [dubbo-website](https://github.com/apache/dubbo-website) project if you are requesting to add a feature.\r\n- [x] GitHub Actions works fine on your own branch.\r\n- [x] If this contribution is large, please follow the [Software Donation Guide](https://github.com/apache/dubbo/wiki/Software-donation-guide).",
+  "files_changed": [
+    {
+      "filename": "dubbo-rpc/dubbo-rpc-api/src/test/java/org/apache/dubbo/rpc/filter/ExecuteLimitFilterTest.java",
+      "status": "modified",
+      "patch": "@@ -85,6 +85,7 @@ public void testExecuteLimitInvokeWitException() throws Exception {\n             executeLimitFilter.onError(e, invoker, invocation);\n         }\n         Assertions.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());\n+        RpcStatus.removeStatus(url, invocation.getMethodName());\n     }\n \n     @Test"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

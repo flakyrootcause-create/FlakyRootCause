@@ -1,0 +1,17 @@
+{
+  "id": 8,
+  "repo": "relay",
+  "issue_url": "https://github.com/getsentry/relay/issues/2996",
+  "pr_url": "https://github.com/getsentry/relay/pull/2997",
+  "issue_description": "### Flakiness Type\n\nAssertion failure\n\n### Name of Test\n\ntests/integration/test_store.py::test_span_ingestion\n\n### Link to Test Run\n\nhttps://github.com/getsentry/relay/actions/runs/7651064436/job/20848193597\n\n### Details\n\n_No response_",
+  "files_changed": [
+    {
+      "filename": "tests/integration/test_store.py",
+      "status": "modified",
+      "patch": "@@ -1647,7 +1647,7 @@ def test_span_ingestion(\n     ]\n \n     metrics = [metric for (metric, _headers) in metrics_consumer.get_metrics()]\n-    metrics.sort(key=lambda m: (m[\"name\"], sorted(m[\"tags\"].items())))\n+    metrics.sort(key=lambda m: (m[\"name\"], sorted(m[\"tags\"].items()), m[\"timestamp\"]))\n     for metric in metrics:\n         try:\n             metric[\"value\"].sort()"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Python)"
+}

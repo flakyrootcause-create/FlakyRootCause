@@ -1,0 +1,17 @@
+{
+  "id": 421,
+  "repo": "alluxio",
+  "issue_url": "https://github.com/Alluxio/alluxio/pull/16850",
+  "pr_url": "https://github.com/Alluxio/alluxio/pull/16850",
+  "issue_description": "### What changes are proposed in this pull request?\r\n\r\nFix the flaky test in the two-choice random cache eviction policy\r\n\r\n### Why are the changes needed?\r\n\r\nAs the test is flaky, it will influence other PRs.\r\n\r\n### Does this PR introduce any user facing changes?\r\n\r\nNo.\r\n",
+  "files_changed": [
+    {
+      "filename": "core/client/fs/src/test/java/alluxio/client/file/cache/TwoChoiceRandomEvictorTest.java",
+      "status": "modified",
+      "patch": "@@ -40,7 +40,8 @@ public void evictGetOrder() {\n     mEvictor.updateOnGet(mFirst);\n     Assert.assertEquals(mFirst, mEvictor.evict());\n     mEvictor.updateOnGet(mSecond);\n-    Assert.assertEquals(mSecond, mEvictor.evict());\n+    PageId evictedPage = mEvictor.evict();\n+    Assert.assertTrue(evictedPage.equals(mFirst) || evictedPage.equals(mSecond));\n   }\n \n   @Test"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

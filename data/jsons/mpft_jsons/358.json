@@ -1,0 +1,11 @@
+{
+  "id": 358,
+  "repo": "google-cloud-rust",
+  "issue_url": "https://github.com/googleapis/google-cloud-rust/commit/d1348119749a52e9bdc48267eca3d1746d330250",
+  "pr_url": "https://github.com/googleapis/google-cloud-rust/commit/d1348119749a52e9bdc48267eca3d1746d330250",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

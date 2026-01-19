@@ -1,0 +1,11 @@
+{
+  "id": 277,
+  "repo": "rust",
+  "issue_url": "https://github.com/rust-lang/rust/commit/4dca485db6b0f552d7cee25b4a66f6c05acf9ce3",
+  "pr_url": "https://github.com/rust-lang/rust/commit/4dca485db6b0f552d7cee25b4a66f6c05acf9ce3",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

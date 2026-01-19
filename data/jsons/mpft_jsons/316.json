@@ -1,0 +1,17 @@
+{
+  "id": 316,
+  "repo": "pulsar",
+  "issue_url": "https://github.com/apache/pulsar/commit/4e1d863634613f9e7dd13935138034712d9f1b69",
+  "pr_url": "https://github.com/apache/pulsar/commit/4e1d863634613f9e7dd13935138034712d9f1b69",
+  "issue_description": "### Motivation\n\nI'm making this change for clarification in the Getting Started guide which is the gateway for new users to Pulsar.\n### Modifications\n\nUpdated documentation.\n### Result\n\nJust the documentation.\n",
+  "files_changed": [
+    {
+      "filename": "docs/GettingStarted.md",
+      "status": "modified",
+      "patch": "@@ -122,6 +122,8 @@ while (true) {\n   // Acknowledge the message so that it can be deleted by broker\n   consumer.acknowledge(msg);\n }\n+\n+client.close();\n ```\n \n \n@@ -137,4 +139,6 @@ Producer producer = client.createProducer(\n for (int i = 0; i < 10; i++) {\n     producer.send(\"my-message\".getBytes());\n }\n+\n+client.close();\n ```"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

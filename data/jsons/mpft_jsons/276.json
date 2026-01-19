@@ -1,0 +1,11 @@
+{
+  "id": 276,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/05b39ea8ab4c24bc19faba93686164a0b71bdaae",
+  "pr_url": "https://github.com/nodejs/node/commit/05b39ea8ab4c24bc19faba93686164a0b71bdaae",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

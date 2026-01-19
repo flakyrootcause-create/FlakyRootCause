@@ -1,0 +1,11 @@
+{
+  "id": 4,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/233384d4e4711720e81b9c41302f67ece1a57abb",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/233384d4e4711720e81b9c41302f67ece1a57abb",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

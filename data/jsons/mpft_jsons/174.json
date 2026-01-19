@@ -1,0 +1,11 @@
+{
+  "id": 174,
+  "repo": "compose",
+  "issue_url": "https://github.com/docker/compose/pull/11739/files",
+  "pr_url": "https://github.com/docker/compose/pull/11739/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

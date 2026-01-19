@@ -1,0 +1,17 @@
+{
+  "id": 109,
+  "repo": "airflow",
+  "issue_url": "https://github.com/apache/airflow/pull/55624",
+  "pr_url": "https://github.com/apache/airflow/pull/55624",
+  "issue_description": "[PR Linked Issue]\n````\nFAILED providers/microsoft/azure/tests/unit/microsoft/azure/triggers/test_wasb.py::TestWasbBlobSensorTrigger::test_success - AssertionError: assert False is True\n +  where False = <built-in method done of _asyncio.Task object at 0xffe8138b6b00>()\n +    where <built-in method done of _asyncio.Task object at 0xffe8138b6b00> = <Task pending name='Task-2479' coro=<<async_generator_asend without __name__>()> wait_for=<Future pending cb=[shield.<locals>._outer_done_callback() at /usr/python/lib/python3.12/asyncio/tasks.py:922, Task.task_wakeup()]>>.done\n```\n\nFor example https://github.com/apache/airflow/actions/runs/17534123692/job/49795194833#step:8:2322",
+  "files_changed": [
+    {
+      "filename": "providers/microsoft/azure/tests/unit/microsoft/azure/triggers/test_wasb.py",
+      "status": "modified",
+      "patch": "@@ -23,6 +23,7 @@\n \n import pytest\n \n+from airflow.models import Connection\n from airflow.providers.microsoft.azure.triggers.wasb import (\n     WasbBlobSensorTrigger,\n     WasbPrefixSensorTrigger,\n@@ -35,7 +36,17 @@\n TEST_WASB_CONN_ID = \"wasb_default\"\n POKE_INTERVAL = 5.0\n \n-pytestmark = pytest.mark.db_test\n+\n+@pytest.fixture(autouse=True)\n+def setup_connections(create_connection_without_db):\n+    create_connection_without_db(\n+        Connection(\n+            conn_id=TEST_WASB_CONN_ID,\n+            conn_type=\"wasb\",\n+            login=\"test_account_name\",\n+            password=\"test_account_key\",\n+        )\n+    )\n \n \n class TestWasbBlobSensorTrigger:"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

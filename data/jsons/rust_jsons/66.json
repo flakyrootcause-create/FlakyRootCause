@@ -1,0 +1,17 @@
+{
+  "id": 66,
+  "repo": "deno",
+  "issue_url": "https://github.com/denoland/deno/issues/4589",
+  "pr_url": "https://github.com/denoland/deno/pull/4628",
+  "issue_description": "https://github.com/denoland/deno/runs/555522900\r\n```\r\n---- inspector_pause stdout ----\r\ntarget_dir D:\\a\\deno\\deno\\target\\release\r\nws_url ws://127.0.0.1:9230/ws/32db3e15-0d08-4ee4-af90-b3f9ca5a7273\r\n##[error]thread 'inspector_pause' panicked at 'called `Result::unwrap()` on an `Err` value: Io(Os { code: 10054, kind: ConnectionReset, message: \"An existing connection was forcibly closed by the remote host.\" })', cli\\tests\\integration_tests.rs:2076:17\r\n```\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "cli/tests/integration_tests.rs",
+      "status": "modified",
+      "patch": "@@ -2015,7 +2015,6 @@ fn extract_ws_url_from_stderr(\n   url::Url::parse(ws_url).unwrap()\n }\n \n-#[cfg(not(target_os = \"linux\"))] // TODO(ry) broken on github actions.\n #[tokio::test]\n async fn inspector_connect() {\n   let script = deno::test_util::root_path()\n@@ -2122,7 +2121,6 @@ async fn inspector_break_on_first_line() {\n   child.kill().unwrap();\n }\n \n-#[cfg(not(target_os = \"linux\"))] // TODO(ry) broken on github actions.\n #[tokio::test]\n async fn inspector_pause() {\n   let script = deno::test_util::root_path()\n@@ -2182,7 +2180,6 @@ async fn inspector_pause() {\n   child.kill().unwrap();\n }\n \n-#[cfg(not(target_os = \"linux\"))] // TODO(ry) broken on github actions.\n #[tokio::test]\n async fn inspector_port_collision() {\n   let script = deno::test_util::root_path()"
+    }
+  ],
+  "fix_category": "Support failure case",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": "Robustness"
+}

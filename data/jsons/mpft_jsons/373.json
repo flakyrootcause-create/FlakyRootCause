@@ -1,0 +1,22 @@
+{
+  "id": 373,
+  "repo": "splunk-otel-java",
+  "issue_url": "https://github.com/signalfx/splunk-otel-java/pull/2438",
+  "pr_url": "https://github.com/signalfx/splunk-otel-java/pull/2438",
+  "issue_description": "https://scans.gradle.com/s/bfgjiqwioneey/tests/task/:profiler:test/details/com.splunk.opentelemetry.profiler.snapshot.LongRunningBackgroundTaskTest/traceBackgroundThreadProfilingContinuesAfterEntrySpanEnds()?top-execution=1",
+  "files_changed": [
+    {
+      "filename": "profiler/src/test/java/com/splunk/opentelemetry/profiler/snapshot/LongRunningBackgroundTaskTest.java",
+      "status": "modified",
+      "patch": "@@ -24,6 +24,8 @@\n import com.splunk.opentelemetry.profiler.snapshot.simulation.Server;\n import io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkExtension;\n import java.time.Duration;\n+import java.util.concurrent.CountDownLatch;\n+import org.junit.jupiter.api.AfterEach;\n import org.junit.jupiter.api.Test;\n import org.junit.jupiter.api.extension.RegisterExtension;\n \n@@ -40,20 +42,28 @@ class LongRunningBackgroundTaskTest {\n           .with(new SnapshotVolumePropagator((c) -> true))\n           .build();\n \n+  private CountDownLatch slowTaskLatch = new CountDownLatch(1);\n+\n   @RegisterExtension\n   public final Server server =\n       Server.builder(sdk).named(\"server\").performing(Background.task(slowTask())).build();\n \n   private Runnable slowTask() {\n     return () -> {\n       try {\n-        Thread.sleep(250);\n+        slowTaskLatch.await();\n       } catch (InterruptedException e) {\n-        e.printStackTrace();\n+        Thread.currentThread().interrupt();\n       }\n     };\n   }\n \n+  @AfterEach\n+  void reset() {\n+    slowTaskLatch.countDown();\n+    slowTaskLatch = new CountDownLatch(1);\n+  }\n+\n   @Test\n   void traceBackgroundThreadProfilingContinuesAfterEntrySpanEnds() {\n     server.send(new Message());"
+    },
+    {
+      "filename": "profiler/src/test/java/com/splunk/opentelemetry/profiler/snapshot/simulation/Background.java",
+      "status": "modified",
+      "patch": "@@ -18,6 +18,7 @@\n \n import io.opentelemetry.context.Context;\n import java.util.concurrent.Callable;\n+import java.util.concurrent.CountDownLatch;\n import java.util.concurrent.ExecutionException;\n import java.util.concurrent.Executors;\n import java.util.function.UnaryOperator;\n@@ -44,10 +45,22 @@ public static <T> UnaryOperator<Message> task(Callable<T> task) {\n \n   /** Perform background task within the context of the same trace. */\n   public static UnaryOperator<Message> task(Runnable task) {\n+    CountDownLatch latch = new CountDownLatch(1);\n     return message -> {\n       var executor = Context.current().wrap(Executors.newSingleThreadExecutor());\n       try {\n-        executor.submit(task);\n+        Runnable runnable =\n+            () -> {\n+              latch.countDown();\n+              task.run();\n+            };\n+        executor.submit(runnable);\n+        // wait until the task has started\n+        try {\n+          latch.await();\n+        } catch (InterruptedException e) {\n+          Thread.currentThread().interrupt();\n+        }\n         return message;\n       } finally {\n         executor.shutdown();"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

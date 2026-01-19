@@ -1,0 +1,17 @@
+{
+  "id": 326,
+  "repo": "hugo",
+  "issue_url": "https://github.com/gohugoio/hugo/pull/10356",
+  "pr_url": "https://github.com/gohugoio/hugo/pull/10356",
+  "issue_description": "Set `getNumHomes: 1` to enable the 567 ms or 2 seconds of wait for the server to be ready in `TestServerPathEncodingIssues/Unicode_paths` and `TestServerPathEncodingIssues/Windows_multilingual_404`.\r\n\r\nFixes #10332\r\n\r\n---\r\n\r\nHi @bep, I hope this is the right fix.  Besides waiting for the GitHub Actions CI test result, I'll be uploading 0.104.2-2 to Debian shortly and will report back if these tests pass the very first time on all architectures.",
+  "files_changed": [
+    {
+      "filename": "commands/server_test.go",
+      "status": "modified",
+      "patch": "@@ -25,7 +25,6 @@ import (\n \n \t\"github.com/gohugoio/hugo/config\"\n \t\"github.com/gohugoio/hugo/helpers\"\n-\t\"github.com/gohugoio/hugo/htesting\"\n \t\"golang.org/x/net/context\"\n \t\"golang.org/x/sync/errgroup\"\n \n@@ -69,20 +68,14 @@ func TestServer404(t *testing.T) {\n }\n \n func TestServerPathEncodingIssues(t *testing.T) {\n-\tif htesting.IsGitHubAction() {\n-\t\t// This test is flaky on CI for some reason. Run it on Windows only for now.\n-\t\t// TODO(bep)\n-\t\tif runtime.GOOS != \"windows\" {\n-\t\t\tt.Skip(\"Skipping test on CI\")\n-\t\t}\n-\t}\n \tc := qt.New(t)\n \n \t// Issue 10287\n \tc.Run(\"Unicode paths\", func(c *qt.C) {\n \t\tr := runServerTest(c,\n \t\t\tserverTestOptions{\n-\t\t\t\tpathsToGet: []string{\"h\u00fcg\u00f6/\"},\n+\t\t\t\tpathsToGet:  []string{\"h\u00fcg\u00f6/\"},\n+\t\t\t\tgetNumHomes: 1,\n \t\t\t},\n \t\t)\n \n@@ -123,8 +116,9 @@ status = 404\n `\n \t\tr := runServerTest(c,\n \t\t\tserverTestOptions{\n-\t\t\t\tconfig:     config,\n-\t\t\t\tpathsToGet: []string{\"en/this/does/not/exist\", \"es/this/does/not/exist\"},\n+\t\t\t\tconfig:      config,\n+\t\t\t\tpathsToGet:  []string{\"en/this/does/not/exist\", \"es/this/does/not/exist\"},\n+\t\t\t\tgetNumHomes: 1,\n \t\t\t},\n \t\t)\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

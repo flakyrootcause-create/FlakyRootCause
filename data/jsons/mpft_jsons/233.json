@@ -1,0 +1,17 @@
+{
+  "id": 233,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/pull/159443",
+  "pr_url": "https://github.com/pytorch/pytorch/pull/159443",
+  "issue_description": "Stack from [ghstack](https://github.com/ezyang/ghstack) (oldest at bottom):\r\n* __->__ #159443\r\n\r\nunder dynamo, the libraries couldn't properly be cleared unless we manually did `gc.collect()`, but that's slow. it also worked if we just used the _destroy() method to tear down \r\n\r\nFIXES \r\n#159398\r\n#159349\r\n#159254\r\n#159237\r\n#159153\r\n#159114\r\n#159040\r\n#158910\r\n#158841\r\n#158763\r\n#158735\n\ncc @voznesenskym @penguinwu @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @chenyang78 @kadeng @chauhang @amjames @Lucaskabela",
+  "files_changed": [
+    {
+      "filename": "test/test_autograd_fallback.py",
+      "status": "modified",
+      "patch": "@@ -6,7 +6,7 @@\n import numpy as np\n \n import torch\n-from torch.library import _scoped_library, Library\n+from torch.library import _scoped_library\n from torch.testing._internal.common_utils import (\n     instantiate_parametrized_tests,\n     parametrize,\n@@ -28,20 +28,24 @@ def autograd_fallback_mode(mode):\n class TestAutogradFallback(TestCase):\n     test_ns = \"_test_autograd_fallback\"\n \n+    def setUp(self):\n+        super().setUp()\n+        self.libraries = []\n+\n     def tearDown(self):\n         if hasattr(torch.ops, self.test_ns):\n             delattr(torch.ops, self.test_ns)\n-        if hasattr(self, \"lib\"):\n-            del self.lib.m\n-            del self.lib\n+        for lib in self.libraries:\n+            lib._destroy()\n+        del self.libraries\n \n     def get_op(self, name):\n         return getattr(getattr(torch.ops, self.test_ns), name).default\n \n     def get_lib(self):\n-        lib = Library(self.test_ns, \"FRAGMENT\")  # noqa: TOR901\n-        self.lib = lib\n-        return lib\n+        result = torch.library.Library(self.test_ns, \"FRAGMENT\")  # noqa: TOR901\n+        self.libraries.append(result)\n+        return result\n \n     @parametrize(\"mode\", (\"nothing\", \"warn\"))\n     def test_no_grad(self, mode):"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

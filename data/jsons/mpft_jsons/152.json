@@ -1,0 +1,17 @@
+{
+  "id": 152,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/commit/53436d1",
+  "pr_url": "https://github.com/tensorflow/tensorflow/commit/53436d1",
+  "issue_description": "The problem is that in the yoga example's training data there are 5 classes but when using any other amount of classes as training data the training fails. Set the output layer to the actual number of classes instead.\r\n\r\nWithout this fix, a ValueError is raised (e.g. `ValueError: Shapes (None, 7) and (None, 5) are incompatible`).",
+  "files_changed": [
+    {
+      "filename": "tensorflow/lite/g3doc/tutorials/pose_classification.ipynb",
+      "status": "modified",
+      "patch": "@@ -1015,7 +1015,7 @@\n         \"layer = keras.layers.Dropout(0.5)(layer)\\n\",\n         \"layer = keras.layers.Dense(64, activation=tf.nn.relu6)(layer)\\n\",\n         \"layer = keras.layers.Dropout(0.5)(layer)\\n\",\n-        \"outputs = keras.layers.Dense(5, activation=\\\"softmax\\\")(layer)\\n\",\n+        \"outputs = keras.layers.Dense(len(class_names), activation=\\\"softmax\\\")(layer)\\n\",\n         \"\\n\",\n         \"model = keras.Model(inputs, outputs)\\n\",\n         \"model.summary()\""
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 337,
+  "repo": "ladybird",
+  "issue_url": "https://github.com/LadybirdBrowser/ladybird/commit/366f15b441abb2c3c3b244188edaa86e10712dcd",
+  "pr_url": "https://github.com/LadybirdBrowser/ladybird/commit/366f15b441abb2c3c3b244188edaa86e10712dcd",
+  "issue_description": "Removed white supremacist language.",
+  "files_changed": [
+    {
+      "filename": "CONTRIBUTING.md",
+      "status": "modified",
+      "patch": "@@ -131,6 +131,3 @@ Sometimes good PRs get abandoned by the author for one reason or another. If the\n \n To make this easier, we do appreciate it if folks enable the \"Allow edits from maintainers\" flag on their pull requests.\n \n-## On ideologically motivated changes\n-\n-This is a purely technical project. As such, it is not an appropriate arena to advertise your personal politics or religious beliefs. Any changes that appear ideologically motivated will be rejected."
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

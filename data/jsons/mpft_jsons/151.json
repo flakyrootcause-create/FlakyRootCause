@@ -1,0 +1,17 @@
+{
+  "id": 151,
+  "repo": "llvm-project",
+  "issue_url": "https://github.com/llvm/llvm-project/commit/4c23625",
+  "pr_url": "https://github.com/llvm/llvm-project/commit/4c23625",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "llvm/include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h",
+      "status": "modified",
+      "patch": "@@ -713,7 +713,7 @@ class OrcRemoteTargetClient : public OrcRemoteTargetRPCAPI {\n \n   uint32_t getTrampolineSize() const { return RemoteTrampolineSize; }\n \n-  Expected<std::vector<char>> readMem(char *Dst, JITTargetAddress Src,\n+  Expected<std::vector<uint8_t>> readMem(char *Dst, JITTargetAddress Src,\n                                       uint64_t Size) {\n     // Check for an 'out-of-band' error, e.g. from an MM destructor.\n     if (ExistingError)"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

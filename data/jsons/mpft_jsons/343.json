@@ -1,0 +1,11 @@
+{
+  "id": 343,
+  "repo": "airflow",
+  "issue_url": "https://github.com/apache/airflow/pull/46502/files",
+  "pr_url": "https://github.com/apache/airflow/pull/46502/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 301,
+  "repo": "matplotlib",
+  "issue_url": "https://github.com/matplotlib/matplotlib/pull/16735",
+  "pr_url": "https://github.com/matplotlib/matplotlib/pull/16735",
+  "issue_description": "## PR Summary\r\n\r\nSince parametrizing the test allows it to run in parallel, this makes it flaky, as one process can overwrite the test result image of another.\r\n\r\nOur standard way for dealing with tests that use the same baseline image is to pass duplicate filenames to `image_comparison`, because that is serialized.\r\n\r\nThis is basically the same as #16656 for `test_stem`.\r\n\r\n## PR Checklist\r\n\r\n- [x] Has Pytest style unit tests\r\n- [x] Code is [Flake 8](http://flake8.pycqa.org/en/latest/) compliant\r\n- [N/A] New features are documented, with examples if plot related\r\n- [N/A] Documentation is sphinx and numpydoc compliant\r\n- [N/A] Added an entry to doc/users/next_whats_new/ if major new feature (follow instructions in README.rst there)\r\n- [N/A] Documented in doc/api/api_changes.rst if API changed in a backward-incompatible way",
+  "files_changed": [
+    {
+      "filename": "lib/matplotlib/tests/test_axes.py",
+      "status": "modified",
+      "patch": "@@ -3342,10 +3342,15 @@ def test_hist_stacked_weighted():\n     ax.hist((d1, d2), weights=(w1, w2), histtype=\"stepfilled\", stacked=True)\n \n \n-@pytest.mark.parametrize(\"use_line_collection\", [True, False],\n-                         ids=['w/ line collection', 'w/o line collection'])\n-@image_comparison(['stem.png'], style='mpl20', remove_text=True)\n-def test_stem(use_line_collection):\n+@image_comparison(['stem.png', 'stem.png'], style='mpl20', remove_text=True)\n+def test_stem():\n+    # Note, we don't use @pytest.mark.parametrize, because in parallel this\n+    # might cause one process result to overwrite another's.\n+    for use_line_collection in [True, False]:\n+        _test_stem(use_line_collection)\n+\n+\n+def _test_stem(use_line_collection):\n     x = np.linspace(0.1, 2 * np.pi, 100)\n     args = (x, np.cos(x))\n     # Label is a single space to force a legend to be drawn, but to avoid any"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

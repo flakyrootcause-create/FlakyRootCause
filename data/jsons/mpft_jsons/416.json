@@ -1,0 +1,17 @@
+{
+  "id": 416,
+  "repo": "ai-gateway",
+  "issue_url": "https://github.com/envoyproxy/ai-gateway/pull/1143",
+  "pr_url": "https://github.com/envoyproxy/ai-gateway/pull/1143",
+  "issue_description": "**Description**\r\n\r\nCloses #1142 ",
+  "files_changed": [
+    {
+      "filename": "cmd/aigw/run_test.go",
+      "status": "modified",
+      "patch": "@@ -207,21 +207,14 @@ func TestRunCmdContext_writeEnvoyResourcesAndRunExtProc(t *testing.T) {\n }\n \n func Test_mustStartExtProc(t *testing.T) {\n-\tctx, cancel := context.WithCancel(t.Context())\n-\tt.Cleanup(cancel)\n+\tmockerr := errors.New(\"mock extproc error\")\n \trunCtx := &runCmdContext{\n \t\ttmpdir:          t.TempDir(),\n-\t\textProcLauncher: mainlib.Main,\n-\t\t// UNIX doesn't like a long UDS path, so we use a short one.\n-\t\t// https://unix.stackexchange.com/questions/367008/why-is-socket-path-length-limited-to-a-hundred-chars\n-\t\tudsPath:      filepath.Join(\"/tmp\", \"run.sock\"),\n-\t\tstderrLogger: slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})),\n+\t\textProcLauncher: func(context.Context, []string, io.Writer) error { return mockerr },\n+\t\tstderrLogger:    slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})),\n \t}\n-\tdone := runCtx.mustStartExtProc(ctx, filterapi.MustLoadDefaultConfig())\n-\ttime.Sleep(1 * time.Second)\n-\tcancel()\n-\t// Wait for the external processor to stop.\n-\trequire.NoError(t, <-done)\n+\tdone := runCtx.mustStartExtProc(t.Context(), filterapi.MustLoadDefaultConfig())\n+\trequire.ErrorIs(t, <-done, mockerr)\n }\n \n // checkIfOllamaReady checks if the Ollama server is ready and if the specified model is available."
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

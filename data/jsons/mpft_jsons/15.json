@@ -1,0 +1,42 @@
+{
+  "id": 15,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/35c85a2249c006c35ed67ceb7f8514e00e650b54",
+  "pr_url": "https://github.com/nodejs/node/commit/35c85a2249c006c35ed67ceb7f8514e00e650b54",
+  "issue_description": "Add address and/or port to errors where applicable for better reporting.\n\nSee joyent/node#7005 and #16 \n",
+  "files_changed": [
+    {
+      "filename": "lib/net.js",
+      "status": "modified",
+      "patch": "@@ -63,6 +63,25 @@ function isPipeName(s) {\n   return util.isString(s) && toNumber(s) === false;\n }\n \n+// format exceptions\n+function detailedException(err, syscall, address, port, additional) {\n+  var details;\n+  if (port && port > 0) {\n+    details = address + ':' + port;\n+  } else {\n+    details = address;\n+  }\n+\n+  if (additional) {\n+    details += ' - Local (' + additional + ')';\n+  }\n+  var ex = errnoException(err, syscall, details);\n+  ex.address = address;\n+  if (port) {\n+    ex.port = port;\n+  }\n+  return ex;\n+}\n \n exports.createServer = function() {\n   return new Server(arguments[0], arguments[1]);\n@@ -755,7 +774,7 @@ function afterWrite(status, handle, req, err) {\n   }\n \n   if (status < 0) {\n-    var ex = errnoException(status, 'write', err);\n+    var ex = detailedException(status, 'write', req.address, req.port);\n     debug('write failure', ex);\n     self._destroy(ex, req.cb);\n     return;\n@@ -817,28 +836,46 @@ function connect(self, address, port, addressType, localAddress, localPort) {\n     err = bind(localAddress, localPort);\n \n     if (err) {\n-      self._destroy(errnoException(err, 'bind'));\n+      var ex = detailedException(err, 'bind', localAddress, localPort);\n+      self._destroy(ex);\n       return;\n     }\n   }\n \n-  var req = { oncomplete: afterConnect };\n+  var req = {\n+    oncomplete: afterConnect,\n+    port: undefined,\n+    address: undefined,\n+    localAddress: undefined,\n+    localPort: undefined\n+  };\n   if (addressType === 6 || addressType === 4) {\n     port = port | 0;\n     if (port <= 0 || port > 65535)\n       throw new RangeError('Port should be > 0 and < 65536');\n \n+    req.port = port;\n+    req.address = address;\n     if (addressType === 6) {\n       err = self._handle.connect6(req, address, port);\n     } else if (addressType === 4) {\n       err = self._handle.connect(req, address, port);\n     }\n   } else {\n+    req.address = address;\n     err = self._handle.connect(req, address, afterConnect);\n   }\n \n   if (err) {\n-    self._destroy(errnoException(err, 'connect'));\n+    self._getsockname();\n+    var details;\n+    if (self._sockname) {\n+      ex.localAddress = self._sockname.address;\n+      ex.localPort = self._sockname.port;\n+      details = ex.localAddress + ':' + ex.localPort;\n+    }\n+    var ex = detailedException(err, 'connect', address, port, details);\n+    self._destroy(ex);\n   }\n }\n \n@@ -921,6 +958,9 @@ Socket.prototype.connect = function(options, cb) {\n         // There are no event listeners registered yet so defer the\n         // error event to the next tick.\n         process.nextTick(function() {\n+          err.host = options.host;\n+          err.port = options.port;\n+          err.message = err.message + ' ' + options.host + ':' + options.port;\n           self.emit('error', err);\n           self._destroy();\n         });\n@@ -988,7 +1028,18 @@ function afterConnect(status, handle, req, readable, writable) {\n \n   } else {\n     self._connecting = false;\n-    self._destroy(errnoException(status, 'connect'));\n+    var details;\n+    if (req.localAddress && req.localPort) {\n+      ex.localAddress = req.localAddress;\n+      ex.localPort = req.localPort;\n+      details = ex.localAddress + ':' + ex.localPort;\n+    }\n+    var ex = detailedException(status,\n+                               'connect',\n+                               req.address,\n+                               req.port,\n+                               details);\n+    self._destroy(ex);\n   }\n }\n \n@@ -1117,7 +1168,7 @@ Server.prototype._listen2 = function(address, port, addressType, backlog, fd) {\n     debug('_listen2: create a handle');\n     var rval = createServerHandle(address, port, addressType, fd);\n     if (util.isNumber(rval)) {\n-      var error = errnoException(rval, 'listen');\n+      var error = detailedException(rval, 'listen', address, port);\n       process.nextTick(function() {\n         self.emit('error', error);\n       });\n@@ -1134,7 +1185,7 @@ Server.prototype._listen2 = function(address, port, addressType, backlog, fd) {\n   var err = _listen(self._handle, backlog);\n \n   if (err) {\n-    var ex = errnoException(err, 'listen');\n+    var ex = detailedException(err, 'listen', address, port);\n     self._handle.close();\n     self._handle = null;\n     process.nextTick(function() {\n@@ -1182,8 +1233,10 @@ function listen(self, address, port, addressType, backlog, fd, exclusive) {\n         err = uv.UV_EADDRINUSE;\n     }\n \n-    if (err)\n-      return self.emit('error', errnoException(err, 'bind'));\n+    if (err) {\n+      var ex = detailedException(err, 'bind', address, port);\n+      return self.emit('error', ex);\n+    }\n \n     self._handle = handle;\n     self._listen2(address, port, addressType, backlog, fd);"
+    },
+    {
+      "filename": "test/simple/test-net-better-error-messages-listen-path.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,9 @@\n+var common = require('../common');\n+var assert = require('assert');\n+var net = require('net');\n+var fp = '/blah/fadfa';\n+var server = net.createServer(assert.fail);\n+server.listen(fp, assert.fail);\n+server.on('error', common.mustCall(function(e) {\n+  assert.equal(e.address, fp)\n+}));"
+    },
+    {
+      "filename": "test/simple/test-net-better-error-messages-listen.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,11 @@\n+var common = require('../common');\n+var assert = require('assert');\n+var net = require('net');\n+\n+var server = net.createServer(assert.fail);\n+server.listen(1, '1.1.1.1', assert.fail);\n+server.on('error', common.mustCall(function(e) {\n+  assert.equal(e.address, '1.1.1.1');\n+  assert.equal(e.port, 1);\n+  assert.equal(e.syscall, 'listen');\n+}));"
+    },
+    {
+      "filename": "test/simple/test-net-better-error-messages-path.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,12 @@\n+var common = require('../common');\n+var net = require('net');\n+var assert = require('assert');\n+var fp = '/tmp/fadagagsdfgsdf';\n+var c = net.connect(fp);\n+\n+c.on('connect', assert.fail);\n+\n+c.on('error', common.mustCall(function(e) {\n+  assert.equal(e.code, 'ENOENT');\n+  assert.equal(e.message, 'connect ENOENT ' + fp);\n+}));"
+    },
+    {
+      "filename": "test/simple/test-net-better-error-messages-port-hostname.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,13 @@\n+var common = require('../common');\n+var net = require('net');\n+var assert = require('assert');\n+\n+var c = net.createConnection(common.PORT, 'blah.blah');\n+\n+c.on('connect', assert.fail);\n+\n+c.on('error', common.mustCall(function(e) {\n+  assert.equal(e.code, 'ENOTFOUND');\n+  assert.equal(e.port, common.PORT);\n+  assert.equal(e.hostname, 'blah.blah');\n+}));"
+    },
+    {
+      "filename": "test/simple/test-net-better-error-messages-port.js",
+      "status": "added",
+      "patch": "@@ -0,0 +1,13 @@\n+var common = require('../common');\n+var net = require('net');\n+var assert = require('assert');\n+\n+var c = net.createConnection(common.PORT);\n+\n+c.on('connect', assert.fail);\n+\n+c.on('error', common.mustCall(function(e) {\n+  assert.equal(e.code, 'ECONNREFUSED');\n+  assert.equal(e.port, common.PORT);\n+  assert.equal(e.address, '127.0.0.1');\n+}));"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

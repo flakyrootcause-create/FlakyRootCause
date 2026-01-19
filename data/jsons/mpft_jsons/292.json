@@ -1,0 +1,17 @@
+{
+  "id": 292,
+  "repo": "iceberg",
+  "issue_url": "https://github.com/apache/iceberg/pull/12714",
+  "pr_url": "https://github.com/apache/iceberg/pull/12714",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "core/src/test/java/org/apache/iceberg/hadoop/TestHadoopCommits.java",
+      "status": "modified",
+      "patch": "@@ -459,7 +459,7 @@ public void testConcurrentFastAppends(@TempDir File dir) throws Exception {\n                 final int currentFilesCount = numCommittedFiles;\n                 Awaitility.await()\n                     .pollInterval(Duration.ofMillis(10))\n-                    .atMost(Duration.ofSeconds(10))\n+                    .atMost(Duration.ofSeconds(60))\n                     .until(() -> barrier.get() >= currentFilesCount * threadsCount);\n                 tableWithHighRetries.newFastAppend().appendFile(file).commit();\n                 barrier.incrementAndGet();"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

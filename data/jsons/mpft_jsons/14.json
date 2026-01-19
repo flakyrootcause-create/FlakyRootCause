@@ -1,0 +1,11 @@
+{
+  "id": 14,
+  "repo": "spark",
+  "issue_url": "https://github.com/apache/spark/commit/eaed585c55e5f242fdc397e62dbc9e068b033af4",
+  "pr_url": "https://github.com/apache/spark/commit/eaed585c55e5f242fdc397e62dbc9e068b033af4",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

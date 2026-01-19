@@ -1,0 +1,22 @@
+{
+  "id": 365,
+  "repo": "thanos",
+  "issue_url": "https://github.com/thanos-io/thanos/pull/8393",
+  "pr_url": "https://github.com/thanos-io/thanos/pull/8393",
+  "issue_description": "<!--\r\n    Keep PR title verbose enough and add prefix telling\r\n    about what components it touches e.g \"query:\" or \".*:\"\r\n-->\r\n\r\n<!--\r\n    Don't forget about CHANGELOG!\r\n\r\n    Changelog entry format:\r\n    - [#<PR-id>](<PR-URL>) Thanos <Component> ...\r\n\r\n    <PR-id> Id of your pull request.\r\n    <PR-URL> URL of your PR such as https://github.com/thanos-io/thanos/pull/<PR-id>\r\n    <Component> Component affected by your changes such as Query, Store, Receive.\r\n-->\r\n\r\n* [x] I added CHANGELOG entry for this change.\r\n* [x] Change is not relevant to the end user.\r\n\r\n## Changes\r\n\r\nFixes: #8115\r\n\r\n<!-- Enumerate changes you made -->\r\n\r\n## Verification\r\n\r\n<!-- How you tested it? How do you know it works? -->\r\n",
+  "files_changed": [
+    {
+      "filename": "CHANGELOG.md",
+      "status": "modified",
+      "patch": "@@ -12,6 +12,7 @@ We use *breaking :warning:* to mark changes that are not backward compatible (re\n \n ### Fixed\n \n+- [#8393](https://github.com/thanos-io/thanos/pull/8393) Tests: fix flaky TestCompactWithStoreGateway by adding proper readiness checks\n - [#8334](https://github.com/thanos-io/thanos/pull/8334) Query: wait for initial endpoint discovery before becoming ready\n \n ### Added"
+    },
+    {
+      "filename": "test/e2e/compact_test.go",
+      "status": "modified",
+      "patch": "@@ -469,6 +469,10 @@ func testCompactWithStoreGateway(t *testing.T, penaltyDedup bool) {\n \tq := e2ethanos.NewQuerierBuilder(e, \"1\", str.InternalEndpoint(\"grpc\")).Init()\n \ttestutil.Ok(t, e2e.StartAndWaitReady(q))\n \n+\ttestutil.Ok(t, q.WaitSumMetricsWithOptions(e2emon.Equals(1), []string{\"thanos_store_nodes_grpc_connections\"}, e2emon.WaitMissingMetrics(), e2emon.WithLabelMatchers(\n+\t\tmatchers.MustNewMatcher(matchers.MatchEqual, \"store_type\", \"store\"),\n+\t)))\n+\n \tctx, cancel = context.WithTimeout(context.Background(), 3*time.Minute)\n \tt.Cleanup(cancel)\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

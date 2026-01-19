@@ -1,0 +1,17 @@
+{
+  "id": 237,
+  "repo": "ray",
+  "issue_url": "https://github.com/ray-project/ray/pull/56028",
+  "pr_url": "https://github.com/ray-project/ray/pull/56028",
+  "issue_description": "<!-- Thank you for your contribution! Please review https://github.com/ray-project/ray/blob/master/CONTRIBUTING.rst before opening a pull request. -->\r\n\r\n<!-- Please add a reviewer to the assignee section when you create a PR. If you don't have the access to it, we will shortly find a reviewer and assign them to your PR. -->\r\n\r\n## Why are these changes needed?\r\n\r\n<!-- Please give a short summary of the change and the problem this solves. -->\r\n\r\nFixing [flakey](https://buildkite.com/anyscale/rayturbo/builds/5914#0198edc9-d671-4075-b788-4c0c555b29db) test_operators by explicitly sorting before comparing the results.\r\n\r\n## Related issue number\r\n\r\n<!-- For example: \"Closes #1234\" -->\r\n\r\n## Checks\r\n\r\n- [ ] I've signed off every commit(by using the -s flag, i.e., `git commit -s`) in this PR.\r\n- [ ] I've run `scripts/format.sh` to lint the changes in this PR.\r\n- [ ] I've included any doc changes needed for https://docs.ray.io/en/master/.\r\n    - [ ] I've added any new APIs to the API Reference. For example, if I added a\r\n           method in Tune, I've added it in `doc/source/tune/api/` under the\r\n           corresponding `.rst` file.\r\n- [ ] I've made sure the tests are passing. Note that there might be a few flaky tests, see the recent failures at https://flakey-tests.ray.io/\r\n- Testing Strategy\r\n   - [ ] Unit tests\r\n   - [ ] Release tests\r\n   - [ ] This PR is not tested :(\r\n",
+  "files_changed": [
+    {
+      "filename": "python/ray/data/tests/test_operators.py",
+      "status": "modified",
+      "patch": "@@ -139,7 +139,9 @@ def dummy_all_transform(bundles: List[RefBundle], ctx):\n \n     # Check we return transformed bundles.\n     assert not op.completed()\n-    assert _take_outputs(op) == [[1, 2], [3, 4]]\n+    outputs = _take_outputs(op)\n+    expected = [[1, 2], [3, 4]]\n+    assert sorted(outputs) == expected, f\"Expected {expected}, got {outputs}\"\n     stats = op.get_stats()\n     assert \"FooStats\" in stats\n     assert op.completed()\n@@ -515,7 +517,9 @@ def test_map_operator_ray_args(shutdown_only, use_actors):\n     run_op_tasks_sync(op)\n \n     # Check we don't hang and complete with num_gpus=1.\n-    assert _take_outputs(op) == [[i * 2] for i in range(10)]\n+    outputs = _take_outputs(op)\n+    expected = [[i * 2] for i in range(10)]\n+    assert sorted(outputs) == expected, f\"Expected {expected}, got {outputs}\"\n     assert op.completed()\n \n "
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,27 @@
+{
+  "id": 24,
+  "repo": "SpacetimeDB",
+  "issue_url": "https://github.com/clockworklabs/SpacetimeDB/issues/1527",
+  "pr_url": "https://github.com/clockworklabs/SpacetimeDB/pull/1536",
+  "issue_description": "See e.g. https://github.com/clockworklabs/SpacetimeDB/actions/runs/9977698168/job/27575374257?pr=1479\n\nI believe this is due to these smoketests using the CLI to subscribe to queries. They asynchronously read errors/exceptions out from the CLI output, but the CLI call is wrapped in a **synchronous** exception handler, so this handler may or may not be triggered properly depending on the timing. For example, in `smoketests/tests/permissions.py`:\n\n```python\n        with self.assertRaises(Exception):\n            self.subscribe(\"SELECT * FROM Secret\", n=0)\n```",
+  "files_changed": [
+    {
+      "filename": "smoketests/__init__.py",
+      "status": "modified",
+      "patch": "@@ -237,17 +237,17 @@ def stderr_task():\n         threading.Thread(target=stderr_task).start()\n \n         print(\"initial update:\", proc.stdout.readline())\n-        if proc.poll() is not None:\n-            if proc.returncode:\n-                raise subprocess.CalledProcessError(proc.returncode, fake_args)\n-            return lambda timeout=None: []\n \n         def run():\n             updates = list(map(json.loads, proc.stdout))\n             code = proc.wait()\n             if code:\n                 raise subprocess.CalledProcessError(code, fake_args)\n             return updates\n+        # Note that we're returning `.join`, not `.join()`; this returns something that the caller can call in order to\n+        # join the thread and wait for the results.\n+        # If the caller does not invoke this returned value, the thread will just run in the background, not be awaited,\n+        # and **not raise any exceptions to the caller**.\n         return ReturnThread(run).join\n \n     @classmethod\n@@ -299,6 +299,9 @@ def enterClassContext(cls, cm):\n             return result\n \n \n+# This is a custom thread class that will propagate an exception to the caller of `.join()`.\n+# This is required because, by default, threads do not propagate exceptions to their callers,\n+# even callers who have called `join`.\n class ReturnThread:\n     def __init__(self, target):\n         self._target = target\n@@ -307,6 +310,8 @@ def __init__(self, target):\n         self._thread.start()\n \n     def _task(self):\n+        # Wrap self._target()` with an exception handler, so we can return the exception\n+        # to the caller of `join` below.\n         try:\n             self._result = self._target()\n         except BaseException as e:"
+    },
+    {
+      "filename": "smoketests/tests/add_remove_index.py",
+      "status": "modified",
+      "patch": "@@ -64,7 +64,7 @@ def test_add_then_remove_index(self):\n         # There are no indices, resulting in an unsupported unindexed join.\n         self.publish_module(name, clear = False)\n         with self.assertRaises(Exception):\n-            self.subscribe(self.JOIN_QUERY, n = 0)\n+            self.subscribe(self.JOIN_QUERY, n = 0)()\n \n         # Publish the indexed version.\n         # Now we have indices, so the query should be accepted.\n@@ -79,4 +79,4 @@ def test_add_then_remove_index(self):\n         self.write_module_code(self.MODULE_CODE)\n         self.publish_module(name, clear = False)\n         with self.assertRaises(Exception):\n-            self.subscribe(self.JOIN_QUERY, n = 0)\n+            self.subscribe(self.JOIN_QUERY, n = 0)()"
+    },
+    {
+      "filename": "smoketests/tests/permissions.py",
+      "status": "modified",
+      "patch": "@@ -114,7 +114,7 @@ def test_private_table(self):\n             self.spacetime(\"sql\", self.address, \"select * from Secret\")\n \n         with self.assertRaises(Exception):\n-            self.subscribe(\"SELECT * FROM Secret\", n=0)\n+            self.subscribe(\"SELECT * FROM Secret\", n=0)()\n \n         sub = self.subscribe(\"SELECT * FROM *\", n=1)\n         self.call(\"do_thing\", anon=True)"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Python)"
+}

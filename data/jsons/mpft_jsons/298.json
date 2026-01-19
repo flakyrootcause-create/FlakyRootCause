@@ -1,0 +1,22 @@
+{
+  "id": 298,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/pull/115633",
+  "pr_url": "https://github.com/elastic/elasticsearch/pull/115633",
+  "issue_description": "The PR at https://github.com/elastic/elasticsearch/pull/114334 disallows functions from returning TEXT, and this affected error messages also. This Analyzer test was flaky because it randomly selected from a list of type combinations, only occasionally hitting the case where it asserted incorrectly on a TEXT error message.\r\n\r\nFixes #115636\r\n",
+  "files_changed": [
+    {
+      "filename": "muted-tests.yml",
+      "status": "modified",
+      "patch": "@@ -282,9 +282,6 @@ tests:\n - class: org.elasticsearch.oldrepos.OldRepositoryAccessIT\n   method: testOldRepoAccess\n   issue: https://github.com/elastic/elasticsearch/issues/115631\n-- class: org.elasticsearch.xpack.esql.analysis.AnalyzerTests\n-  method: testMvAppendValidation\n-  issue: https://github.com/elastic/elasticsearch/issues/115636\n \n # Examples:\n #"
+    },
+    {
+      "filename": "x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/analysis/AnalyzerTests.java",
+      "status": "modified",
+      "patch": "@@ -56,6 +56,7 @@\n import java.util.List;\n import java.util.Map;\n import java.util.Set;\n+import java.util.function.Function;\n import java.util.function.Supplier;\n import java.util.stream.Collectors;\n import java.util.stream.IntStream;\n@@ -1879,14 +1880,19 @@ public void testMvAppendValidation() {\n         Supplier<Integer> supplier = () -> randomInt(fields.length - 1);\n         int first = supplier.get();\n         int second = randomValueOtherThan(first, supplier);\n+        Function<String, String> noText = (type) -> type.equals(\"text\") ? \"keyword\" : type;\n+        assumeTrue(\n+            \"Ignore tests with TEXT and KEYWORD combinations because they are now valid\",\n+            noText.apply(fields[first][0]).equals(noText.apply(fields[second][0])) == false\n+        );\n \n         String signature = \"mv_append(\" + fields[first][0] + \", \" + fields[second][0] + \")\";\n         verifyUnsupported(\n             \" from test | eval \" + signature,\n             \"second argument of [\"\n                 + signature\n                 + \"] must be [\"\n-                + fields[first][1]\n+                + noText.apply(fields[first][1])\n                 + \"], found value [\"\n                 + fields[second][0]\n                 + \"] type [\""
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

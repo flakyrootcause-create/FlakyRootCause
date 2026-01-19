@@ -1,0 +1,27 @@
+{
+  "id": 31,
+  "repo": "polkadot-sdk",
+  "issue_url": "https://github.com/paritytech/polkadot-sdk/issues/5974",
+  "pr_url": "https://github.com/paritytech/polkadot-sdk/pull/6154",
+  "issue_description": "Examples (from yesterday 10 of 78 fails)\r\n\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7528201\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7527201\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7526808\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7526157\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7523749\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7519971\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7518972\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7518884\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7518515\r\nhttps://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs/7517649\r\n\r\ncc: @paritytech/sdk-node ",
+  "files_changed": [
+    {
+      "filename": ".gitlab/pipeline/zombienet/substrate.yml",
+      "status": "modified",
+      "patch": "@@ -70,11 +70,11 @@ zombienet-substrate-0001-basic-warp-sync:\n       --local-dir=\"${LOCAL_DIR}/0001-basic-warp-sync\"\n       --test=\"test-warp-sync.zndsl\"\n \n-.zombienet-substrate-0002-validators-warp-sync:\n+zombienet-substrate-0002-validators-warp-sync:\n   extends:\n     - .zombienet-substrate-warp-sync-common\n   before_script:\n-    - !reference [.zombienet-substrate-warp-sync-common, before_script]\n+    - !reference [ .zombienet-substrate-warp-sync-common, before_script ]\n     - cp --remove-destination ${LOCAL_DIR}/0001-basic-warp-sync/chain-spec.json ${LOCAL_DIR}/0002-validators-warp-sync\n   script:\n     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh\n@@ -85,7 +85,7 @@ zombienet-substrate-0003-block-building-warp-sync:\n   extends:\n     - .zombienet-substrate-warp-sync-common\n   before_script:\n-    - !reference [.zombienet-substrate-warp-sync-common, before_script]\n+    - !reference [ .zombienet-substrate-warp-sync-common, before_script ]\n     - cp --remove-destination ${LOCAL_DIR}/0001-basic-warp-sync/chain-spec.json ${LOCAL_DIR}/0003-block-building-warp-sync\n   script:\n     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh"
+    },
+    {
+      "filename": "substrate/zombienet/0002-validators-warp-sync/test-validators-warp-sync.toml",
+      "status": "modified",
+      "patch": "@@ -11,12 +11,12 @@ chain_spec_path = \"chain-spec.json\"\n   [[relaychain.nodes]]\n   name = \"alice\"\n   validator = true\n-  args = [\"--sync warp\"]\n+  args = [\"--log=beefy=debug\", \"--sync warp\"]\n \n   [[relaychain.nodes]]\n   name = \"bob\"\n   validator = true\n-  args = [\"--sync warp\"]\n+  args = [\"--log=beefy=debug\", \"--sync warp\"]\n \n   # we need at least 3 nodes for warp sync\n   [[relaychain.nodes]]"
+    },
+    {
+      "filename": "substrate/zombienet/0002-validators-warp-sync/test-validators-warp-sync.zndsl",
+      "status": "modified",
+      "patch": "@@ -31,11 +31,9 @@ bob: log line matches \"Block history download is complete\" within 120 seconds\n alice: reports block height is at least {{DB_BLOCK_HEIGHT}} within 10 seconds\n bob: reports block height is at least {{DB_BLOCK_HEIGHT}} within 10 seconds\n \n-alice: reports substrate_beefy_best_block is at least {{DB_BLOCK_HEIGHT}} within 180 seconds\n-bob: reports substrate_beefy_best_block is at least {{DB_BLOCK_HEIGHT}} within 180 seconds\n-\n-alice: reports substrate_beefy_best_block is greater than {{DB_BLOCK_HEIGHT}} within 180 seconds\n-bob: reports substrate_beefy_best_block is greater than {{DB_BLOCK_HEIGHT}} within 180 seconds\n+# In the worst case scenario, the validators should vote on 1 mandatory block each 6 seconds. And 1 era = 200 blocks.\n+alice: reports substrate_beefy_best_block is at least {{200*180/6}} within 180 seconds\n+bob: reports substrate_beefy_best_block is at least {{200*180/6}} within 180 seconds\n \n alice: count of log lines containing \"error\" is 0 within 10 seconds\n bob: count of log lines containing \"verification failed\" is 0 within 10 seconds"
+    }
+  ],
+  "fix_category": "Wait/Join",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Wait/Join"
+}

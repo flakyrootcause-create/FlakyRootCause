@@ -1,0 +1,17 @@
+{
+  "id": 250,
+  "repo": "activemq",
+  "issue_url": "https://github.com/apache/activemq/pull/951",
+  "pr_url": "https://github.com/apache/activemq/pull/951",
+  "issue_description": "Properly shutdown broker for each test and speed up tests by sending less messages",
+  "files_changed": [
+    {
+      "filename": "activemq-unit-tests/src/test/java/org/apache/activemq/advisory/AdvisoryTests.java",
+      "status": "modified",
+      "patch": "@@ -66,13 +66,14 @@\n @RunWith(Parameterized.class)\n public class AdvisoryTests {\n \n-    protected static final int MESSAGE_COUNT = 2000;\n+    protected static final int MESSAGE_COUNT = 100;\n     protected BrokerService broker;\n     protected Connection connection;\n     protected String bindAddress = ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL;\n     protected final boolean includeBodyForAdvisory;\n     protected final boolean persistent;\n     protected final int EXPIRE_MESSAGE_PERIOD = 3000;\n+    protected final int DEFAULT_PREFETCH = 50;\n \n     @Parameters(name = \"includeBodyForAdvisory={0}, persistent={1}\")\n     public static Collection<Object[]> data() {\n@@ -126,7 +127,7 @@ public void testQueueSlowConsumerAdvisory() throws Exception {\n \n     @Test(timeout = 60000)\n     public void testTopicSlowConsumerAdvisory() throws Exception {\n-        broker.getDestinationPolicy().getDefaultEntry().setTopicPrefetch(500);\n+        broker.getDestinationPolicy().getDefaultEntry().setTopicPrefetch(10);\n         broker.getDestinationPolicy().getDefaultEntry().setPendingMessageLimitStrategy(null);\n         testSlowConsumerAdvisory(new ActiveMQTopic(getClass().getName()));\n     }\n@@ -597,8 +598,7 @@ public void testMessageDiscardedAdvisory() throws Exception {\n         MessageConsumer advisoryConsumer = s.createConsumer(advisoryTopic);\n         // start throwing messages at the consumer\n         MessageProducer producer = s.createProducer(topic);\n-        int count = (new ActiveMQPrefetchPolicy().getTopicPrefetch() * 2);\n-        for (int i = 0; i < count; i++) {\n+        for (int i = 0; i < MESSAGE_COUNT; i++) {\n             BytesMessage m = s.createBytesMessage();\n             m.writeBytes(new byte[1024]);\n             producer.send(m);\n@@ -672,7 +672,11 @@ public void setUp() throws Exception {\n \n     @After\n     public void tearDown() throws Exception {\n-        connection.close();\n+        try {\n+            connection.close();\n+        } catch (Exception e) {\n+            //swallow exception so we can still stop the broker even on error\n+        }\n         if (broker != null) {\n             broker.stop();\n         }\n@@ -704,6 +708,10 @@ protected void configureBroker(BrokerService answer) throws Exception {\n         policy.setAdvisoryWhenFull(true);\n         policy.setIncludeBodyForAdvisory(includeBodyForAdvisory);\n         policy.setProducerFlowControl(false);\n+        policy.setDurableTopicPrefetch(DEFAULT_PREFETCH);\n+        policy.setTopicPrefetch(DEFAULT_PREFETCH);\n+        policy.setQueuePrefetch(DEFAULT_PREFETCH);\n+\n         ConstantPendingMessageLimitStrategy strategy = new ConstantPendingMessageLimitStrategy();\n         strategy.setLimit(10);\n         policy.setPendingMessageLimitStrategy(strategy);"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

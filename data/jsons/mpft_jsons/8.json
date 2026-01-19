@@ -1,0 +1,11 @@
+{
+  "id": 8,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/f142852b077596d6e93ad92bab341568a93927ca",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/f142852b077596d6e93ad92bab341568a93927ca",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

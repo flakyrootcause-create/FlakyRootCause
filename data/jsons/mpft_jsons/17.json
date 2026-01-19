@@ -1,0 +1,47 @@
+{
+  "id": 17,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/555aeb3aae3b1b91a1c183c6326fd033f491e103",
+  "pr_url": "https://github.com/nodejs/node/commit/555aeb3aae3b1b91a1c183c6326fd033f491e103",
+  "issue_description": "No out-of-tree patches, yay!\n\nR=@indutny\n",
+  "files_changed": [
+    {
+      "filename": "deps/v8/src/accessors.cc",
+      "status": "modified",
+      "patch": "@@ -382,9 +382,9 @@ void Accessors::RegExpSourceGetter(\n   i::Isolate* isolate = reinterpret_cast<i::Isolate*>(info.GetIsolate());\n   HandleScope scope(isolate);\n \n-  Handle<Object> receiver =\n-      Utils::OpenHandle(*v8::Local<v8::Value>(info.This()));\n-  Handle<JSRegExp> regexp = Handle<JSRegExp>::cast(receiver);\n+  Handle<Object> holder =\n+      Utils::OpenHandle(*v8::Local<v8::Value>(info.Holder()));\n+  Handle<JSRegExp> regexp = Handle<JSRegExp>::cast(holder);\n   Handle<String> result;\n   if (regexp->TypeTag() == JSRegExp::NOT_COMPILED) {\n     result = isolate->factory()->empty_string();"
+    },
+    {
+      "filename": "deps/v8/src/base/atomicops_internals_mips64_gcc.h",
+      "status": "modified",
+      "patch": "@@ -59,7 +59,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,\n                        \"2:\\n\"\n                        \".set pop\\n\"\n                        : \"=&r\" (prev), \"=m\" (*ptr), \"=&r\" (tmp)\n-                       : \"Ir\" (old_value), \"r\" (new_value), \"m\" (*ptr)\n+                       : \"r\" (old_value), \"r\" (new_value), \"m\" (*ptr)\n                        : \"memory\");\n   return prev;\n }\n@@ -196,7 +196,7 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,\n                        \"2:\\n\"\n                        \".set pop\\n\"\n                        : \"=&r\" (prev), \"=m\" (*ptr), \"=&r\" (tmp)\n-                       : \"Ir\" (old_value), \"r\" (new_value), \"m\" (*ptr)\n+                       : \"r\" (old_value), \"r\" (new_value), \"m\" (*ptr)\n                        : \"memory\");\n   return prev;\n }"
+    },
+    {
+      "filename": "deps/v8/src/base/atomicops_internals_mips_gcc.h",
+      "status": "modified",
+      "patch": "@@ -36,7 +36,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,\n                        \"2:\\n\"\n                        \".set pop\\n\"\n                        : \"=&r\" (prev), \"=&r\" (tmp)\n-                       : \"Ir\" (old_value), \"r\" (new_value), \"r\" (ptr)\n+                       : \"r\" (old_value), \"r\" (new_value), \"r\" (ptr)\n                        : \"memory\");\n   return prev;\n }"
+    },
+    {
+      "filename": "deps/v8/src/ic/mips/ic-compiler-mips.cc",
+      "status": "modified",
+      "patch": "@@ -62,12 +62,13 @@ Handle<Code> PropertyICCompiler::CompilePolymorphic(TypeHandleList* types,\n       // Separate compare from branch, to provide path for above JumpIfSmi().\n       Handle<WeakCell> cell = Map::WeakCellForMap(map);\n       __ GetWeakValue(match, cell);\n+      __ Subu(match, match, Operand(map_reg));\n       if (type->Is(HeapType::Number())) {\n         DCHECK(!number_case.is_unused());\n         __ bind(&number_case);\n       }\n       __ Jump(handlers->at(current), RelocInfo::CODE_TARGET, eq, match,\n-              Operand(map_reg));\n+              Operand(zero_reg));\n     }\n   }\n   DCHECK(number_of_handled_maps != 0);"
+    },
+    {
+      "filename": "deps/v8/src/ic/mips64/ic-compiler-mips64.cc",
+      "status": "modified",
+      "patch": "@@ -62,12 +62,13 @@ Handle<Code> PropertyICCompiler::CompilePolymorphic(TypeHandleList* types,\n       // Separate compare from branch, to provide path for above JumpIfSmi().\n       Handle<WeakCell> cell = Map::WeakCellForMap(map);\n       __ GetWeakValue(match, cell);\n+      __ Dsubu(match, match, Operand(map_reg));\n       if (type->Is(HeapType::Number())) {\n         DCHECK(!number_case.is_unused());\n         __ bind(&number_case);\n       }\n       __ Jump(handlers->at(current), RelocInfo::CODE_TARGET, eq, match,\n-              Operand(map_reg));\n+              Operand(zero_reg));\n     }\n   }\n   DCHECK(number_of_handled_maps != 0);"
+    },
+    {
+      "filename": "deps/v8/src/preparser.h",
+      "status": "modified",
+      "patch": "@@ -2905,7 +2905,7 @@ ParserBase<Traits>::ParseTemplateLiteral(ExpressionT tag, int start, bool* ok) {\n     Next();\n \n     if (next == Token::EOS) {\n-      ReportMessageAt(Scanner::Location(start, peek_position()),\n+      ReportMessageAt(Scanner::Location(start, position()),\n                       \"unterminated_template\");\n       *ok = false;\n       return Traits::EmptyExpression();"
+    },
+    {
+      "filename": "deps/v8/src/version.cc",
+      "status": "modified",
+      "patch": "@@ -35,7 +35,7 @@\n #define MAJOR_VERSION     4\n #define MINOR_VERSION     1\n #define BUILD_NUMBER      0\n-#define PATCH_LEVEL       7\n+#define PATCH_LEVEL       12\n // Use 1 for candidates and 0 otherwise.\n // (Boolean macro values are not supported by all preprocessors.)\n #define IS_CANDIDATE_VERSION 0"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

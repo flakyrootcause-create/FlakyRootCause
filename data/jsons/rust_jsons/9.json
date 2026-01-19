@@ -1,0 +1,42 @@
+{
+  "id": 9,
+  "repo": "vibranium",
+  "issue_url": "https://github.com/0x-r4bbit/vibranium/issues/29",
+  "pr_url": "https://github.com/0x-r4bbit/vibranium/pull/32",
+  "issue_description": "Current algo to merge default CLI options with custom ones is primitive and flaky. E.g. it relies on sorting which doesn't work well for this use case in the first place.",
+  "files_changed": [
+    {
+      "filename": ".azure-pipelines.yml",
+      "status": "modified",
+      "patch": "@@ -52,6 +52,8 @@ jobs:\n         condition: eq( variables['Agent.OS'], 'Windows_NT' )\n       - script: cargo build --all\n         displayName: Cargo build\n+      - script: cargo test --all\n+        displayName: Cargo test vibranium\n       - script: cd cli && cargo test --all\n-        displayName: Cargo test\n+        displayName: Cargo test vibranium-cli\n "
+    },
+    {
+      "filename": "src/blockchain/mod.rs",
+      "status": "modified",
+      "patch": "@@ -1,7 +1,8 @@\n-extern crate log;\n-\n use std::process::{Command, Child};\n+\n use crate::config;\n+use crate::utils;\n+\n use support::SupportedBlockchainClients;\n \n pub mod error;\n@@ -36,21 +37,21 @@ impl<'a> Node<'a> {\n     let client_options: Vec<String> = match &config.client_options {\n       Some(options) => {\n         match client.parse() {\n-          Ok(SupportedBlockchainClients::Parity) => merge_defaults_with_options_for(SupportedBlockchainClients::Parity, options.to_vec()),\n-          Ok(SupportedBlockchainClients::Geth) => merge_defaults_with_options_for(SupportedBlockchainClients::Geth, options.to_vec()),\n+          Ok(SupportedBlockchainClients::Parity) => utils::merge_cli_options(\n+            support::default_options_from(SupportedBlockchainClients::Parity),\n+            options.to_vec()\n+          ),\n+          Ok(SupportedBlockchainClients::Geth) => utils::merge_cli_options(\n+            support::default_options_from(SupportedBlockchainClients::Geth),\n+            options.to_vec()\n+          ),\n           Err(_err) => options.to_vec(),\n         }\n       }\n       None => {\n         match project_config.blockchain {\n-          Some(config) => config.options.unwrap_or_else(|| {\n-            match client.parse() {\n-              Ok(SupportedBlockchainClients::Parity) => support::default_options_for(SupportedBlockchainClients::Parity),\n-              Ok(SupportedBlockchainClients::Geth) => support::default_options_for(SupportedBlockchainClients::Geth),\n-              Err(_err) => vec![],\n-            }\n-          }),\n-          None => support::default_options_for(SupportedBlockchainClients::Parity)\n+          Some(config) => config.options.unwrap_or_else(|| try_default_options_from(&client)),\n+          None => try_default_options_from(&client)\n         }\n       }\n     };\n@@ -70,10 +71,11 @@ impl<'a> Node<'a> {\n   }\n }\n \n-fn merge_defaults_with_options_for(client: SupportedBlockchainClients, options: Vec<String>) -> Vec<String> {\n-  let mut combined = support::default_options_for(client);\n-  combined.append(&mut options.clone());\n-  combined.sort();\n-  combined.dedup();\n-  combined\n+\n+fn try_default_options_from(client: &str) -> Vec<String> {\n+  match client.parse() {\n+    Ok(SupportedBlockchainClients::Parity) => support::default_options_from(SupportedBlockchainClients::Parity),\n+    Ok(SupportedBlockchainClients::Geth) => support::default_options_from(SupportedBlockchainClients::Geth),\n+    Err(_err) => vec![],\n+  }\n }"
+    },
+    {
+      "filename": "src/blockchain/support.rs",
+      "status": "modified",
+      "patch": "@@ -30,7 +30,7 @@ impl ToString for SupportedBlockchainClients {\n   }\n }\n \n-pub fn default_options_for(client: SupportedBlockchainClients) -> Vec<String> {\n+pub fn default_options_from(client: SupportedBlockchainClients) -> Vec<String> {\n   match client {\n     SupportedBlockchainClients::Parity => {\n       vec![\"--config\".to_string(), \"dev\".to_string()]"
+    },
+    {
+      "filename": "src/lib.rs",
+      "status": "modified",
+      "patch": "@@ -2,6 +2,7 @@ pub mod blockchain;\n pub mod project_generator;\n pub mod compiler;\n pub mod config;\n+mod utils;\n \n use std::process::{ExitStatus, Output};\n use std::path::PathBuf;"
+    },
+    {
+      "filename": "src/project_generator/mod.rs",
+      "status": "modified",
+      "patch": "@@ -113,7 +113,7 @@ pub fn default_project_config() -> config::ProjectConfig {\n     }),\n     blockchain: Some(config::ProjectCmdExecutionConfig {\n       cmd: Some(blockchain::support::SupportedBlockchainClients::Parity.to_string()),\n-      options: Some(blockchain::support::default_options_for(blockchain::support::SupportedBlockchainClients::Parity))\n+      options: Some(blockchain::support::default_options_from(blockchain::support::SupportedBlockchainClients::Parity))\n     }),\n   }\n }"
+    },
+    {
+      "filename": "src/utils.rs",
+      "status": "added",
+      "patch": "@@ -0,0 +1,89 @@\n+pub fn merge_cli_options(a: Vec<String>, b: Vec<String>) -> Vec<String> {\n+\n+  let mut merged = vec![];\n+\n+  for (i, e) in a.iter().enumerate() {\n+    if !e.starts_with(\"--\") {\n+      continue;\n+    }\n+\n+    merged.push(e.to_owned());\n+\n+    if let Some(next) = a.get(i+1) {\n+      if !next.starts_with(\"--\") && b.contains(&e) {\n+        let ii = b.iter().position(|x| x == e).unwrap();\n+        if let Some(b_next) = b.get(ii+1) {\n+          if !b_next.starts_with(\"--\") {\n+            merged.push(b_next.to_owned());\n+          }\n+        }\n+      } else {\n+        if !next.starts_with(\"--\") {\n+          merged.push(next.to_owned())\n+        }\n+      }\n+    }\n+  }\n+\n+  for e in b {\n+    if !merged.contains(&e) {\n+      merged.push(e.to_owned());\n+    }\n+  }\n+\n+  merged\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+\n+  mod merge_cli_options {\n+\n+    use super::super::merge_cli_options;\n+\n+    #[test]\n+    fn it_should_merge_two_vec_of_options() {\n+      let a = vec![\"--one\".to_string(),\"--two\".to_string()];\n+      let b = vec![\"--three\".to_string(), \"--four\".to_string()];\n+\n+      let merged = merge_cli_options(a, b);\n+      assert_eq!(merged, vec![\"--one\".to_string(), \"--two\".to_string(), \"--three\".to_string(), \"--four\".to_string()]);\n+    }\n+\n+    #[test]\n+    fn it_should_keep_option_values_in_place() {\n+      let a = vec![\"--one\".to_string(),\"value1\".to_string(), \"--three\".to_string()];\n+      let b = vec![\"--two\".to_string(), \"value2\".to_string()];\n+\n+      let merged = merge_cli_options(a, b);\n+      assert_eq!(merged, vec![\"--one\".to_string(), \"value1\".to_string(), \"--three\".to_string(), \"--two\".to_string(), \"value2\".to_string()]);\n+    }\n+\n+    #[test]\n+    fn it_should_override_options() {\n+      let a = vec![\"--one\".to_string(),\"value1\".to_string(), \"--two\".to_string()];\n+      let b = vec![\"--one\".to_string(), \"value2\".to_string()];\n+\n+      let merged = merge_cli_options(a, b);\n+      assert_eq!(merged, vec![\"--one\".to_string(), \"value2\".to_string(), \"--two\".to_string()]);\n+    }\n+\n+    #[test]\n+    fn it_should_override_options_with_no_value_given() {\n+      let a = vec![\"--one\".to_string(),\"value1\".to_string(), \"--two\".to_string(), \"value2\".to_string()];\n+      let b = vec![\"--one\".to_string(), \"value1\".to_string(), \"--two\".to_string()];\n+\n+      let merged = merge_cli_options(a, b);\n+      assert_eq!(merged, vec![\"--one\".to_string(), \"value1\".to_string(), \"--two\".to_string()]);\n+    }\n+\n+    #[test]\n+    fn it_should_throw_out_duplicates_and_keep_the_last() {\n+      let a = vec![\"--one\".to_string(),\"value1\".to_string()];\n+      let b = vec![\"--two\".to_string(), \"value1\".to_string(), \"--two\".to_string(), \"value2\".to_string()];\n+\n+      let merged = merge_cli_options(a, b);\n+      assert_eq!(merged, vec![\"--one\".to_string(), \"value1\".to_string(), \"--two\".to_string(), \"value2\".to_string()]);\n+    }\n+  }\n+}"
+    }
+  ],
+  "fix_category": "Remove sorting",
+  "root_cause_category": "Logic",
+  "root_cause_subcategory": "Sorting"
+}

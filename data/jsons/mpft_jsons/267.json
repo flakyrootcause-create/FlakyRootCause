@@ -1,0 +1,11 @@
+{
+  "id": 267,
+  "repo": "vllm",
+  "issue_url": "https://github.com/vllm-project/vllm/commit/3253ae765ef4dc0604a6f3ed3a1dcd61fdda6bda",
+  "pr_url": "https://github.com/vllm-project/vllm/commit/3253ae765ef4dc0604a6f3ed3a1dcd61fdda6bda",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 192,
+  "repo": "okhttp",
+  "issue_url": "https://github.com/square/okhttp/pull/8207",
+  "pr_url": "https://github.com/square/okhttp/pull/8207",
+  "issue_description": "[PR Linked Issue]\nhttps://github.com/square/okhttp/actions/runs/7593827185/job/20684688664\r\n\r\n\r\n```\r\nHttpOverHttp2Test > concurrentRequestWithEmptyFlowControlWindow(Protocol, MockWebServer) > [1] h2_prior_knowledge FAILED\r\n    java.lang.AssertionError: Timed out waiting for log message.\r\n        at okhttp3.TestLogHandler.take(TestLogHandler.kt:92)\r\n        at okhttp3.internal.http2.HttpOverHttp2Test.waitForDataFrames(HttpOverHttp2Test.kt:425)\r\n        at okhttp3.internal.http2.HttpOverHttp2Test.concurrentRequestWithEmptyFlowControlWindow(HttpOverHttp2Test.kt:481)\r\n```        \r\n\r\nSteps \r\n1. FakeFileSystem cache to remove that issue\r\n2. Close requests cleanly\r\n3. Verify in CI ",
+  "files_changed": [
+    {
+      "filename": "okhttp/src/test/java/okhttp3/internal/http2/HttpOverHttp2Test.kt",
+      "status": "modified",
+      "patch": "@@ -24,7 +24,6 @@ import assertk.assertions.isFalse\n import assertk.assertions.isNull\n import assertk.assertions.isTrue\n import assertk.fail\n-import java.io.File\n import java.io.IOException\n import java.net.HttpURLConnection\n import java.net.SocketTimeoutException\n@@ -86,15 +85,16 @@ import okhttp3.tls.HandshakeCertificates\n import okio.Buffer\n import okio.BufferedSink\n import okio.GzipSink\n+import okio.Path.Companion.toPath\n import okio.buffer\n+import okio.fakefilesystem.FakeFileSystem\n import org.junit.jupiter.api.AfterEach\n import org.junit.jupiter.api.Assertions.assertArrayEquals\n import org.junit.jupiter.api.Assumptions.assumeTrue\n import org.junit.jupiter.api.Disabled\n import org.junit.jupiter.api.Tag\n import org.junit.jupiter.api.Timeout\n import org.junit.jupiter.api.extension.RegisterExtension\n-import org.junit.jupiter.api.io.TempDir\n import org.junit.jupiter.params.ParameterizedTest\n import org.junit.jupiter.params.provider.ArgumentsSource\n \n@@ -107,9 +107,6 @@ class HttpOverHttp2Test {\n     override fun arguments() = listOf(Protocol.H2_PRIOR_KNOWLEDGE, Protocol.HTTP_2)\n   }\n \n-  @TempDir\n-  lateinit var tempDir: File\n-\n   @RegisterExtension\n   val platform: PlatformRule = PlatformRule()\n \n@@ -127,7 +124,8 @@ class HttpOverHttp2Test {\n   private lateinit var server: MockWebServer\n   private lateinit var protocol: Protocol\n   private lateinit var client: OkHttpClient\n-  private lateinit var cache: Cache\n+  private val fileSystem: FakeFileSystem = FakeFileSystem()\n+  private val cache: Cache = Cache(\"/tmp/cache\".toPath(), Long.MAX_VALUE, fileSystem)\n   private lateinit var scheme: String\n \n   private fun configureClientTestRule(): OkHttpClientTestRule {\n@@ -164,10 +162,13 @@ class HttpOverHttp2Test {\n           .build()\n       scheme = \"http\"\n     }\n-    cache = Cache(tempDir, Int.MAX_VALUE.toLong())\n   }\n \n   @AfterEach fun tearDown() {\n+//    TODO reenable after https://github.com/square/okhttp/issues/8206\n+//    fileSystem.checkNoOpenFiles()\n+    cache.close()\n+\n     java.net.Authenticator.setDefault(null)\n   }\n "
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 128,
+  "repo": "PowerToys",
+  "issue_url": "https://github.com/microsoft/PowerToys/pull/29749",
+  "pr_url": "https://github.com/microsoft/PowerToys/pull/29749",
+  "issue_description": "<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->\r\n## Summary of the Pull Request\r\n\r\nSometimes the Interop Tests hung in CI. This seems to be caused by the sending of a message before the OS has set up the pipes correctly. We add a little wait to the test to reduce flakiness.\r\n\r\n<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->\r\n## Validation Steps Performed\r\n![image](https://github.com/microsoft/PowerToys/assets/26118718/fa326de5-89fa-411a-b678-e36878c6cbb6)\r\nRan the \"TestSend\" with \"Run Until Failure\" and it ran 1000 times without hanging.\r\n",
+  "files_changed": [
+    {
+      "filename": "src/common/interop/interop-tests/InteropTests.cs",
+      "status": "modified",
+      "patch": "@@ -49,6 +49,9 @@ public void TestSend()\n                     serverPipe.Start();\n                     ClientPipe.Start();\n \n+                    // Test can be flaky as the pipes are still being set up and we end up receiving no message. Wait for a bit to avoid that.\n+                    Thread.Sleep(100);\n+\n                     ClientPipe.Send(testString);\n                     reset.WaitOne();\n "
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

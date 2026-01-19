@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "repo": "snarkOS",
+  "issue_url": "https://github.com/AleoNet/snarkOS/issues/1634",
+  "pr_url": "https://github.com/AleoNet/snarkOS/pull/1642",
+  "issue_description": "## \ud83d\udc1b Bug Report\r\n\r\nThe following error likes to pop up in the CircleCI `tests` job from time to time:\r\n\r\n```\r\nrunning 1 test\r\ntest helpers::block_requests::tests::test_block_requests_case_2cbb ... FAILED\r\n\r\nfailures:\r\n\r\n---- helpers::block_requests::tests::test_block_requests_case_2cbb stdout ----\r\nthread 'helpers::block_requests::tests::test_block_requests_case_2cbb' panicked at 'assertion failed: `(left == right)`\r\n  left: `AbortAndDisconnect(TwoCBA, ExceededForkRange)`,\r\n right: `Proceed(TwoCBB, BlockRequestHandlerProceed { start_block_height: 966, end_block_height: 1215, ledger_is_on_fork: true })`', src/helpers/block_requests.rs:572:13\r\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\r\n\r\n\r\nfailures:\r\n    helpers::block_requests::tests::test_block_requests_case_2cbb\r\n```\r\n\r\nIt's likely an off-by one in the test, but I'm not sure.",
+  "files_changed": [
+    {
+      "filename": "src/helpers/block_requests.rs",
+      "status": "modified",
+      "patch": "@@ -209,7 +209,7 @@ pub(crate) fn handle_block_requests<N: Network, E: Environment>(\n             else if let Some(first_deviating_locator) = first_deviating_locator {\n                 // Case 2(c)(b)(a) - Check if the real common ancestor is NOT within `ALEO_MAXIMUM_FORK_DEPTH`.\n                 // If this peer is outside of the fork range of this ledger, proceed to disconnect from the peer.\n-                if latest_block_height.saturating_sub(first_deviating_locator) >= N::ALEO_MAXIMUM_FORK_DEPTH {\n+                if latest_block_height.saturating_sub(first_deviating_locator) > N::ALEO_MAXIMUM_FORK_DEPTH {\n                     debug!(\"Peer {} exceeded the permitted fork range, disconnecting\", maximal_peer);\n                     return BlockRequestHandler::AbortAndDisconnect(Case::TwoCBA, DisconnectReason::ExceededForkRange);\n                 }"
+    }
+  ],
+  "fix_category": "Comparison operator",
+  "root_cause_category": "Logic",
+  "root_cause_subcategory": "Off by one"
+}

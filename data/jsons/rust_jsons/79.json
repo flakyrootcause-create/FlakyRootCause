@@ -1,0 +1,17 @@
+{
+  "id": 79,
+  "repo": "neon",
+  "issue_url": "https://github.com/neondatabase/neon/issues/3666",
+  "pr_url": "https://github.com/neondatabase/neon/pull/3697",
+  "issue_description": "Two ways:\r\n- `assert 7 > 7` on the last line\r\n- pageserver stop failed: pageserver with pid 18039 did not stop in 10 seconds [here](https://neon-github-public-dev.s3.amazonaws.com/reports/main/release/4235314752/index.html#suites/b97efae3a617afb71cb8142f5afa5224/da1f1dd229669df1/)\r\n\r\nNoted, didn't fix yet:\r\n- gc and compaction run on the second restart\r\n- comments say that they are disabled, but period is non-zero, so they are executed",
+  "files_changed": [
+    {
+      "filename": "test_runner/regress/test_ondemand_download.py",
+      "status": "modified",
+      "patch": "@@ -63,12 +63,15 @@ def test_ondemand_download_large_rel(\n     tenant, _ = env.neon_cli.create_tenant(\n         conf={\n             # disable background GC\n-            \"gc_period\": \"10 m\",\n+            \"gc_period\": \"0s\",\n             \"gc_horizon\": f\"{10 * 1024 ** 3}\",  # 10 GB\n             # small checkpoint distance to create more delta layer files\n             \"checkpoint_distance\": f\"{10 * 1024 ** 2}\",  # 10 MB\n+            # allow compaction with the checkpoint\n             \"compaction_threshold\": \"3\",\n             \"compaction_target_size\": f\"{10 * 1024 ** 2}\",  # 10 MB\n+            # but don't run compaction in background or on restart\n+            \"compaction_period\": \"0s\",\n         }\n     )\n     env.initial_tenant = tenant\n@@ -95,9 +98,17 @@ def test_ondemand_download_large_rel(\n \n         current_lsn = Lsn(query_scalar(cur, \"SELECT pg_current_wal_flush_lsn()\"))\n \n-    # wait until pageserver receives that data\n     wait_for_last_record_lsn(client, tenant_id, timeline_id, current_lsn)\n \n+    # stop endpoint before checkpoint to stop wal generation\n+    endpoint.stop()\n+\n+    # stopping of safekeepers now will help us not to calculate logical size\n+    # after startup, so page requests should be the only one on-demand\n+    # downloading the layers\n+    for sk in env.safekeepers:\n+        sk.stop()\n+\n     # run checkpoint manually to be sure that data landed in remote storage\n     client.timeline_checkpoint(tenant_id, timeline_id)\n \n@@ -106,7 +117,6 @@ def test_ondemand_download_large_rel(\n     log.info(\"uploads have finished\")\n \n     ##### Stop the first pageserver instance, erase all its data\n-    endpoint.stop()\n     env.pageserver.stop()\n \n     # remove all the layer files\n@@ -117,8 +127,13 @@ def test_ondemand_download_large_rel(\n     ##### Second start, restore the data and ensure it's the same\n     env.pageserver.start()\n \n-    endpoint.start()\n+    # start a readonly endpoint which we'll use to check the database.\n+    # readonly (with lsn=) is required so that we don't try to connect to\n+    # safekeepers, that have now been shut down.\n+    endpoint = env.endpoints.create_start(\"main\", lsn=current_lsn)\n+\n     before_downloads = get_num_downloaded_layers(client, tenant_id, timeline_id)\n+    assert before_downloads != 0, \"basebackup should on-demand non-zero layers\"\n \n     # Probe in the middle of the table. There's a high chance that the beginning\n     # and end of the table was stored together in the same layer files with data"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Python)"
+}

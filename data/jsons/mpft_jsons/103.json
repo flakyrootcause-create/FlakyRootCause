@@ -1,0 +1,22 @@
+{
+  "id": 103,
+  "repo": "jbpm",
+  "issue_url": "https://github.com/kiegroup/jbpm/pull/2021",
+  "pr_url": "https://github.com/kiegroup/jbpm/pull/2021",
+  "issue_description": "**JIRA**: [JBPM-9895](https://issues.redhat.com/browse/JBPM-9895)\r\n\r\nCherry-pick from adc8aaf884bb967b2d25bb0072b4063b3ddcdf96",
+  "files_changed": [
+    {
+      "filename": "jbpm-human-task/jbpm-human-task-audit/src/test/java/org/jbpm/services/task/audit/service/LocalTaskAuditWithDeadlineTest.java",
+      "status": "modified",
+      "patch": "@@ -114,9 +114,13 @@ public void testDelayedReassignmentOnDeadline() throws Exception {\n         assertEquals(1, tasks.size());\n         \n         AuditTask auditTask = tasks.get(0);\n-        assertEquals(Status.Reserved.toString(), auditTask.getStatus());\n-        assertEquals(\"Tony Stark\", auditTask.getActualOwner());\n-    \n+        \n+        //Check if countdown listener has not expired yet\n+        if (countDownListener.latchCount() != 0) {\n+            assertEquals(Status.Reserved.toString(), auditTask.getStatus());\n+            assertEquals(\"Tony Stark\", auditTask.getActualOwner());\n+        }\n+        \n         // should have re-assigned by now\n         countDownListener.waitTillCompleted();\n         \n@@ -171,8 +175,12 @@ public void testDelayedReassignmentOnDeadlineISOFormat() throws Exception {\n         assertEquals(1, tasks.size());\n \n         AuditTask auditTask = tasks.get(0);\n-        assertEquals(Status.Reserved.toString(), auditTask.getStatus());\n-        assertEquals(\"Tony Stark\", auditTask.getActualOwner());\n+        \n+        //Check if countdown listener has not expired yet\n+        if (countDownListener.latchCount() != 0) {\n+            assertEquals(Status.Reserved.toString(), auditTask.getStatus());\n+            assertEquals(\"Tony Stark\", auditTask.getActualOwner());\n+        }\n \n         // should have re-assigned by now\n         countDownListener.waitTillCompleted();"
+    },
+    {
+      "filename": "jbpm-test-util/src/main/java/org/jbpm/test/listener/task/CountDownTaskEventListener.java",
+      "status": "modified",
+      "patch": "@@ -292,6 +292,10 @@ public void afterTaskOutputVariableChangedEvent(TaskEvent event, Map<String, Obj\n         \n     }\n     \n+    public long latchCount() {\n+        return latch.getCount();\n+    }\n+    \n     protected void countDown() {\n         try {\n             TransactionManager tm = TransactionManagerFactory.get().newTransactionManager();"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

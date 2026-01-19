@@ -1,0 +1,11 @@
+{
+  "id": 259,
+  "repo": "letta",
+  "issue_url": "https://github.com/letta-ai/letta/commit/a583e5d3093437761b583b54e730c140da622aac",
+  "pr_url": "https://github.com/letta-ai/letta/commit/a583e5d3093437761b583b54e730c140da622aac",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 411,
+  "repo": "ytmusicapi",
+  "issue_url": "https://github.com/sigma67/ytmusicapi/pull/810",
+  "pr_url": "https://github.com/sigma67/ytmusicapi/pull/810",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "tests/mixins/test_browsing.py",
+      "status": "modified",
+      "patch": "@@ -103,7 +103,7 @@ def test_get_album_browse_id(self, yt, sample_album):\n \n     def test_get_album_browse_id_issue_470(self, yt):\n         escaped_browse_id = yt.get_album_browse_id(\"OLAK5uy_nbMYyrfeg5ZgknoOsOGBL268hGxtcbnDM\")\n-        assert escaped_browse_id == \"MPREb_pZhPA6GfQmN\"\n+        assert len(escaped_browse_id) == 17\n \n     def test_get_album_2024(self, yt):\n         with open(Path(__file__).parent.parent / \"data\" / \"2024_03_get_album.json\", encoding=\"utf8\") as f:"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

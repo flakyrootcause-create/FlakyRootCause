@@ -1,0 +1,17 @@
+{
+  "id": 381,
+  "repo": "Bodo",
+  "issue_url": "https://github.com/bodo-ai/Bodo/pull/809",
+  "pr_url": "https://github.com/bodo-ai/Bodo/pull/809",
+  "issue_description": "This test fails regularly so trying to make it a bit more robust.",
+  "files_changed": [
+    {
+      "filename": "BodoSQL/bodosql/tests/test_types/test_snowflake_catalog.py",
+      "status": "modified",
+      "patch": "@@ -2021,10 +2021,6 @@ def test_filter_pushdown_row_count_caching(\n     assert \"1 rows\" in plan, \"Plan should have 1 row in the cost estimate\"\n     assert \"5.9849e4 rows\" in plan, \"Plan should have 59849 rows in the cost estimate\"\n \n-    # Empirically, it takes a moment for the query history to update,\n-    # so we sleep for a few seconds to ensure that the query history is updated\n-    time.sleep(2)\n-\n     # This query will get the list of all queries that match the specified pattern\n     # in the past minute\n     metadata_query = \"\"\"select * from table(information_schema.QUERY_HISTORY_BY_WAREHOUSE(\n@@ -2036,7 +2032,15 @@ def test_filter_pushdown_row_count_caching(\n                             CONTAINS(QUERY_TEXT, 'SELECT COUNT(*) FROM (SELECT * FROM \"TEST_DB\".\"PUBLIC\".\"TPCH_SF10_CUSTOMER_WITH_ADDITIONS_COPY\" WHERE \"C_COMMENT\" = ')\n                     \"\"\"\n \n-    df = pd.read_sql(metadata_query, conn_str)\n+    # Try 4 times to make sure history is updated\n+    for _ in range(4):\n+        # Empirically, it takes a moment for the query history to update,\n+        # so we sleep for a few seconds to ensure that the query history is updated\n+        time.sleep(2)\n+        df = pd.read_sql(metadata_query, conn_str)\n+        if len(df) != 0:\n+            break\n+\n     # We expect two rows, one for each filter\n     assert len(df) == 2, \"We should have two rows in the query history\"\n     assert df[\"query_text\"].str.contains(\"SELECT COUNT(*)\", regex=False).all(), ("
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

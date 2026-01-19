@@ -1,0 +1,17 @@
+{
+  "id": 364,
+  "repo": "thanos",
+  "issue_url": "https://github.com/thanos-io/thanos/pull/8395",
+  "pr_url": "https://github.com/thanos-io/thanos/pull/8395",
+  "issue_description": "## Changes\r\n\r\n- Increased timeout delay for the flaky test to reduce flakiness.\r\n- Adjusted the waiting logic in `e2e_test.go` to ensure proper container health check completion.\r\n\r\n## Verification\r\n\r\n- Ran the test suite multiple times locally in Gitpod and observed no flakiness.\r\n- Confirmed that the timeout handles the observed race condition.\r\n\r\n* [x] I added CHANGELOG entry for this change.\r\n\r\n## Changelog\r\n\r\n- [#8114](https://github.com/thanos-io/thanos/pull/8114) E2E: Increased test timeout delay to reduce flakiness in container startup checks.\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "pkg/reloader/reloader_test.go",
+      "status": "modified",
+      "patch": "@@ -464,7 +464,11 @@ func TestReloader_ConfigDirApply(t *testing.T) {\n \t\t\t// \u251c\u2500 rule3-001.yaml -> rule3-source.yaml\n \t\t\t// \u2514\u2500 rule3-source.yaml\n \t\t\ttestutil.Ok(t, os.Symlink(path.Join(dir2, \"rule3-001.yaml\"), path.Join(dir2, \"rule3.yaml\")))\n-\t\t\ttestutil.Ok(t, os.Rename(path.Join(dir2, \"rule3.yaml\"), path.Join(dir, \"rule3.yaml\")))\n+\n+// ADD THIS DELAY TO FIX THE FLAKINESS\n+time.Sleep(200 * time.Millisecond) // \ud83d\udc48 Insert this line\n+\n+testutil.Ok(t, os.Rename(path.Join(dir2, \"rule3.yaml\"), path.Join(dir, \"rule3.yaml\")))\n \t\t\t// out1\n \t\t\t// \u251c\u2500 rule1.yaml\n \t\t\t// \u251c\u2500 rule2.yaml"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

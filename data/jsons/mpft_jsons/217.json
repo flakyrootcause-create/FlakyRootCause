@@ -1,0 +1,11 @@
+{
+  "id": 217,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/commit/da69aefddde7c0d5934c0a26791f7f013a0011a6",
+  "pr_url": "https://github.com/pandas-dev/pandas/commit/da69aefddde7c0d5934c0a26791f7f013a0011a6",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

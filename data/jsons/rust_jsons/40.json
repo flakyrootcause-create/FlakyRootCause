@@ -1,0 +1,17 @@
+{
+  "id": 40,
+  "repo": "10101",
+  "issue_url": "https://github.com/get10101/10101/issues/2072",
+  "pr_url": "https://github.com/get10101/10101/pull/2105",
+  "issue_description": "https://github.com/get10101/10101/actions/runs/7969843098/job/21756644996?pr=2070#step:10:493",
+  "files_changed": [
+    {
+      "filename": "crates/tests-e2e/tests/e2e_reject_offer.rs",
+      "status": "modified",
+      "patch": "@@ -7,6 +7,7 @@ use native::trade::order::api::NewOrder;\n use native::trade::order::api::OrderType;\n use native::trade::order::OrderState;\n use native::trade::position::PositionState;\n+use std::time::Duration;\n use tests_e2e::app::submit_channel_opening_order;\n use tests_e2e::setup::TestSetup;\n use tests_e2e::wait_until;\n@@ -65,6 +66,9 @@ async fn reject_offer() {\n         stable: false,\n     };\n \n+    // give the coordinator some time to process the reject message, before submitting the next\n+    // order.\n+    tokio::time::sleep(Duration::from_secs(5)).await;\n     submit_channel_opening_order(order.clone(), 0, 0);\n \n     // Assert that the order was posted"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Sleep"
+}

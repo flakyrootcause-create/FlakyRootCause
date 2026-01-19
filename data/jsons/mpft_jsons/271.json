@@ -1,0 +1,17 @@
+{
+  "id": 271,
+  "repo": "cpython",
+  "issue_url": "https://github.com/python/cpython/commit/69db40b9dea9717c29a3855f0466260cf5cd108e",
+  "pr_url": "https://github.com/python/cpython/commit/69db40b9dea9717c29a3855f0466260cf5cd108e",
+  "issue_description": "Introduced by 3d707be950b387552585451071928e7b39cdfa53.\r\n\r\nFrom docs buildbot: http://buildbot.python.org/all/builders/Docs%203.x/builds/399/steps/lint/logs/stdio\r\n\r\n```\r\npython3 tools/rstlint.py -i tools -i venv\r\n[1] faq/windows.rst:303: trailing whitespace\r\n[1] faq/windows.rst:305: trailing whitespace\r\n2 problems with severity 1 found.\r\n```",
+  "files_changed": [
+    {
+      "filename": "Doc/faq/windows.rst",
+      "status": "modified",
+      "patch": "@@ -300,9 +300,9 @@ this respect, and is easily configured to use spaces: Take :menuselection:`Tools\n --> Options --> Tabs`, and for file type \"Default\" set \"Tab size\" and \"Indent\n size\" to 4, and select the \"Insert spaces\" radio button.\n \n-Python raises :exc:`IndentationError` or :exc:`TabError` if mixed tabs \n+Python raises :exc:`IndentationError` or :exc:`TabError` if mixed tabs\n and spaces are causing problems in leading whitespace.\n-You may also run the :mod:`tabnanny` module to check a directory tree \n+You may also run the :mod:`tabnanny` module to check a directory tree\n in batch mode.\n \n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

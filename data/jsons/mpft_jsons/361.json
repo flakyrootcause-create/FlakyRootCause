@@ -1,0 +1,11 @@
+{
+  "id": 361,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/pull/133986",
+  "pr_url": "https://github.com/kubernetes/kubernetes/pull/133986",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

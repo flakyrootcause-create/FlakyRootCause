@@ -1,0 +1,17 @@
+{
+  "id": 123,
+  "repo": "vscode",
+  "issue_url": "https://github.com/microsoft/vscode/pull/224414",
+  "pr_url": "https://github.com/microsoft/vscode/pull/224414",
+  "issue_description": "[PR Linked Issue]\n 1) VSCode Smoke Tests (Electron)\r\n       Terminal\r\n         Terminal Persistence\r\n           detach/attach\r\n             should persist buffer content:\r\n     Error: Timeout: get element '.quick-input-widget' after 20 seconds.\r\n      at Code.poll (/Users/runner/work/1/s/test/automation/out/code.js:204:23)\r\n      at async Code.waitForElement (/Users/runner/work/1/s/test/automation/out/code.js:163:16)\r\n      at async QuickInput.waitForQuickInputClosed (/Users/runner/work/1/s/test/automation/out/quickinput.js:32:9)\r\n      at async Terminal.runCommandWithValue (/Users/runner/work/1/s/test/automation/out/terminal.js:109:9)\r\n      at async Context.<anonymous> (out/areas/terminal/terminal-persistence.test.js:64:17)\r\n\r\nhttps://dev.azure.com/monacotools/Monaco/_build/results?buildId=278997&view=logs&j=260a512b-e5ca-5cf1-3f8e-20c0fa41efc9&t=dc7a7a05-ae89-521b-55db-0cb2ded34668",
+  "files_changed": [
+    {
+      "filename": "test/smoke/src/areas/terminal/terminal-persistence.test.ts",
+      "status": "modified",
+      "patch": "@@ -75,7 +75,8 @@ export function setup(options?: { skipSuite: boolean }) {\n \t\t\t\tawait terminal.assertTerminalGroups([\n \t\t\t\t\t[{ name }]\n \t\t\t\t]);\n-\t\t\t\tawait terminal.waitForTerminalText(buffer => buffer.some(e => e.includes('terminal_test_content')));\n+\t\t\t\t// There can be line wrapping, so remove newlines #216464\n+\t\t\t\tawait terminal.waitForTerminalText(buffer => buffer.some(e => e.replaceAll('\\n', '').includes('terminal_test_content')));\n \t\t\t});\n \t\t});\n \t});"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

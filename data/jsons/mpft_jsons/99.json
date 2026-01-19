@@ -1,0 +1,27 @@
+{
+  "id": 99,
+  "repo": "notebook",
+  "issue_url": "https://github.com/jupyter/notebook/pull/7278",
+  "pr_url": "https://github.com/jupyter/notebook/pull/7278",
+  "issue_description": "Try fixing a UI test that has been flaky for a while recently.",
+  "files_changed": [
+    {
+      "filename": "ui-tests/test/mobile.spec.ts",
+      "status": "modified",
+      "patch": "@@ -1,8 +1,6 @@\n // Copyright (c) Jupyter Development Team.\n // Distributed under the terms of the Modified BSD License.\n \n-import path from 'path';\n-\n import { expect } from '@playwright/test';\n \n import { test } from './fixtures';\n@@ -28,26 +26,29 @@ test.describe('Mobile', () => {\n     tmpPath,\n     browserName,\n   }) => {\n-    const notebook = 'empty.ipynb';\n-    await page.contents.uploadFile(\n-      path.resolve(__dirname, `./notebooks/${notebook}`),\n-      `${tmpPath}/${notebook}`\n-    );\n-    await page.goto(`notebooks/${tmpPath}/${notebook}`);\n+    await page.goto(`tree/${tmpPath}`);\n+\n+    // Create a new notebook\n+    const [notebook] = await Promise.all([\n+      page.waitForEvent('popup'),\n+      page.click('text=\"New\"'),\n+      page.click('text=\"Python 3 (ipykernel)\"'),\n+    ]);\n \n     // wait for the kernel status animations to be finished\n-    await waitForKernelReady(page);\n+    await waitForKernelReady(notebook);\n \n     // force switching back to command mode to avoid capturing the cursor in the screenshot\n-    await page.evaluate(async () => {\n+    await notebook.evaluate(async () => {\n       await window.jupyterapp.commands.execute('notebook:enter-command-mode');\n     });\n \n     // TODO: remove\n     if (browserName === 'firefox') {\n-      await hideAddCellButton(page);\n+      await hideAddCellButton(notebook);\n     }\n \n-    expect(await page.screenshot()).toMatchSnapshot('notebook.png');\n+    expect(await notebook.screenshot()).toMatchSnapshot('notebook.png');\n+    await notebook.close();\n   });\n });"
+    },
+    {
+      "filename": "ui-tests/test/mobile.spec.ts-snapshots/notebook-chromium-linux.png",
+      "status": "modified",
+      "patch": ""
+    },
+    {
+      "filename": "ui-tests/test/mobile.spec.ts-snapshots/notebook-firefox-linux.png",
+      "status": "modified",
+      "patch": ""
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

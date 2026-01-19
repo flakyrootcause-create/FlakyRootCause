@@ -1,0 +1,17 @@
+{
+  "id": 198,
+  "repo": "os",
+  "issue_url": "https://github.com/truenas/os/commit/99a7fa92687f38bdc9798e2f79fc911ca06a8cdb",
+  "pr_url": "https://github.com/truenas/os/commit/99a7fa92687f38bdc9798e2f79fc911ca06a8cdb",
+  "issue_description": "Ideas and help of Alexander Motin ;)\r\n\r\nTicket: #28198\r\n(cherry picked from commit ef3eb51d9b80715c45401827316ab1ef7fc6933b)",
+  "files_changed": [
+    {
+      "filename": "sys/netinet/ip_carp.c",
+      "status": "modified",
+      "patch": "@@ -210,11 +210,13 @@ static VNET_DEFINE(int, carp_senderr_adj) = CARP_MAXSKEW;\n static VNET_DEFINE(int, carp_ifdown_adj) = CARP_MAXSKEW;\n #define\tV_carp_ifdown_adj\tVNET(carp_ifdown_adj)\n \n+static int carp_allow_sysctl(SYSCTL_HANDLER_ARGS);\n static int carp_demote_adj_sysctl(SYSCTL_HANDLER_ARGS);\n \n SYSCTL_NODE(_net_inet, IPPROTO_CARP,\tcarp,\tCTLFLAG_RW, 0,\t\"CARP\");\n-SYSCTL_INT(_net_inet_carp, OID_AUTO, allow, CTLFLAG_VNET | CTLFLAG_RW,\n-    &VNET_NAME(carp_allow), 0, \"Accept incoming CARP packets\");\n+SYSCTL_PROC(_net_inet_carp, OID_AUTO, allow,\n+    CTLFLAG_VNET | CTLTYPE_INT | CTLFLAG_RW, 0, 0, carp_allow_sysctl, \"I\",\n+    \"Accept incoming CARP packets\");\n SYSCTL_INT(_net_inet_carp, OID_AUTO, preempt, CTLFLAG_VNET | CTLFLAG_RW,\n     &VNET_NAME(carp_preempt), 0, \"High-priority backup preemption mode\");\n SYSCTL_INT(_net_inet_carp, OID_AUTO, log, CTLFLAG_VNET | CTLFLAG_RW,\n@@ -1197,7 +1199,8 @@ carp_setrun(struct carp_softc *sc, sa_family_t af)\n \n \tif ((sc->sc_carpdev->if_flags & IFF_UP) == 0 ||\n \t    sc->sc_carpdev->if_link_state != LINK_STATE_UP ||\n-\t    (sc->sc_naddrs == 0 && sc->sc_naddrs6 == 0))\n+\t    (sc->sc_naddrs == 0 && sc->sc_naddrs6 == 0) ||\n+\t    !V_carp_allow)\n \t\treturn;\n \n \tswitch (sc->sc_state) {\n@@ -1969,7 +1972,8 @@ carp_sc_state(struct carp_softc *sc)\n \tCARP_LOCK_ASSERT(sc);\n \n \tif (sc->sc_carpdev->if_link_state != LINK_STATE_UP ||\n-\t    !(sc->sc_carpdev->if_flags & IFF_UP)) {\n+\t    !(sc->sc_carpdev->if_flags & IFF_UP) ||\n+\t    !V_carp_allow) {\n \t\tcallout_stop(&sc->sc_ad_tmo);\n #ifdef INET\n \t\tcallout_stop(&sc->sc_md_tmo);\n@@ -1999,6 +2003,33 @@ carp_demote_adj(int adj, char *reason)\n \ttaskqueue_enqueue(taskqueue_swi, &carp_sendall_task);\n }\n \n+static int\n+carp_allow_sysctl(SYSCTL_HANDLER_ARGS)\n+{\n+\tint new, error;\n+\tstruct carp_softc *sc;\n+\n+\tnew = V_carp_allow;\n+\terror = sysctl_handle_int(oidp, &new, 0, req);\n+\tif (error || !req->newptr)\n+\t\treturn (error);\n+\n+\tif (V_carp_allow != new) {\n+\t\tV_carp_allow = new;\n+\n+\t\tmtx_lock(&carp_mtx);\n+\t\tLIST_FOREACH(sc, &carp_list, sc_next) {\n+\t\t\tCARP_LOCK(sc);\n+\t\t\tif (curvnet == sc->sc_carpdev->if_vnet)\n+\t\t\t\tcarp_sc_state(sc);\n+\t\t\tCARP_UNLOCK(sc);\n+\t\t}\n+\t\tmtx_unlock(&carp_mtx);\n+\t}\n+\n+\treturn (0);\n+}\n+\n static int\n carp_demote_adj_sysctl(SYSCTL_HANDLER_ARGS)\n {"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

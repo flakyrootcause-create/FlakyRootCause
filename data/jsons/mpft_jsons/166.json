@@ -1,0 +1,17 @@
+{
+  "id": 166,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/pull/4198",
+  "pr_url": "https://github.com/getsentry/sentry-python/pull/4198",
+  "issue_description": "There's a test in `test_utils.py` that flakes very often, but only on Python 3.8 and only in CI (locally it's all fine). I've tried a couple of ways to fix it but at this point it's not worth the effort, so just skipping it on 3.8.",
+  "files_changed": [
+    {
+      "filename": "tests/test_utils.py",
+      "status": "modified",
+      "patch": "@@ -7,6 +7,7 @@\n import pytest\n \n import sentry_sdk\n+from sentry_sdk._compat import PY38\n from sentry_sdk.integrations import Integration\n from sentry_sdk._queue import Queue\n from sentry_sdk.utils import (\n@@ -901,6 +902,7 @@ def target():\n     assert (main_thread.ident, main_thread.name) == results.get(timeout=1)\n \n \n+@pytest.mark.skipif(PY38, reason=\"Flakes a lot on 3.8 in CI.\")\n def test_get_current_thread_meta_failed_to_get_main_thread():\n     results = Queue(maxsize=1)\n "
+    }
+  ],
+  "fix_category": "Skip",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

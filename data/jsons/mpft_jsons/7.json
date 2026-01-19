@@ -1,0 +1,11 @@
+{
+  "id": 7,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/d36737c817303e525e00e5ada24a7a79c05ebb53",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/d36737c817303e525e00e5ada24a7a79c05ebb53",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

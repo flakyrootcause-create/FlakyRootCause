@@ -1,0 +1,17 @@
+{
+  "id": 3,
+  "repo": "reth",
+  "issue_url": "https://github.com/paradigmxyz/reth/issues/3456",
+  "pr_url": "https://github.com/paradigmxyz/reth/pull/3476",
+  "issue_description": "### Describe the bug\r\n\r\nhttps://github.com/paradigmxyz/reth/actions/runs/5405202612/jobs/9820416442?pr=3455#step:8:789\r\n\r\n```console\r\n--- STDERR:              reth-network::it connect::test_incoming_node_id_blacklist ---\r\nthread 'connect::test_incoming_node_id_blacklist' panicked at 'called `Result::unwrap()` on an `Err` value: HTTPError(reqwest::Error { kind: Request, url: Url { scheme: \"http\", cannot_be_a_base: false, username: \"\", password: None, host: Some(Ipv4(127.0.0.1)), port: Some(44187), path: \"/\", query: None, fragment: None }, source: hyper::Error(Connect, ConnectError(\"tcp connect error\", Os { code: 111, kind: ConnectionRefused, message: \"Connection refused\" })) })', crates/net/network/tests/it/connect.rs:325:70\r\n```\r\n\r\n### Code of Conduct\r\n\r\n- [X] I agree to follow the Code of Conduct",
+  "files_changed": [
+    {
+      "filename": "crates/net/network/tests/it/connect.rs",
+      "status": "modified",
+      "patch": "@@ -318,7 +318,7 @@ async fn test_incoming_node_id_blacklist() {\n \n         // instantiate geth and add ourselves as a peer\n         let temp_dir = tempfile::tempdir().unwrap().into_path();\n-        let geth = Geth::new().data_dir(temp_dir).disable_discovery().spawn();\n+        let geth = Geth::new().data_dir(temp_dir).disable_discovery().authrpc_port(0).spawn();\n         let geth_endpoint = SocketAddr::new([127, 0, 0, 1].into(), geth.port());\n         let provider = Provider::<Http>::try_from(format!(\"http://{geth_endpoint}\")).unwrap();\n \n@@ -371,7 +371,7 @@ async fn test_incoming_connect_with_single_geth() {\n \n         // instantiate geth and add ourselves as a peer\n         let temp_dir = tempfile::tempdir().unwrap().into_path();\n-        let geth = Geth::new().data_dir(temp_dir).disable_discovery().spawn();\n+        let geth = Geth::new().data_dir(temp_dir).disable_discovery().authrpc_port(0).spawn();\n         let geth_endpoint = SocketAddr::new([127, 0, 0, 1].into(), geth.port());\n         let provider = Provider::<Http>::try_from(format!(\"http://{geth_endpoint}\")).unwrap();\n \n@@ -429,7 +429,7 @@ async fn test_outgoing_connect_with_single_geth() {\n \n         // instantiate geth and add ourselves as a peer\n         let temp_dir = tempfile::tempdir().unwrap().into_path();\n-        let geth = Geth::new().disable_discovery().data_dir(temp_dir).spawn();\n+        let geth = Geth::new().disable_discovery().data_dir(temp_dir).authrpc_port(0).spawn();\n \n         let geth_p2p_port = geth.p2p_port().unwrap();\n         let geth_socket = SocketAddr::new([127, 0, 0, 1].into(), geth_p2p_port);\n@@ -474,7 +474,7 @@ async fn test_geth_disconnect() {\n \n         // instantiate geth and add ourselves as a peer\n         let temp_dir = tempfile::tempdir().unwrap().into_path();\n-        let geth = Geth::new().disable_discovery().data_dir(temp_dir).spawn();\n+        let geth = Geth::new().disable_discovery().data_dir(temp_dir).authrpc_port(0).spawn();\n \n         let geth_p2p_port = geth.p2p_port().unwrap();\n         let geth_socket = SocketAddr::new([127, 0, 0, 1].into(), geth_p2p_port);"
+    }
+  ],
+  "fix_category": "Dummy data",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": "Reused resource (port)"
+}

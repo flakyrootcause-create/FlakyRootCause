@@ -1,0 +1,17 @@
+{
+  "id": 307,
+  "repo": "kibana",
+  "issue_url": "https://github.com/elastic/kibana/pull/190415",
+  "pr_url": "https://github.com/elastic/kibana/pull/190415",
+  "issue_description": "[PR Linked Issue]\nA test failed on a tracked branch\n\n```\nStaleElementReferenceError: stale element reference: stale element not found in the current frame\n  (Session info: chrome=123.0.6312.105)\n    at Object.throwDecodedError (node_modules/selenium-webdriver/lib/error.js:521:15)\n    at parseHttpResponse (node_modules/selenium-webdriver/lib/http.js:510:13)\n    at Executor.execute (node_modules/selenium-webdriver/lib/http.js:443:28)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Task.exec (prevent_parallel_calls.ts:28:20) {\n  remoteStacktrace: '#0 0x562f61afa873 <unknown>\\n' +\n    '#1 0x562f617f08c6 <unknown>\\n' +\n    '#2 0x562f617f5e75 <unknown>\\n' +\n    '#3 0x562f617f7bce <unknown>\\n' +\n    '#4 0x562f617f7c5c <unknown>\\n' +\n    '#5 0x562f61835ae2 <unknown>\\n' +\n    '#6 0x562f6185d5a2 <unknown>\\n' +\n    '#7 0x562f6182fe98 <unknown>\\n' +\n    '#8 0x562f6185d76e <unknown>\\n' +\n    '#9 0x562f6187bc19 <unknown>\\n' +\n    '#10 0x562f6185d343 <unknown>\\n' +\n    '#11 0x562f6182e593 <unknown>\\n' +\n    '#12 0x562f6182ef5e <unknown>\\n' +\n    '#13 0x562f61abe85b <unknown>\\n' +\n    '#14 0x562f61ac27b5 <unknown>\\n' +\n    '#15 0x562f61aac581 <unknown>\\n' +\n    '#16 0x562f61ac3342 <unknown>\\n' +\n    '#17 0x562f61a9188f <unknown>\\n' +\n    '#18 0x562f61ae9738 <unknown>\\n' +\n    '#19 0x562f61ae990b <unknown>\\n' +\n    '#20 0x562f61af99c4 <unknown>\\n' +\n    '#21 0x7fbdefe8b609 start_thread\\n'\n}\n```\n\nFirst failure: [CI Build - main](https://buildkite.com/elastic/kibana-on-merge/builds/43375#018eb290-51a2-49ec-a9c7-a34017c17388)\n\n<!-- kibanaCiData = {\"failed-test\":{\"test.class\":\"Chrome X-Pack UI Functional Tests.x-pack/test/functional/apps/lens/group4/show_underlying_data_dashboard\u00b7ts\",\"test.name\":\"lens app - group 4 lens show underlying data from dashboard should bring both dashboard context and visualization context to discover\",\"test.failCount\":2}} -->",
+  "files_changed": [
+    {
+      "filename": "x-pack/test/functional/apps/lens/group4/show_underlying_data_dashboard.ts",
+      "status": "modified",
+      "patch": "@@ -131,6 +131,7 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {\n       await browser.switchToWindow(discoverWindowHandle);\n \n       await PageObjects.header.waitUntilLoadingHasFinished();\n+      await PageObjects.discover.waitUntilSearchingHasFinished();\n \n       await retry.waitFor('filter count to be correct', async () => {\n         const filterCount = await filterBarService.getFilterCount();"
+    }
+  ],
+  "fix_category": "Reorder execution",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

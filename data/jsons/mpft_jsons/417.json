@@ -1,0 +1,17 @@
+{
+  "id": 417,
+  "repo": "planner",
+  "issue_url": "https://github.com/codebar/planner/pull/2287",
+  "pr_url": "https://github.com/codebar/planner/pull/2287",
+  "issue_description": "Fix attendees emails test which was trying to match two strings together when order can change and cause flakiness.  Resolved by expecting string to include emails so order shouldn't matter",
+  "files_changed": [
+    {
+      "filename": "spec/presenters/meeting_presenter_spec.rb",
+      "status": "modified",
+      "patch": "@@ -16,10 +16,10 @@\n \n   it '#attendees_emails' do\n     attendees = Fabricate.times(4, :attending_meeting_invitation, meeting: meeting)\n-\n-    expect(event.attendees_emails).to eq(\n-      attendees.map(&:member).map(&:email).sort.join(', ')\n-    )\n+    emails = attendees.map(&:member).map(&:email)\n+    emails.each do |email|\n+      expect(event.attendees_emails).to include(email)\n+    end\n   end\n \n   it '#time' do"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 167,
+  "repo": "ollama",
+  "issue_url": "https://github.com/ollama/ollama/pull/5804/files",
+  "pr_url": "https://github.com/ollama/ollama/pull/5804/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

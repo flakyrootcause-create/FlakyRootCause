@@ -1,0 +1,17 @@
+{
+  "id": 231,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/50773d75b6b9fe4f4ce5d9727e2e84cab7c3353a",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/50773d75b6b9fe4f4ce5d9727e2e84cab7c3353a",
+  "issue_description": "<!--  Thanks for sending a pull request!  Here are some tips for you:\r\n1. If this is your first time, read our contributor guidelines https://git.k8s.io/community/contributors/devel/pull-requests.md#the-pr-submit-process and developer guide https://git.k8s.io/community/contributors/devel/development.md#development-guide\r\n2. If you want *faster* PR reviews, read how: https://git.k8s.io/community/contributors/devel/pull-requests.md#best-practices-for-faster-reviews\r\n3. Follow the instructions for writing a release note: https://git.k8s.io/community/contributors/devel/pull-requests.md#write-release-notes-if-needed\r\n-->\r\n\r\n**What this PR does / why we need it**:\r\nDelete \"hugetlb\" from whitelistControllers\r\n\r\n**Which issue this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close that issue when PR gets merged)*: fixes #50770\r\n\r\n**Special notes for your reviewer**:\r\n\r\n**Release note**:\r\n<!--  Steps to write your release note:\r\n1. Use the release-note-* labels to set the release note state (if you have access)\r\n2. Enter your extended release note in the below block; leaving it blank means using the PR title as the release note. If no release note is required, just write `NONE`.\r\n-->\r\n```\r\nNONE\r\n```\r\n",
+  "files_changed": [
+    {
+      "filename": "pkg/kubelet/cm/cgroup_manager_linux.go",
+      "status": "modified",
+      "patch": "@@ -233,7 +233,7 @@ func (m *cgroupManagerImpl) Exists(name CgroupName) bool {\n \t// scoped to the set control groups it understands.  this is being discussed\n \t// in https://github.com/opencontainers/runc/issues/1440\n \t// once resolved, we can remove this code.\n-\twhitelistControllers := sets.NewString(\"cpu\", \"cpuacct\", \"cpuset\", \"memory\", \"hugetlb\", \"systemd\")\n+\twhitelistControllers := sets.NewString(\"cpu\", \"cpuacct\", \"cpuset\", \"memory\", \"systemd\")\n \n \t// If even one cgroup path doesn't exist, then the cgroup doesn't exist.\n \tfor controller, path := range cgroupPaths {"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,32 @@
+{
+  "id": 299,
+  "repo": "ansible",
+  "issue_url": "https://github.com/ansible/ansible/pull/82407",
+  "pr_url": "https://github.com/ansible/ansible/pull/82407",
+  "issue_description": "##### SUMMARY\r\n\r\nThis PR fixes various issues with the ansible-playbook-callbacks integration test.\r\n\r\n##### ISSUE TYPE\r\n\r\n- Test Pull Request\r\n\r\n##### ADDITIONAL INFORMATION\r\n\r\nThe timing of the async tasks was a little unpredictable, meaning that sometimes we would get an unexpected number of v2_runner_on_async_poll callbacks, and fail the test. This change fixes the issue by increasing the poll interval to 2 seconds and the sleep duration to 3 seconds, such that on a reasonably responsive system we will poll twice per task, with the sleep ending in the middle of the two polls.\r\n    \r\nThe include_me.yml file does not exist in this integration test. It has been added.\r\n    \r\nThe remote_tmp_dir.path expression is invalid - the setup_remote_tmp_dir role uses set_fact to set remote_tmp_dir to remote_tmp_dir.path.\r\n    \r\nThe integration tests run with ANSIBLE_HOST_PATTERN_MISMATCH=error, meaning that the final play was never reached. Set ANSIBLE_HOST_PATTERN_MISMATCH=warning to continue past the play and trigger the v2_playbook_on_no_hosts_matched callback.",
+  "files_changed": [
+    {
+      "filename": "test/integration/targets/ansible-playbook-callbacks/all-callbacks.yml",
+      "status": "modified",
+      "patch": "@@ -96,22 +96,22 @@\n       ignore_errors: true\n \n     - name: async poll ok\n-      command: sleep 2\n-      async: 3\n-      poll: 1\n+      command: sleep 3\n+      async: 5\n+      poll: 2\n \n     - name: async poll failed\n-      shell: sleep 2; false\n-      async: 3\n-      poll: 1\n+      shell: sleep 3; false\n+      async: 5\n+      poll: 2\n       ignore_errors: true\n \n     - include_tasks: include_me.yml\n \n     - name: diff\n       copy:\n         content: diff\n-        dest: '{{ remote_tmp_dir.path }}/diff.txt'\n+        dest: '{{ remote_tmp_dir }}/diff.txt'\n       diff: true\n \n - hosts: i_dont_exist"
+    },
+    {
+      "filename": "test/integration/targets/ansible-playbook-callbacks/callbacks_list.expected",
+      "status": "modified",
+      "patch": "@@ -1,12 +1,14 @@\n  1 __init__\n-83 v2_on_any\n+92 v2_on_any\n+ 1 v2_on_file_diff\n  4 v2_playbook_on_handler_task_start\n  2 v2_playbook_on_include\n+ 1 v2_playbook_on_no_hosts_matched\n  3 v2_playbook_on_notify\n- 1 v2_playbook_on_play_start\n+ 3 v2_playbook_on_play_start\n  1 v2_playbook_on_start\n  1 v2_playbook_on_stats\n-17 v2_playbook_on_task_start\n+19 v2_playbook_on_task_start\n  1 v2_playbook_on_vars_prompt\n  1 v2_runner_item_on_failed\n  2 v2_runner_item_on_ok\n@@ -15,8 +17,8 @@\n  1 v2_runner_on_async_ok\n  2 v2_runner_on_async_poll\n  5 v2_runner_on_failed\n-15 v2_runner_on_ok\n+16 v2_runner_on_ok\n  1 v2_runner_on_skipped\n-21 v2_runner_on_start\n+23 v2_runner_on_start\n  1 v2_runner_on_unreachable\n  2 v2_runner_retry"
+    },
+    {
+      "filename": "test/integration/targets/ansible-playbook-callbacks/include_me.yml",
+      "status": "added",
+      "patch": ""
+    },
+    {
+      "filename": "test/integration/targets/ansible-playbook-callbacks/runme.sh",
+      "status": "modified",
+      "patch": "@@ -5,6 +5,7 @@ set -eux\n export ANSIBLE_CALLBACK_PLUGINS=../support-callback_plugins/callback_plugins\n export ANSIBLE_ROLES_PATH=../\n export ANSIBLE_STDOUT_CALLBACK=callback_debug\n+export ANSIBLE_HOST_PATTERN_MISMATCH=warning\n \n ansible-playbook all-callbacks.yml 2>/dev/null | sort | uniq -c | tee callbacks_list.out\n "
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

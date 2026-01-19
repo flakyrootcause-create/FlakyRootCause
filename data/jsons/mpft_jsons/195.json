@@ -1,0 +1,11 @@
+{
+  "id": 195,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/commit/fd224946e084ad6bf6e55d6c4216cb8399e15c7e",
+  "pr_url": "https://github.com/getsentry/sentry-python/commit/fd224946e084ad6bf6e55d6c4216cb8399e15c7e",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

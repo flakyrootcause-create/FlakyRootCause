@@ -1,0 +1,62 @@
+{
+  "id": 65,
+  "repo": "databend",
+  "issue_url": "https://github.com/databendlabs/databend/issues/13731",
+  "pr_url": "https://github.com/databendlabs/databend/pull/13730",
+  "issue_description": "**Summary**\r\n\r\n```\r\n00_0000_target_tables:                                                  [ FAIL ] - result differs with:\r\n--- /runner/_work/databend/databend/tests/suites/6_background/00_target_tables/00_0000_target_tables.result\t2023-11-15 15:23:40.125338169 +0000\r\n+++ /runner/_work/databend/databend/tests/suites/6_background/00_target_tables/00_0000_target_tables.stdout\t2023-11-15 15:24:27.189338098 +0000\r\n@@ -3,6 +3,5 @@\r\n call  system$execute_background_job('test_tenant-compactor-job');\r\n target1\tCOMPACTION\t'root'@'%'\r\n target1\tCOMPACTION\t'root'@'%'\r\n-target2\tCOMPACTION\t'root'@'%'\r\n+i4DUdV9zjSOP7tgy4mUS47\t738eb126-4568-40f1-87f5-8a4495cc8946\tFlightSQL\tNULL\ttest_tenant-test_cluster-background-svc\tQuery\tdefault\t\t0\t0\t0\t0\t0\tNULL\t0\tbinding\r\n default\ttarget1\r\n-default\ttarget2\r\n\r\n\r\nHaving 1 errors! 0 tests passed.                     0 tests skipped.\r\nThe failure tests:\r\n    /runner/_work/databend/databend/tests/suites/6_background/00_target_tables/00_0000_target_tables.sh\r\nError: Process completed with exit code 1.\r\n```\r\nhttps://github.com/datafuselabs/databend/actions/runs/6879030518/job/18710498636?pr=13730#step:6:314",
+  "files_changed": [
+    {
+      "filename": "benchmark/clickbench/benchmark_local.sh",
+      "status": "modified",
+      "patch": "@@ -22,6 +22,10 @@ for bin in databend-query databend-meta; do\n         killall -9 $bin || true\n     fi\n done\n+\n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup databend-meta --single &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "benchmark/clickbench/benchmark_local_merge_into.sh",
+      "status": "modified",
+      "patch": "@@ -23,6 +23,10 @@ for bin in databend-query databend-meta; do\n         killall -9 $bin || true\n     fi\n done\n+\n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup ./databend-meta --single &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "scripts/benchmark/run-meta-benchmark.sh",
+      "status": "modified",
+      "patch": "@@ -29,6 +29,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start Meta service HA cluster(3 nodes)...'\n \n nohup ./target/release/databend-meta -c scripts/ci/deploy/config/databend-meta-node-1.toml &"
+    },
+    {
+      "filename": "scripts/ci/deploy/databend-query-cluster-3-nodes.sh",
+      "status": "modified",
+      "patch": "@@ -25,6 +25,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start Meta service HA cluster(3 nodes)...'\n \n mkdir -p ./.databend/"
+    },
+    {
+      "filename": "scripts/ci/deploy/databend-query-management-mode.sh",
+      "status": "modified",
+      "patch": "@@ -19,6 +19,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup target/${BUILD_PROFILE}/databend-meta --single --log-level=ERROR &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "scripts/ci/deploy/databend-query-standalone-hive.sh",
+      "status": "modified",
+      "patch": "@@ -19,6 +19,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup target/${BUILD_PROFILE}/databend-meta --single --log-level=ERROR &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "scripts/ci/deploy/databend-query-standalone-native.sh",
+      "status": "modified",
+      "patch": "@@ -20,6 +20,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup target/${BUILD_PROFILE}/databend-meta --single --log-level=ERROR &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "scripts/ci/deploy/databend-query-standalone.sh",
+      "status": "modified",
+      "patch": "@@ -20,6 +20,9 @@ for bin in databend-query databend-meta; do\n \tfi\n done\n \n+# Wait for killed process to cleanup resources\n+sleep 1\n+\n echo 'Start databend-meta...'\n nohup target/${BUILD_PROFILE}/databend-meta --single --log-level=ERROR &\n echo \"Waiting on databend-meta 10 seconds...\""
+    },
+    {
+      "filename": "src/meta/sled-store/src/db.rs",
+      "status": "modified",
+      "patch": "@@ -37,7 +37,7 @@ impl GlobalSledDb {\n             temp_dir: Some(temp_dir),\n             path: temp_path.clone(),\n             db: sled::open(temp_path.clone())\n-                .unwrap_or_else(|_| panic!(\"open global sled::Db(path: {})\", temp_path)),\n+                .unwrap_or_else(|e| panic!(\"open global sled::Db(path: {}): {}\", temp_path, e)),\n         }\n     }\n \n@@ -46,7 +46,7 @@ impl GlobalSledDb {\n             temp_dir: None,\n             path: path.clone(),\n             db: sled::open(path.clone())\n-                .unwrap_or_else(|_| panic!(\"open global sled::Db(path: {})\", path)),\n+                .unwrap_or_else(|e| panic!(\"open global sled::Db(path: {}): {}\", path, e)),\n         }\n     }\n }"
+    },
+    {
+      "filename": "tests/compat/test-compat.sh",
+      "status": "modified",
+      "patch": "@@ -185,6 +185,9 @@ run_test() {\n \tkill_proc databend-query\n \tkill_proc databend-meta\n \n+  # Wait for killed process to cleanup resources\n+  sleep 1\n+\n \techo \" === Clean old meta dir\"\n \trm -rf .databend/meta || echo \" === no meta dir to rm\"\n "
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (CI)"
+}

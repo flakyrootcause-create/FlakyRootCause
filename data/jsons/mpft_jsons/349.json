@@ -1,0 +1,17 @@
+{
+  "id": 349,
+  "repo": "elasticsearch",
+  "issue_url": "https://github.com/elastic/elasticsearch/pull/126707",
+  "pr_url": "https://github.com/elastic/elasticsearch/pull/126707",
+  "issue_description": "There is some flakiness for the checked error messages, as some include a \"verification_error:\" prefix. I've used regexes to avoid that, and removing the line / character information on the error being checked. ",
+  "files_changed": [
+    {
+      "filename": "x-pack/plugin/src/yamlRestTest/resources/rest-api-spec/test/esql/180_match_operator.yml",
+      "status": "modified",
+      "patch": "@@ -125,7 +125,7 @@ setup:\n \n   - match: { status: 400 }\n   - match: { error.type: verification_exception }\n-  - match: { error.reason: \"Found 1 problem\\nline 1:19: Unknown column [something]\" }\n+  - match: { error.reason: \"/Unknown.column.\\\\[something\\\\]/\" }\n \n ---\n \"match on eval column\":\n@@ -139,7 +139,7 @@ setup:\n \n   - match: { status: 400 }\n   - match: { error.type: verification_exception }\n-  - match: { error.reason: \"Found 1 problem\\nline 1:60: [:] operator cannot operate on [upper_content], which is not a field from an index mapping\" }\n+  - match: { error.reason: \"/operator.cannot.operate.on.\\\\[upper_content\\\\],.which.is.not.a.field.from.an.index.mapping/\" }\n \n ---\n \"match on overwritten column\":\n@@ -153,7 +153,7 @@ setup:\n \n   - match: { status: 400 }\n   - match: { error.type: verification_exception }\n-  - match: { error.reason: \"Found 1 problem\\nline 1:78: [:] operator cannot operate on [content], which is not a field from an index mapping\" }\n+  - match: { error.reason: \"/operator.cannot.operate.on.\\\\[content\\\\],.which.is.not.a.field.from.an.index.mapping/\" }\n \n ---\n \"match after stats\":\n@@ -167,7 +167,7 @@ setup:\n \n   - match: { status: 400 }\n   - match: { error.type: verification_exception }\n-  - match: { error.reason: \"Found 1 problem\\nline 1:36: Unknown column [content], did you mean [count(*)]?\" }\n+  - match: { error.reason: \"/Unknown.column.\\\\[content\\\\]/\" }\n \n ---\n \"match with disjunctions\":\n@@ -199,4 +199,4 @@ setup:\n \n   - match: { status: 400 }\n   - match: { error.type: verification_exception }\n-  - match: { error.reason: \"Found 1 problem\\nline 1:34: [:] operator is only supported in WHERE commands\" }\n+  - match: { error.reason: \"/operator.is.only.supported.in.WHERE.commands/\" }"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 227,
+  "repo": "jbpm",
+  "issue_url": "https://github.com/kiegroup/jbpm/commit/f310148697be7544217f88483ab8dc43804e1475",
+  "pr_url": "https://github.com/kiegroup/jbpm/commit/f310148697be7544217f88483ab8dc43804e1475",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

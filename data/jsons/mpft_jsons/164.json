@@ -1,0 +1,17 @@
+{
+  "id": 164,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/pull/4165",
+  "pr_url": "https://github.com/getsentry/sentry-python/pull/4165",
+  "issue_description": "The URL www.squirrelchasers.com is actually existing, so we should not access it in our tests. Hope this make the test more stable. ",
+  "files_changed": [
+    {
+      "filename": "tests/integrations/stdlib/test_httplib.py",
+      "status": "modified",
+      "patch": "@@ -398,25 +398,16 @@ def test_http_timeout(monkeypatch, sentry_init, capture_envelopes):\n \n     envelopes = capture_envelopes()\n \n-    with start_transaction(op=\"op\", name=\"name\"):\n-        try:\n-            conn = HTTPSConnection(\"www.squirrelchasers.com\")\n-            conn.request(\"GET\", \"/top-chasers\")\n+    with pytest.raises(TimeoutError):\n+        with start_transaction(op=\"op\", name=\"name\"):\n+            conn = HTTPSConnection(\"www.example.com\")\n+            conn.request(\"GET\", \"/bla\")\n             conn.getresponse()\n-        except Exception:\n-            pass\n-\n-    items = [\n-        item\n-        for envelope in envelopes\n-        for item in envelope.items\n-        if item.type == \"transaction\"\n-    ]\n-    assert len(items) == 1\n-\n-    transaction = items[0].payload.json\n+\n+    (transaction_envelope,) = envelopes\n+    transaction = transaction_envelope.get_transaction_event()\n     assert len(transaction[\"spans\"]) == 1\n \n     span = transaction[\"spans\"][0]\n     assert span[\"op\"] == \"http.client\"\n-    assert span[\"description\"] == \"GET https://www.squirrelchasers.com/top-chasers\"\n+    assert span[\"description\"] == \"GET https://www.example.com/bla\""
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Network",
+  "root_cause_subcategory": NaN
+}

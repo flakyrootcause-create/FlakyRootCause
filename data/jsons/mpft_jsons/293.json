@@ -1,0 +1,17 @@
+{
+  "id": 293,
+  "repo": "arrow-go",
+  "issue_url": "https://github.com/apache/arrow-go/pull/411",
+  "pr_url": "https://github.com/apache/arrow-go/pull/411",
+  "issue_description": "### Rationale for this change\nFixing flaky bloom filter memory check test\n\n### What changes are included in this PR?\nAdded an additional runtime.GC() call to ensure the releases are called.\n\n",
+  "files_changed": [
+    {
+      "filename": "parquet/metadata/bloom_filter_reader_test.go",
+      "status": "modified",
+      "patch": "@@ -52,6 +52,7 @@ func (suite *BloomFilterBuilderSuite) SetupTest() {\n \n func (suite *BloomFilterBuilderSuite) TearDownTest() {\n \truntime.GC() // we use setfinalizer to clean up the buffers, so run the GC\n+\truntime.GC()\n \tsuite.mem.AssertSize(suite.T(), 0)\n }\n "
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

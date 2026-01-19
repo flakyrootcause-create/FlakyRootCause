@@ -1,0 +1,11 @@
+{
+  "id": 86,
+  "repo": "matplotlib",
+  "issue_url": "https://github.com/matplotlib/matplotlib/pull/28858/commits",
+  "pr_url": "https://github.com/matplotlib/matplotlib/pull/28858/commits",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change condition",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

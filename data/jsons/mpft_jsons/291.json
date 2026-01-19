@@ -1,0 +1,27 @@
+{
+  "id": 291,
+  "repo": "iceberg",
+  "issue_url": "https://github.com/apache/iceberg/pull/13598",
+  "pr_url": "https://github.com/apache/iceberg/pull/13598",
+  "issue_description": "Closes #12889 ",
+  "files_changed": [
+    {
+      "filename": "spark/v3.4/spark/src/test/java/org/apache/iceberg/spark/actions/TestRewriteDataFilesAction.java",
+      "status": "modified",
+      "patch": "@@ -1427,7 +1427,11 @@ public void testParallelPartialProgressWithMaxCommitsLargerThanTotalGroupCount()\n \n     List<Object[]> postRewriteData = currentData();\n     assertEquals(\"We shouldn't have changed the data\", originalData, postRewriteData);\n-    shouldHaveSnapshots(table, 11);\n+    table.refresh();\n+    assertThat(table.snapshots())\n+        .as(\"Table did not have the expected number of snapshots\")\n+        // To tolerate 1 random commit failure\n+        .hasSizeGreaterThanOrEqualTo(10);\n     shouldHaveNoOrphans(table);\n     shouldHaveACleanCache(table);\n   }"
+    },
+    {
+      "filename": "spark/v3.5/spark/src/test/java/org/apache/iceberg/spark/actions/TestRewriteDataFilesAction.java",
+      "status": "modified",
+      "patch": "@@ -1427,7 +1427,11 @@ public void testParallelPartialProgressWithMaxCommitsLargerThanTotalGroupCount()\n \n     List<Object[]> postRewriteData = currentData();\n     assertEquals(\"We shouldn't have changed the data\", originalData, postRewriteData);\n-    shouldHaveSnapshots(table, 11);\n+    table.refresh();\n+    assertThat(table.snapshots())\n+        .as(\"Table did not have the expected number of snapshots\")\n+        // To tolerate 1 random commit failure\n+        .hasSizeGreaterThanOrEqualTo(10);\n     shouldHaveNoOrphans(table);\n     shouldHaveACleanCache(table);\n   }"
+    },
+    {
+      "filename": "spark/v4.0/spark/src/test/java/org/apache/iceberg/spark/actions/TestRewriteDataFilesAction.java",
+      "status": "modified",
+      "patch": "@@ -1427,7 +1427,11 @@ public void testParallelPartialProgressWithMaxCommitsLargerThanTotalGroupCount()\n \n     List<Object[]> postRewriteData = currentData();\n     assertEquals(\"We shouldn't have changed the data\", originalData, postRewriteData);\n-    shouldHaveSnapshots(table, 11);\n+    table.refresh();\n+    assertThat(table.snapshots())\n+        .as(\"Table did not have the expected number of snapshots\")\n+        // To tolerate 1 random commit failure\n+        .hasSizeGreaterThanOrEqualTo(10);\n     shouldHaveNoOrphans(table);\n     shouldHaveACleanCache(table);\n   }"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

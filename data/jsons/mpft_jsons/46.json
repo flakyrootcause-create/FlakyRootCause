@@ -1,0 +1,17 @@
+{
+  "id": 46,
+  "repo": "dask",
+  "issue_url": "https://github.com/dask/dask/pull/10943",
+  "pr_url": "https://github.com/dask/dask/pull/10943",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "dask/dataframe/tests/test_dataframe.py",
+      "status": "modified",
+      "patch": "@@ -604,22 +604,19 @@ def test_describe_without_datetime_is_numeric():\n             ddf.e.describe()\n \n \n+# Note: this warning is not always raised on Windows\n+@pytest.mark.filterwarnings(\n+    \"ignore:invalid value encountered in (true_)?divide:RuntimeWarning\"\n+)\n def test_describe_empty():\n     df_none = pd.DataFrame({\"A\": [None, None]})\n     ddf_none = dd.from_pandas(df_none, 2)\n     df_len0 = pd.DataFrame({\"A\": [], \"B\": []})\n     ddf_len0 = dd.from_pandas(df_len0, 2)\n     ddf_nocols = dd.from_pandas(pd.DataFrame({}), 2)\n \n-    # Pandas have different dtypes for resulting describe dataframe if there are only\n-    # None-values, pre-compute dask df to bypass _meta check\n-    assert_eq(\n-        df_none.describe(), ddf_none.describe(percentiles_method=\"dask\").compute()\n-    )\n-\n-    with pytest.warns(RuntimeWarning):\n-        ddf_len0.describe(percentiles_method=\"dask\").compute()\n-\n+    assert_eq(df_none.describe(), ddf_none.describe(percentiles_method=\"dask\"))\n+    assert_eq(df_len0.describe(), ddf_len0.describe(percentiles_method=\"dask\"))\n     with pytest.raises(ValueError):\n         ddf_nocols.describe(percentiles_method=\"dask\").compute()\n "
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

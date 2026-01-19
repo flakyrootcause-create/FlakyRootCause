@@ -1,0 +1,17 @@
+{
+  "id": 208,
+  "repo": "ably-chat-js",
+  "issue_url": "https://github.com/ably/ably-chat-js/pull/640",
+  "pr_url": "https://github.com/ably/ably-chat-js/pull/640",
+  "issue_description": "The test was flaking because instead of receiving an ENTER, we received a PRESENT. This happens when the presence entry arrives whilst a SYNC is in progress.\r\n\r\nWe wait for presence.get() to return, ensuring that the sync is complete prior to proceeding.\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **Tests**\n  * Improved reliability of presence-related integration tests by ensuring deterministic synchronization before component mount.\n  * Added detailed debug logging around presence events to aid diagnosis when tests fail.\n  * Reduced test flakiness by capturing and validating events consistently.\n\n* **Chores**\n  * Minor test harness adjustments to streamline debugging and maintainability without affecting user-facing behavior.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+  "files_changed": [
+    {
+      "filename": "test/react/hooks/use-presence.integration.test.tsx",
+      "status": "modified",
+      "patch": "@@ -20,6 +20,7 @@ describe('usePresence', () => {\n     // create new clients\n     const chatClientOne = newChatClient();\n     const chatClientTwo = newChatClient();\n+    const logger = chatClientTwo.logger;\n \n     // create a second room and attach it, so we can listen for presence events\n     const roomName = randomRoomName();\n@@ -28,10 +29,19 @@ describe('usePresence', () => {\n \n     // start listening for presence events on room two\n     const presenceEventsRoomTwo: PresenceEvent[] = [];\n-    roomTwo.presence.subscribe((presenceEvent) => presenceEventsRoomTwo.push(presenceEvent));\n+    roomTwo.presence.subscribe((presenceEvent) => {\n+      logger.debug('received presence event', presenceEvent);\n+      presenceEventsRoomTwo.push(presenceEvent);\n+    });\n \n     let isPresentState = false;\n \n+    // Before we mount the component, we're going to call presence.get() to force\n+    // the SYNC to complete. If we don't do this, then events later may be either\n+    // present OR enter, which is brittle to assert on. This guarantees that we get enter\n+    // by not entering presence until sync is complete.\n+    await roomTwo.presence.get();\n+\n     const TestComponent = ({ initialData }: { initialData: PresenceData }) => {\n       const { update, myPresenceState } = usePresence({ initialData });\n "
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

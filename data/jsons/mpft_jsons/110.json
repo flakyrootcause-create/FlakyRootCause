@@ -1,0 +1,17 @@
+{
+  "id": 110,
+  "repo": "pulumi",
+  "issue_url": "https://github.com/pulumi/pulumi/pull/20407",
+  "pr_url": "https://github.com/pulumi/pulumi/pull/20407",
+  "issue_description": "[PR Linked Issue]\nI've seen this fail a couple times\n\n```\n=== Failed\n=== FAIL: codegen/pcl TestRangeTraversalFromObjectOfObjectsDoesNotError (0.43s)\n    binder_test.go:1110: \n        \tError Trace:\t/home/runner/work/pulumi/pulumi/pkg/codegen/pcl/binder_test.go:1110\n        \tError:      \t\"unknown property 'aws_region' among [something awsRegion]\" does not contain \"unknown property 'aws_region' among [awsRegion something]\"\n        \tTest:       \tTestRangeTraversalFromObjectOfObjectsDoesNotError\n        \tMessages:   \tThe diagnostic contains the correct message about the unknown property\n```\n\nhttps://github.com/pulumi/pulumi/actions/runs/17270052509/job/49012394297?pr=20403",
+  "files_changed": [
+    {
+      "filename": "pkg/codegen/hcl2/model/diagnostics.go",
+      "status": "modified",
+      "patch": "@@ -16,6 +16,7 @@ package model\n \n import (\n \t\"fmt\"\n+\t\"slices\"\n \n \t\"github.com/hashicorp/hcl/v2\"\n \t\"github.com/zclconf/go-cty/cty\"\n@@ -104,6 +105,7 @@ func tupleIndexOutOfRange(tupleLen int, indexRange hcl.Range) *hcl.Diagnostic {\n }\n \n func unknownObjectProperty(name string, indexRange hcl.Range, props []string) *hcl.Diagnostic {\n+\tslices.Sort(props)\n \treturn errorf(indexRange, \"unknown property '%s' among %v\", name, props)\n }\n "
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

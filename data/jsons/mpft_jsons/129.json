@@ -1,0 +1,22 @@
+{
+  "id": 129,
+  "repo": "PowerToys",
+  "issue_url": "https://github.com/microsoft/PowerToys/pull/29760",
+  "pr_url": "https://github.com/microsoft/PowerToys/pull/29760",
+  "issue_description": "<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->\r\n## Summary of the Pull Request\r\n\r\nAnother attempt for trying to fix flaky WebView2 CI \ud83e\udd1e \r\n\r\n<!-- Please review the items on the PR checklist before submitting-->\r\n## PR Checklist\r\n\r\n- [ ] **Closes:** #xxx\r\n- [ ] **Communication:** I've discussed this with core contributors already. If work hasn't been agreed, this work might be rejected\r\n- [ ] **Tests:** Added/updated and all pass\r\n- [ ] **Localization:** All end user facing strings can be localized\r\n- [ ] **Dev docs:** Added/updated\r\n- [ ] **New binaries:** Added on the required places\r\n   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries\r\n   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder\r\n   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects\r\n   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)\r\n- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx\r\n\r\n<!-- Provide a more detailed description of the PR, other things fixed or any additional comments/features here -->\r\n## Detailed Description of the Pull Request / Additional comments\r\n\r\n<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->\r\n## Validation Steps Performed\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "src/modules/previewpane/UnitTests-MarkdownPreviewHandler/MarkdownPreviewHandlerTest.cs",
+      "status": "modified",
+      "patch": "@@ -17,7 +17,7 @@ namespace MarkdownPreviewHandlerUnitTests\n     public class MarkdownPreviewHandlerTest\n     {\n         // A long timeout is needed. WebView2 can take a long time to load the first time in some CI systems.\n-        private static readonly int HardTimeoutInMilliseconds = 30000;\n+        private static readonly int HardTimeoutInMilliseconds = 60000;\n         private static readonly int SleepTimeInMilliseconds = 200;\n \n         [TestMethod]"
+    },
+    {
+      "filename": "src/modules/previewpane/UnitTests-SvgPreviewHandler/SvgPreviewControlTests.cs",
+      "status": "modified",
+      "patch": "@@ -4,9 +4,7 @@\n \n using System;\n using System.Drawing;\n-using System.Runtime.InteropServices;\n using System.Runtime.InteropServices.ComTypes;\n-using System.Text;\n using System.Threading;\n using System.Windows.Forms;\n using Microsoft.PowerToys.PreviewHandler.Svg;\n@@ -22,7 +20,7 @@ namespace SvgPreviewHandlerUnitTests\n     public class SvgPreviewControlTests\n     {\n         // A long timeout is needed. WebView2 can take a long time to load the first time in some CI systems.\n-        private static readonly int HardTimeoutInMilliseconds = 30000;\n+        private static readonly int HardTimeoutInMilliseconds = 60000;\n         private static readonly int SleepTimeInMilliseconds = 200;\n \n         [TestMethod]"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

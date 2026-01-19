@@ -1,0 +1,17 @@
+{
+  "id": 242,
+  "repo": "rocksdb",
+  "issue_url": "https://github.com/facebook/rocksdb/pull/13347",
+  "pr_url": "https://github.com/facebook/rocksdb/pull/13347",
+  "issue_description": "Summary: The test has been [flaky](https://github.com/facebook/rocksdb/actions/runs/12220443012/job/34088263578?fbclid=IwZXh0bgNhZW0CMTEAAR3iDUK20Z4kdFkYZOT_PgQMYuj3Ebmpf4O-OOLLyeFQs4HAb8pRTWpFnUo_aem_09A_yiv7cwoD5lKjxFKimA). The cause for flakiness is that background threads may not be immediately available after calling env_->SetBackgroundThreads() while the test expects all background threads to be available for compaction. There's no way to get the number of available threads and I don't want to update threadpool implementation just for this test. So I added a fix to wait until background threads being available that relies on sync point. \r\n\r\n\r\nTest plan: monitor future test failure\r\n",
+  "files_changed": [
+    {
+      "filename": "db/db_compaction_test.cc",
+      "status": "modified",
+      "patch": "@@ -6411,6 +6411,19 @@ TEST_P(RoundRobinSubcompactionsAgainstPressureToken, PressureTokenTest) {\n   const int kKeysPerBuffer = 100;\n   const int kNumSubcompactions = 2;\n   const int kFilesPerLevel = 50;\n+  SyncPoint::GetInstance()->LoadDependency({\n+      // SetBackgroundThreads() only starts the bg threads. Background\n+      // threads may not be immediately available after SetBackgroundThreads\n+      // returns. There are some initialization before they start waiting for\n+      // new jobs, see ThreadPoolImpl::Impl::BGThread(). Here is a hacky way\n+      // to wait until there are at least two background threads (thread id\n+      // starts from 0) start waiting to accept jobs.\n+      {\"ThreadPoolImpl::BGThread::Start:th1\", \"WaitForThreadAvailable\"},\n+  });\n+  SyncPoint::GetInstance()->EnableProcessing();\n+  env_->SetBackgroundThreads(kNumSubcompactions, Env::LOW);\n+  TEST_SYNC_POINT(\"WaitForThreadAvailable\");\n+  SyncPoint::GetInstance()->DisableProcessing();\n   Options options = CurrentOptions();\n   options.num_levels = 3;\n   options.max_bytes_for_level_multiplier = 2;\n@@ -6431,7 +6444,6 @@ TEST_P(RoundRobinSubcompactionsAgainstPressureToken, PressureTokenTest) {\n   options.max_background_compactions = kNumSubcompactions;\n   options.max_compaction_bytes = 100000000;\n   DestroyAndReopen(options);\n-  env_->SetBackgroundThreads(kNumSubcompactions, Env::LOW);\n \n   Random rnd(301);\n   for (int lvl = 2; lvl > 0; lvl--) {"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

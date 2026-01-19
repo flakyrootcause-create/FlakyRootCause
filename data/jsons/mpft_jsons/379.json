@@ -1,0 +1,17 @@
+{
+  "id": 379,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/pull/98516",
+  "pr_url": "https://github.com/tensorflow/tensorflow/pull/98516",
+  "issue_description": "Reduce flakiness/sensitivity of PyFunc cleanup test.\n\nOccasionally, unrelated-seeming changes would cause the GC-based cleanup test to fail, because `gc.collect()` did not collect all garbage. Calling `gc.collect()` twice in sequence will perform a more thorough collection, including cycles that were broken in the first call to `gc.collect()`. There is a plausible theory that the finalizers used in the `WeakValueDictionary` in `script_ops._py_funcs` could be contributing to the issue.\n",
+  "files_changed": [
+    {
+      "filename": "tensorflow/python/kernel_tests/control_flow/py_func_test.py",
+      "status": "modified",
+      "patch": "@@ -482,13 +482,15 @@ class PyFuncAndEagerPyFuncTest(PyFuncTestBase):\n   def verifyPyFuncsNoIncrease(self, make_graph):\n     ops.reset_default_graph()\n     gc.collect()\n+    gc.collect()\n     initial_size = script_ops._py_funcs.size()\n \n     for _ in range(1000):\n       make_graph()\n \n     ops.reset_default_graph()\n     gc.collect()\n+    gc.collect()\n     self.assertEqual(initial_size, script_ops._py_funcs.size())\n \n   def testCleanup(self):"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 213,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/b4b973c23757b28d1753c0803f85dfb655d905f1",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/b4b973c23757b28d1753c0803f85dfb655d905f1",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

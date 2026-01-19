@@ -1,0 +1,17 @@
+{
+  "id": 42,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/51792",
+  "pr_url": "https://github.com/nodejs/node/pull/51792",
+  "issue_description": "[PR Linked Issue]\n### Test\r\n\r\n`test/parallel/test-zlib-brotli-16GB.js`\r\n\r\n### Platform\r\n\r\nAIX\r\n\r\n### Console output\r\n\r\n```console\r\n17:07:37 not ok 3588 parallel/test-zlib-brotli-16GB\r\n17:07:37   ---\r\n17:07:37   duration_ms: 412.84800\r\n17:07:37   severity: fail\r\n17:07:37   exitcode: 1\r\n17:07:37   stack: |-\r\n17:07:37     node:assert:126\r\n17:07:37       throw new AssertionError(obj);\r\n17:07:37       ^\r\n17:07:37     \r\n17:07:37     AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n17:07:37     \r\n17:07:37     0 !== 1\r\n17:07:37     \r\n17:07:37         at Timeout.<anonymous> (/home/iojs/build/workspace/node-test-commit-aix/nodes/aix72-ppc64/test/parallel/test-zlib-brotli-16GB.js:21:3)\r\n17:07:37         at Timeout._onTimeout (/home/iojs/build/workspace/node-test-commit-aix/nodes/aix72-ppc64/test/common/index.js:476:15)\r\n17:07:37         at listOnTimeout (node:internal/timers:573:17)\r\n17:07:37         at process.processTimers (node:internal/timers:514:7) {\r\n17:07:37       generatedMessage: true,\r\n17:07:37       code: 'ERR_ASSERTION',\r\n17:07:37       actual: 0,\r\n17:07:37       expected: 1,\r\n17:07:37       operator: 'strictEqual'\r\n17:07:37     }\r\n17:07:37     \r\n17:07:37     Node.js v21.6.3-pre\r\n17:07:37   ...\r\n```\r\n\r\n\r\n### Build links\r\n\r\n- https://ci.nodejs.org/job/node-test-commit-aix/50223/nodes=aix72-ppc64/console\r\n\r\n### Additional information\r\n\r\n_No response_",
+  "files_changed": [
+    {
+      "filename": "test/parallel/test-zlib-brotli-16GB.js",
+      "status": "modified",
+      "patch": "@@ -19,4 +19,4 @@ decoder.end(buf);\n setTimeout(common.mustCall(() => {\n   // There is only one chunk in the buffer\n   strictEqual(decoder._readableState.buffer.length, 1);\n-}), common.platformTimeout(100));\n+}), common.platformTimeout(500));"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

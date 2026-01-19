@@ -1,0 +1,17 @@
+{
+  "id": 38,
+  "repo": "webrender",
+  "issue_url": "https://github.com/szeged/webrender/issues/277",
+  "pr_url": "https://github.com/gfx-rs/gfx/pull/2732",
+  "issue_description": "The `text\\split-batch.yaml` fails with 25 pixel difference, and the `image\\tile-repeat-prim-or-decompose.yaml` crashes, because we run out of descriptors. The fail was introduced in https://github.com/szeged/webrender/commit/1e81eaf8fa8ddbed1f8beda20a18bfc8787c7e80, where we started using the `max_image_array_layers` limit from gfx-hal. Previously we had a constant `2048` value there. This only affects the Vulkan backend. ",
+  "files_changed": [
+    {
+      "filename": "src/backend/vulkan/src/lib.rs",
+      "status": "modified",
+      "patch": "@@ -783,6 +783,7 @@ impl hal::PhysicalDevice<Backend> for PhysicalDevice {\n             max_image_2d_size: limits.max_image_dimension2_d,\n             max_image_3d_size: limits.max_image_dimension3_d,\n             max_image_cube_size: limits.max_image_dimension_cube,\n+            max_image_array_layers: limits.max_image_array_layers as _,\n             max_texel_elements: limits.max_texel_buffer_elements as _,\n             max_patch_size: limits.max_tessellation_patch_size as PatchSize,\n             max_viewports: limits.max_viewports as _,"
+    }
+  ],
+  "fix_category": "Account for limit",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": "Resource limit"
+}

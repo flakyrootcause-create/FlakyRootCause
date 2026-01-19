@@ -1,0 +1,11 @@
+{
+  "id": 406,
+  "repo": "site-kit-wp",
+  "issue_url": "https://github.com/google/site-kit-wp/commit/8195f44ffc133f29e1d99cce3d275e515fb1c0ef",
+  "pr_url": "https://github.com/google/site-kit-wp/commit/8195f44ffc133f29e1d99cce3d275e515fb1c0ef",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

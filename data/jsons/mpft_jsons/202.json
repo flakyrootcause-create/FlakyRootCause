@@ -1,0 +1,17 @@
+{
+  "id": 202,
+  "repo": "radar-sdk-ios",
+  "issue_url": "https://github.com/radarlabs/radar-sdk-ios/pull/334",
+  "pr_url": "https://github.com/radarlabs/radar-sdk-ios/pull/334",
+  "issue_description": "The `getContext` seem to randomly timing out on github action. \r\n<img width=\"494\" alt=\"image\" src=\"https://github.com/radarlabs/radar-sdk-ios/assets/139801512/9de1176f-0d6b-434e-b63a-f28b242da8e2\">\r\n<img width=\"417\" alt=\"image\" src=\"https://github.com/radarlabs/radar-sdk-ios/assets/139801512/ec3ec059-f3cc-47aa-8f3f-54ac4a7e72ad\">\r\nThis is likely an issue with github action because\r\n- This does not occur on circle CI\r\n- This does not occur on local testing\r\nAs a sanity check, the SDK endpoint for `getContext` was called on waypoint with no noticeable issue. ",
+  "files_changed": [
+    {
+      "filename": "RadarSDKTests/RadarSDKTests.m",
+      "status": "modified",
+      "patch": "@@ -823,7 +823,7 @@ - (void)test_Radar_getContext_errorLocation {\n         [expectation fulfill];\n     }];\n \n-    [self waitForExpectationsWithTimeout:60\n+    [self waitForExpectationsWithTimeout:120\n                                  handler:^(NSError *_Nullable error) {\n                                      if (error) {\n                                          XCTFail();"
+    }
+  ],
+  "fix_category": "Sleep",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 412,
+  "repo": "dotnet-activemq-artemis-client",
+  "issue_url": "https://github.com/Havret/dotnet-activemq-artemis-client/pull/539",
+  "pr_url": "https://github.com/Havret/dotnet-activemq-artemis-client/pull/539",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "test/ArtemisNetClient.UnitTests/MessageCreationTimeSpec.cs",
+      "status": "modified",
+      "patch": "@@ -20,15 +20,14 @@ public async Task Should_be_set_by_producer()\n             await using var connection = await CreateConnection(host.Endpoint);\n             await using var producer = await connection.CreateProducerAsync(\"a1\", RoutingType.Anycast);\n \n-            var before = DateTime.UtcNow.DropTicsPrecision();\n+            var before = DateTime.UtcNow.DropTicsPrecision() - TimeSpan.FromMilliseconds(1);\n             await producer.SendAsync(new Message(\"foo\"));\n-            var after = DateTime.UtcNow.DropTicsPrecision();\n+            var after = DateTime.UtcNow.DropTicsPrecision() + TimeSpan.FromMilliseconds(1);\n \n             var received = messageProcessor.Dequeue(Timeout);\n \n             Assert.NotNull(received.CreationTime);\n-            Assert.True(received.CreationTime.Value >= before, \"CreationTime should be after 'before' timestamp\");\n-            Assert.True(received.CreationTime.Value <= after, \"CreationTime should be before 'after' timestamp\");\n+            Assert.InRange(received.CreationTime.Value, before, after);\n         }\n \n         [Fact]"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

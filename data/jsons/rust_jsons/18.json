@@ -1,0 +1,32 @@
+{
+  "id": 18,
+  "repo": "forest",
+  "issue_url": "https://github.com/ChainSafe/forest/issues/4585",
+  "pr_url": "https://github.com/ChainSafe/forest/pull/4603",
+  "issue_description": "## Issue summary\r\n\r\nThe RPC test for `Filecoin.EthGetBlockByNumber` fails randomly. Investigate and fix this. Until then, the test is ignored.\r\n\r\n## Other information and links\r\n\r\n<!-- Add any other context or screenshots about the issue here. -->\r\n\r\n<!-- Thank you \ud83d\ude4f -->\r\n",
+  "files_changed": [
+    {
+      "filename": "CHANGELOG.md",
+      "status": "modified",
+      "patch": "@@ -35,6 +35,10 @@\n \n ### Fixed\n \n+- [#4603](https://github.com/ChainSafe/forest/pull/4603) Fixed incorrect\n+  deserialisation in `Filecoin.EthGetBlockByNumber` and\n+  `Filecoin.EthGetBlockByHash` RPC methods.\n+\n ## Forest 0.19.2 \"Eagle\"\n \n Non-mandatory release that includes a fix for the Prometheus-incompatible"
+    },
+    {
+      "filename": "scripts/tests/api_compare/filter-list",
+      "status": "modified",
+      "patch": "@@ -9,7 +9,3 @@\n !Filecoin.StateCall\n # CustomCheckFailed in Forest: https://github.com/ChainSafe/forest/issues/4446\n !Filecoin.StateCirculatingSupply\n-# CustomCheckFailed in Forest: https://github.com/ChainSafe/forest/issues/4584\n-!Filecoin.EthGetBlockByHash\n-# CustomCheckFailed in Forest: https://github.com/ChainSafe/forest/issues/4585\n-!Filecoin.EthGetBlockByNumber"
+    },
+    {
+      "filename": "scripts/tests/api_compare/filter-list-offline",
+      "status": "modified",
+      "patch": "@@ -19,7 +19,3 @@\n !Filecoin.StateCirculatingSupply\n # The estimation is inaccurate only for offline RPC server, to be investigated: https://github.com/ChainSafe/forest/issues/4555\n !Filecoin.EthEstimateGas\n-# CustomCheckFailed in Forest: https://github.com/ChainSafe/forest/issues/4584\n-!Filecoin.EthGetBlockByHash\n-# CustomCheckFailed in Forest: https://github.com/ChainSafe/forest/issues/4585\n-!Filecoin.EthGetBlockByNumber"
+    },
+    {
+      "filename": "src/rpc/methods/eth.rs",
+      "status": "modified",
+      "patch": "@@ -35,7 +35,8 @@ use crate::shim::trace::{CallReturn, ExecutionEvent};\n use crate::shim::{clock::ChainEpoch, state_tree::StateTree};\n use crate::utils::db::BlockstoreExt as _;\n use anyhow::{bail, Result};\n-use bytes::Buf;\n+use cbor4ii::core::dec::Decode as _;\n+use cbor4ii::core::Value;\n use cid::Cid;\n use fvm_ipld_blockstore::Blockstore;\n use fvm_ipld_encoding::{RawBytes, CBOR, DAG_CBOR, IPLD_RAW};\n@@ -806,10 +807,10 @@ fn encode_as_abi_helper(param1: u64, param2: u64, data: &[u8]) -> Vec<u8> {\n fn decode_payload(payload: &fvm_ipld_encoding::RawBytes, codec: u64) -> Result<EthBytes> {\n     match codec {\n         DAG_CBOR | CBOR => {\n-            let result: Result<Vec<u8>, _> = serde_ipld_dagcbor::de::from_reader(payload.reader());\n-            match result {\n-                Ok(buffer) => Ok(EthBytes(buffer)),\n-                Err(err) => bail!(\"decode_payload: failed to decode cbor payload: {err}\"),\n+            let mut reader = cbor4ii::core::utils::SliceReader::new(payload.bytes());\n+            match Value::decode(&mut reader) {\n+                Ok(Value::Bytes(bytes)) => Ok(EthBytes(bytes)),\n+                _ => bail!(\"failed to read params byte array\"),\n             }\n         }\n         IPLD_RAW => Ok(EthBytes(payload.to_vec())),"
+    }
+  ],
+  "fix_category": "Robustness",
+  "root_cause_category": "Logic",
+  "root_cause_subcategory": "Deserialization"
+}

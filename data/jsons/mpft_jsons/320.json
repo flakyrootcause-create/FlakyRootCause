@@ -1,0 +1,17 @@
+{
+  "id": 320,
+  "repo": "airflow",
+  "issue_url": "https://github.com/apache/airflow/commit/28278debebabdd44bf69609f17d2c7c9c8a39695",
+  "pr_url": "https://github.com/apache/airflow/commit/28278debebabdd44bf69609f17d2c7c9c8a39695",
+  "issue_description": "<!--\r\nThank you for contributing! Please make sure that your code changes\r\nare covered with tests. And in case of new features or big changes\r\nremember to adjust the documentation.\r\n\r\nFeel free to ping committers for the review!\r\n\r\nIn case of an existing issue, reference it using one of the following:\r\n\r\ncloses: #ISSUE\r\nrelated: #ISSUE\r\n\r\nHow to write a good git commit message:\r\nhttp://chris.beams.io/posts/git-commit/\r\n-->\r\n\r\n---\r\n**^ Add meaningful description above**\r\n\r\nRead the **[Pull Request Guidelines](https://github.com/apache/airflow/blob/main/CONTRIBUTING.rst#pull-request-guidelines)** for more information.\r\nIn case of fundamental code changes, an Airflow Improvement Proposal ([AIP](https://cwiki.apache.org/confluence/display/AIRFLOW/Airflow+Improvement+Proposals)) is needed.\r\nIn case of a new dependency, check compliance with the [ASF 3rd Party License Policy](https://www.apache.org/legal/resolved.html#category-x).\r\nIn case of backwards incompatible changes please leave a note in a newsfragment file, named `{pr_number}.significant.rst` or `{issue_number}.significant.rst`, in [newsfragments](https://github.com/apache/airflow/tree/main/newsfragments).\r\n",
+  "files_changed": [
+    {
+      "filename": ".pre-commit-config.yaml",
+      "status": "modified",
+      "patch": "@@ -400,7 +400,7 @@ repos:\n         name: Check and update common.sql API stubs\n         entry: ./scripts/ci/pre_commit/pre_commit_update_common_sql_api_stubs.py\n         language: python\n-        files: ^scripts/ci/pre_commit/pre_commit_update_common_sql_api\\.py|^airflow/providers/common/sql/.*\\.py[i]$\n+        files: ^scripts/ci/pre_commit/pre_commit_update_common_sql_api\\.py|^airflow/providers/common/sql/.*\\.pyi?$\n         additional_dependencies: ['rich>=12.4.4', 'mypy==0.971', 'black==22.3.0']\n         pass_filenames: false\n         require_serial: true"
+    }
+  ],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

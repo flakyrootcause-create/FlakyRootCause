@@ -1,0 +1,17 @@
+{
+  "id": 65,
+  "repo": "pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/pull/14638",
+  "pr_url": "https://github.com/pandas-dev/pandas/pull/14638",
+  "issue_description": " - [x] closes #14626 \r\n - [x] tests added / passed\r\n - [x] passes ``git diff upstream/master | flake8 --diff``\r\n - [ ] whatsnew entry\r\n\r\n",
+  "files_changed": [
+    {
+      "filename": "pandas/tests/indexes/test_base.py",
+      "status": "modified",
+      "patch": "@@ -913,7 +913,16 @@ def test_summary(self):\n     def test_format(self):\n         self._check_method_works(Index.format)\n \n-        index = Index([datetime.now()])\n+        # GH 14626\n+        def datetime_now_without_trailing_zeros():\n+            now = datetime.now()\n+\n+            while str(now).endswith(\"000\"):\n+                now = datetime.now()\n+\n+            return now\n+\n+        index = Index([datetime_now_without_trailing_zeros()])\n \n         # windows has different precision on datetime.datetime.now (it doesn't\n         # include us since the default for Timestamp shows these but Index"
+    }
+  ],
+  "fix_category": "Other",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

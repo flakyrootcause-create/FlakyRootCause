@@ -1,0 +1,11 @@
+{
+  "id": 197,
+  "repo": "airflow",
+  "issue_url": "https://github.com/soundcloud/airflow/commit/d06d3165ff7df8ceeb52f8f18154f5f27d83355b",
+  "pr_url": "https://github.com/soundcloud/airflow/commit/d06d3165ff7df8ceeb52f8f18154f5f27d83355b",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

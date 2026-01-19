@@ -1,0 +1,11 @@
+{
+  "id": 26,
+  "repo": "flink",
+  "issue_url": "https://github.com/apache/flink/commit/e2a2755a0466fec2c7ae7bd3edddf4d6f822a7a0",
+  "pr_url": "https://github.com/apache/flink/commit/e2a2755a0466fec2c7ae7bd3edddf4d6f822a7a0",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,17 @@
+{
+  "id": 47,
+  "repo": "distributed",
+  "issue_url": "https://github.com/dask/distributed/pull/8228",
+  "pr_url": "https://github.com/dask/distributed/pull/8228",
+  "issue_description": "This was straightforward to reproduce locally, both with and without scheduler-side queuing. Unsure why on CI it seems to only fail without queuing.\r\n\r\n![image](https://github.com/dask/distributed/assets/6213168/ae93bdb1-0624-4543-8b0d-cd003e0570f1)\r\n\r\nNow the test is rock solid (ran 200 times per CI environment).",
+  "files_changed": [
+    {
+      "filename": "distributed/deploy/tests/test_local.py",
+      "status": "modified",
+      "patch": "@@ -25,6 +25,7 @@\n     assert_can_connect_from_everywhere_4_6,\n     assert_can_connect_locally_4,\n     assert_cannot_connect,\n+    async_poll_for,\n     captured_logger,\n     gen_test,\n     inc,\n@@ -746,37 +747,43 @@ def test_adapt(loop):\n             assert time() < start + 5\n \n \n-def test_adapt_then_manual(loop):\n+@gen_test()\n+async def test_adapt_then_manual():\n     \"\"\"We can revert from adaptive, back to manual\"\"\"\n-    with LocalCluster(\n-        silence_logs=False,\n-        loop=loop,\n+    async with LocalCluster(\n+        asynchronous=True,\n         dashboard_address=\":0\",\n         processes=False,\n         n_workers=8,\n+        threads_per_worker=1,\n     ) as cluster:\n-        cluster.adapt(minimum=0, maximum=4, interval=\"10ms\")\n \n-        start = time()\n-        while cluster.scheduler.workers or cluster.workers:\n-            sleep(0.01)\n-            assert time() < start + 30\n+        def wait_workers(n):\n+            return async_poll_for(\n+                lambda: len(cluster.scheduler.workers) == n\n+                and len(cluster.workers) == n,\n+                timeout=5,\n+            )\n \n-        assert not cluster.workers\n+        await wait_workers(8)\n+        cluster.adapt(minimum=0, maximum=4, interval=\"10ms\")\n+        await wait_workers(0)\n \n-        with Client(cluster) as client:\n+        async with Client(cluster, asynchronous=True) as client:\n             futures = client.map(slowinc, range(1000), delay=0.1)\n-            sleep(0.2)\n+            await wait_workers(4)\n \n             cluster._adaptive.stop()\n-            sleep(0.2)\n+            # stop() disables a PeriodicCallback. However, sometimes the callback has\n+            # already been scheduled or is halfway through (it's asynchronous).\n+            # Wait for it to finish, otherwise you'd get a race condition with\n+            # scale() below and flakiness in the test.\n+            tasks = {t for t in asyncio.all_tasks() if \"PeriodicCallback\" in str(t)}\n+            if tasks:\n+                await asyncio.wait(tasks)\n \n             cluster.scale(2)\n-\n-            start = time()\n-            while len(cluster.scheduler.workers) != 2:\n-                sleep(0.01)\n-                assert time() < start + 30\n+            await wait_workers(2)\n \n \n @pytest.mark.parametrize(\"temporary\", [True, False])"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

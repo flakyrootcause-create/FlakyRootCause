@@ -1,0 +1,17 @@
+{
+  "id": 124,
+  "repo": "vscode",
+  "issue_url": "https://github.com/microsoft/vscode/pull/94788",
+  "pr_url": "https://github.com/microsoft/vscode/pull/94788",
+  "issue_description": "Terminal Extension pty terminals should respect dimension overrides\r\n\r\nFixes #90064\r\n",
+  "files_changed": [
+    {
+      "filename": "extensions/vscode-api-tests/src/singlefolder-tests/terminal.test.ts",
+      "status": "modified",
+      "patch": "@@ -380,8 +380,7 @@ import { doesNotThrow, equal, ok, deepEqual, throws } from 'assert';\n \t\t\t// \tconst terminal = window.createTerminal({ name: 'foo', pty });\n \t\t\t// });\n \n-\t\t\t// https://github.com/microsoft/vscode/issues/90437\n-\t\t\ttest.skip('should respect dimension overrides', (done) => {\n+\t\t\ttest('should respect dimension overrides', (done) => {\n \t\t\t\tdisposables.push(window.onDidOpenTerminal(term => {\n \t\t\t\t\ttry {\n \t\t\t\t\t\tequal(terminal, term);\n@@ -394,15 +393,18 @@ import { doesNotThrow, equal, ok, deepEqual, throws } from 'assert';\n \t\t\t\t\t\t\t// HACK: Ignore the event if dimension(s) are zero (#83778)\n \t\t\t\t\t\t\treturn;\n \t\t\t\t\t\t}\n-\t\t\t\t\t\ttry {\n-\t\t\t\t\t\t\tequal(e.dimensions.columns, 10);\n-\t\t\t\t\t\t\tequal(e.dimensions.rows, 5);\n-\t\t\t\t\t\t\tequal(e.terminal, terminal);\n-\t\t\t\t\t\t} catch (e) {\n-\t\t\t\t\t\t\tdone(e);\n+\t\t\t\t\t\t// The default pty dimensions have a chance to appear here since override\n+\t\t\t\t\t\t// dimensions happens after the terminal is created. If so just ignore and\n+\t\t\t\t\t\t// wait for the right dimensions\n+\t\t\t\t\t\tif (e.dimensions.columns === 10 || e.dimensions.rows === 5) {\n+\t\t\t\t\t\t\ttry {\n+\t\t\t\t\t\t\t\tequal(e.terminal, terminal);\n+\t\t\t\t\t\t\t} catch (e) {\n+\t\t\t\t\t\t\t\tdone(e);\n+\t\t\t\t\t\t\t}\n+\t\t\t\t\t\t\tdisposables.push(window.onDidCloseTerminal(() => done()));\n+\t\t\t\t\t\t\tterminal.dispose();\n \t\t\t\t\t\t}\n-\t\t\t\t\t\tdisposables.push(window.onDidCloseTerminal(() => done()));\n-\t\t\t\t\t\tterminal.dispose();\n \t\t\t\t\t}));\n \t\t\t\t}));\n \t\t\t\tconst writeEmitter = new EventEmitter<string>();\n@@ -548,7 +550,6 @@ import { doesNotThrow, equal, ok, deepEqual, throws } from 'assert';\n \t\t\t\t\t} catch (e) {\n \t\t\t\t\t\tdone(e);\n \t\t\t\t\t}\n-\t\t\t\t\tconsole.log('Terminal data: ' + e.data);\n \t\t\t\t\t// Multiple expected could show up in the same data event\n \t\t\t\t\twhile (expectedText.length > 0 && e.data.indexOf(expectedText[0]) >= 0) {\n \t\t\t\t\t\texpectedText.shift();\n@@ -594,7 +595,6 @@ import { doesNotThrow, equal, ok, deepEqual, throws } from 'assert';\n \t\t\t\t\t} catch (e) {\n \t\t\t\t\t\tdone(e);\n \t\t\t\t\t}\n-\t\t\t\t\tconsole.log('Terminal data: ' + e.data);\n \t\t\t\t\t// Multiple expected could show up in the same data event\n \t\t\t\t\twhile (expectedText.length > 0 && e.data.indexOf(expectedText[0]) >= 0) {\n \t\t\t\t\t\texpectedText.shift();"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

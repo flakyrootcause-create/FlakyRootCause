@@ -1,0 +1,17 @@
+{
+  "id": 28,
+  "repo": "quickwit",
+  "issue_url": "https://github.com/quickwit-oss/quickwit/issues/2296",
+  "pr_url": "https://github.com/quickwit-oss/quickwit/pull/2324",
+  "issue_description": "We have a bunch of flaky tests to fix:\r\n\r\n- [x] `test_indexing_service_does_not_shut_down_pipelines_on_indexing_pipeline_timeout` ([link](https://github.com/quickwit-oss/quickwit/actions/runs/3448688279/jobs/5755916183)) @fmassot \r\n- [x] `test_run_gc_expires_stale_staged_splits_after_grace_period` @guilload \r\n- [x] `test_ingest_api_garbage_collector` ([link](https://github.com/quickwit-oss/quickwit/actions/runs/3464851848/jobs/5786887789)) @evanxg852000 \r\n- [x] `grpc_metastore::common_tests::test_metastore_list_splits` @ChillFish8 \r\n- [x] `test_garbage_collect_index_cli` ([link](https://github.com/quickwit-oss/quickwit/actions/runs/3473230518/jobs/5805017278)) @boraarslan \r\n- [x] `test_search_dynamic_mode_expand_dots` ([link](https://github.com/quickwit-oss/quickwit/actions/runs/3516424778/jobs/5892968003)) @fulmicoton ",
+  "files_changed": [
+    {
+      "filename": "quickwit/quickwit-metastore/src/tests.rs",
+      "status": "modified",
+      "patch": "@@ -2103,7 +2103,7 @@ pub mod test_suite {\n             assert_eq!(split_ids, to_hash_set(&[\"list-splits-five\"]));\n \n             // Artificially increase the create_timestamp\n-            sleep(Duration::from_secs(2)).await;\n+            sleep(Duration::from_secs(1)).await;\n             // add a split without tag\n             let split_metadata_6 = SplitMetadata {\n                 footer_offsets: 1000..2000,\n@@ -2182,18 +2182,17 @@ pub mod test_suite {\n                 ])\n             );\n \n-            let select_timestamp = OffsetDateTime::now_utc().unix_timestamp() - 1;\n-            let query =\n-                ListSplitsQuery::for_index(index_id).with_update_timestamp_gte(select_timestamp);\n+            let query = ListSplitsQuery::for_index(index_id)\n+                .with_update_timestamp_gte(split_metadata_6.create_timestamp);\n             let splits = metastore.list_splits(query).await.unwrap();\n             let split_ids: HashSet<String> = splits\n                 .into_iter()\n                 .map(|meta| meta.split_id().to_string())\n                 .collect();\n             assert_eq!(split_ids, to_hash_set(&[\"list-splits-six\"]));\n \n-            let query =\n-                ListSplitsQuery::for_index(index_id).with_create_timestamp_lte(select_timestamp);\n+            let query = ListSplitsQuery::for_index(index_id)\n+                .with_create_timestamp_lt(split_metadata_6.create_timestamp);\n             let splits = metastore.list_splits(query).await.unwrap();\n             let split_ids: HashSet<String> = splits\n                 .into_iter()"
+    }
+  ],
+  "fix_category": "Tweak durations",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": "Tweak durations"
+}

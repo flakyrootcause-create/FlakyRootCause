@@ -1,0 +1,17 @@
+{
+  "id": 394,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/pull/56339",
+  "pr_url": "https://github.com/nodejs/node/pull/56339",
+  "issue_description": "Refs #56190\r\n\r\nThis PR does two things in the specific `test` case that is flaky:\r\n\r\n- Make the `composedSignal` a weak ref so the test won't hold any reference that could keep that variable from being GCed.\r\n- Add `gcUntil` so it will make more calls to `global.gc`. Precisely, until that condition is reached or a maximum number of attempts is hit.",
+  "files_changed": [
+    {
+      "filename": "test/parallel/test-abortsignal-drop-settled-signals.mjs",
+      "status": "modified",
+      "patch": "@@ -134,25 +134,30 @@ it('does not prevent source signal from being GCed if it is short-lived', (t, do\n \n it('drops settled dependant signals when signal is composite', (t, done) => {\n   const controllers = Array.from({ length: 2 }, () => new AbortController());\n-  const composedSignal1 = AbortSignal.any([controllers[0].signal]);\n-  const composedSignalRef = new WeakRef(AbortSignal.any([composedSignal1, controllers[1].signal]));\n+\n+  // Using WeakRefs to avoid this test to retain information that will make the test fail\n+  const composedSignal1 = new WeakRef(AbortSignal.any([controllers[0].signal]));\n+  const composedSignalRef = new WeakRef(AbortSignal.any([composedSignal1.deref(), controllers[1].signal]));\n \n   const kDependantSignals = Object.getOwnPropertySymbols(controllers[0].signal).find(\n     (s) => s.toString() === 'Symbol(kDependantSignals)'\n   );\n \n-  setImmediate(() => {\n-    global.gc({ execution: 'async' }).then(() => {\n-      t.assert.strictEqual(composedSignalRef.deref(), undefined);\n-      t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 2);\n-      t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 1);\n-\n-      setImmediate(() => {\n-        t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 0);\n-        t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 0);\n+  t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 2);\n+  t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 1);\n \n-        done();\n+  setImmediate(() => {\n+    global.gc({ execution: 'async' }).then(async () => {\n+      await gcUntil('all signals are GCed', () => {\n+        const totalDependantSignals = Math.max(\n+          controllers[0].signal[kDependantSignals].size,\n+          controllers[1].signal[kDependantSignals].size\n+        );\n+\n+        return composedSignalRef.deref() === undefined && totalDependantSignals === 0;\n       });\n+\n+      done();\n     });\n   });\n });"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

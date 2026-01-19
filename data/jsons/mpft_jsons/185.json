@@ -1,0 +1,11 @@
+{
+  "id": 185,
+  "repo": "iceberg",
+  "issue_url": "https://github.com/apache/iceberg/commit/a5f6f449b31dc5cf3da2d8e5e192250b2008f1a5",
+  "pr_url": "https://github.com/apache/iceberg/commit/a5f6f449b31dc5cf3da2d8e5e192250b2008f1a5",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

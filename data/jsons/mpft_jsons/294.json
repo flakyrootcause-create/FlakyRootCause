@@ -1,0 +1,27 @@
+{
+  "id": 294,
+  "repo": "arrow-go",
+  "issue_url": "https://github.com/apache/arrow-go/pull/414",
+  "pr_url": "https://github.com/apache/arrow-go/pull/414",
+  "issue_description": "### Rationale for this change\nAdditional checks for `io.EOF` to avoid flaky tests\n",
+  "files_changed": [
+    {
+      "filename": "arrow/flight/flightsql/example/sql_batch_reader.go",
+      "status": "modified",
+      "patch": "@@ -21,6 +21,7 @@ package example\n \n import (\n \t\"database/sql\"\n+\t\"io\"\n \t\"reflect\"\n \t\"strconv\"\n \t\"strings\"\n@@ -264,7 +265,7 @@ func (r *SqlBatchReader) Next() bool {\n \n \trows := 0\n \tfor rows < maxBatchSize && r.rows.Next() {\n-\t\tif err := r.rows.Scan(r.rowdest...); err != nil {\n+\t\tif err := r.rows.Scan(r.rowdest...); err != nil && err.Error() != io.EOF.Error() {\n \t\t\t// Not really useful except for testing Flight SQL clients\n \t\t\tdetail := wrapperspb.StringValue{Value: r.schema.String()}\n \t\t\tif st, sterr := status.New(codes.Unknown, err.Error()).WithDetails(&detail); sterr != nil {"
+    },
+    {
+      "filename": "arrow/flight/flightsql/example/sqlite_tables_schema_batch_reader.go",
+      "status": "modified",
+      "patch": "@@ -22,6 +22,8 @@ package example\n import (\n \t\"context\"\n \t\"database/sql\"\n+\t\"errors\"\n+\t\"io\"\n \t\"strings\"\n \t\"sync/atomic\"\n \n@@ -173,7 +175,9 @@ func (s *SqliteTablesSchemaBatchReader) Next() bool {\n \t\tfor rows.Next() {\n \t\t\tif err := rows.Scan(&tableName, &name, &typ, &nn); err != nil {\n \t\t\t\trows.Close()\n-\t\t\t\ts.err = err\n+\t\t\t\tif err.Error() != io.EOF.Error() {\n+\t\t\t\t\ts.err = err\n+\t\t\t\t}\n \t\t\t\treturn false\n \t\t\t}\n \n@@ -186,7 +190,7 @@ func (s *SqliteTablesSchemaBatchReader) Next() bool {\n \t\t}\n \n \t\trows.Close()\n-\t\tif rows.Err() != nil {\n+\t\tif rows.Err() != nil && !errors.Is(rows.Err(), io.EOF) {\n \t\t\ts.err = rows.Err()\n \t\t\treturn false\n \t\t}"
+    },
+    {
+      "filename": "arrow/flight/record_batch_reader.go",
+      "status": "modified",
+      "patch": "@@ -18,7 +18,9 @@ package flight\n \n import (\n \t\"bytes\"\n+\t\"errors\"\n \t\"fmt\"\n+\t\"io\"\n \t\"sync/atomic\"\n \n \t\"github.com/apache/arrow-go/v18/arrow\"\n@@ -256,7 +258,7 @@ func ConcatenateReaders(rdrs []array.RecordReader, ch chan<- StreamChunk) {\n \t\t\tch <- StreamChunk{Data: rec}\n \t\t}\n \t\tif e, ok := r.(haserr); ok {\n-\t\t\tif e.Err() != nil {\n+\t\t\tif e.Err() != nil && !errors.Is(e.Err(), io.EOF) {\n \t\t\t\tch <- StreamChunk{Err: e.Err()}\n \t\t\t\treturn\n \t\t\t}"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

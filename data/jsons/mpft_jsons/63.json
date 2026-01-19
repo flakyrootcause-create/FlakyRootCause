@@ -1,0 +1,82 @@
+{
+  "id": 63,
+  "repo": "wpt",
+  "issue_url": "https://github.com/web-platform-tests/wpt/commit/9a2d353a86eb2c4963b17d408a7f31eb69625cb8",
+  "pr_url": "https://github.com/web-platform-tests/wpt/commit/9a2d353a86eb2c4963b17d408a7f31eb69625cb8",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "html/browsers/browsing-the-web/read-media/pageload-image.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/browsers/browsing-the-web/read-media/pageload-video.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/dom/dynamic-markup-insertion/document-write/nested-document-write-1.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/dom/dynamic-markup-insertion/document-write/nested-document-write-2.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/dom/dynamic-markup-insertion/document-write/nested-document-write-external.js",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-1-ref.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-1a.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-1b.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-1c.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-2-ref.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/grouping-content/the-ol-element/reversed-2.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/semantics/scripting-1/the-script-element/script-for-onload.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "html/webappapis/scripting/events/body-onload.html",
+      "status": "renamed",
+      "patch": ""
+    },
+    {
+      "filename": "old-tests/submission/Mozilla/MANIFEST",
+      "status": "removed",
+      "patch": "@@ -1,11 +0,0 @@\n-body-onload.html\n-manual nested-document-write-1.html\n-manual nested-document-write-2.html\n-support nested-document-write-external.js\n-pageload-image.html\n-pageload-video.html\n-ref reversed-1a.html == reversed-1-ref.html\n-ref reversed-1b.html == reversed-1-ref.html\n-ref reversed-1c.html == reversed-1-ref.html\n-ref reversed-2.html == reversed-2-ref.html\n-script-for-onload.html"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

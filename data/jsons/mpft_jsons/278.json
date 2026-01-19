@@ -1,0 +1,11 @@
+{
+  "id": 278,
+  "repo": "rust",
+  "issue_url": "https://github.com/rust-lang/rust/commit/64d667ae78f96102fb71286106ba3d0186f411c3",
+  "pr_url": "https://github.com/rust-lang/rust/commit/64d667ae78f96102fb71286106ba3d0186f411c3",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Time",
+  "root_cause_subcategory": NaN
+}

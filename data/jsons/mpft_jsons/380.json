@@ -1,0 +1,17 @@
+{
+  "id": 380,
+  "repo": "tensorflow",
+  "issue_url": "https://github.com/tensorflow/tensorflow/pull/79473",
+  "pr_url": "https://github.com/tensorflow/tensorflow/pull/79473",
+  "issue_description": "Fix flaky TFRT tensor utility unit test.\n",
+  "files_changed": [
+    {
+      "filename": "tensorflow/core/tfrt/utils/tensor_util_test.cc",
+      "status": "modified",
+      "patch": "@@ -15,6 +15,7 @@ limitations under the License.\n #include \"tensorflow/core/tfrt/utils/tensor_util.h\"\n \n #include <complex>\n+#include <cstdint>\n #include <memory>\n #include <numeric>\n \n@@ -43,7 +44,10 @@ TEST(TensorUtilTest, DHTToTFTensor) {\n   std::iota(view.begin(), view.end(), 1);\n   auto tf_tensor = *TFRTTensorToTFTensor(dht);\n   EXPECT_THAT(tf_tensor.shape().dim_sizes(), testing::ElementsAre(2, 2));\n-  EXPECT_EQ(tf_tensor.data(), dht.data());\n+\n+  const int32_t* data = tf_tensor.flat<int32_t>().data();\n+  EXPECT_THAT(std::vector<int32_t>(data, data + 4),\n+              testing::ElementsAre(1, 2, 3, 4));\n }\n \n TEST(TensorUtilTest, SHTToTFTensor) {"
+    }
+  ],
+  "fix_category": "Change assertion",
+  "root_cause_category": "I/O",
+  "root_cause_subcategory": NaN
+}

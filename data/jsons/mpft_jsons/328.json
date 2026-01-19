@@ -1,0 +1,17 @@
+{
+  "id": 328,
+  "repo": "electron",
+  "issue_url": "https://github.com/electron/electron/pull/39682",
+  "pr_url": "https://github.com/electron/electron/pull/39682",
+  "issue_description": "[PR Linked Issue]\n`contentTracing captured events include V8 samples from the main process` has been flaking a fair amount on Appveyor as of late.\r\n\r\nSee [here](https://ci.appveyor.com/project/electron-bot/electron-x64-testing/builds/47184539/job/6ycj2f45a7flb0dc/tests) for example.",
+  "files_changed": [
+    {
+      "filename": "spec/api-content-tracing-spec.ts",
+      "status": "modified",
+      "patch": "@@ -5,8 +5,8 @@ import * as path from 'node:path';\n import { setTimeout } from 'node:timers/promises';\n import { ifdescribe } from './lib/spec-helpers';\n \n-// FIXME: The tests are skipped on arm/arm64 and ia32.\n-ifdescribe(!(['arm', 'arm64', 'ia32'].includes(process.arch)))('contentTracing', () => {\n+// FIXME: The tests are skipped on linux arm/arm64\n+ifdescribe(!(['arm', 'arm64'].includes(process.arch)) || (process.platform !== 'linux'))('contentTracing', () => {\n   const record = async (options: TraceConfig | TraceCategoriesAndOptions, outputFilePath: string | undefined, recordTimeInMilliseconds = 1e1) => {\n     await app.whenReady();\n \n@@ -120,9 +120,7 @@ ifdescribe(!(['arm', 'arm64', 'ia32'].includes(process.arch)))('contentTracing',\n \n   describe('captured events', () => {\n     it('include V8 samples from the main process', async function () {\n-      // This test is flaky on macOS CI.\n-      this.retries(3);\n-\n+      this.timeout(60000);\n       await contentTracing.startRecording({\n         categoryFilter: 'disabled-by-default-v8.cpu_profiler',\n         traceOptions: 'record-until-full'\n@@ -131,7 +129,7 @@ ifdescribe(!(['arm', 'arm64', 'ia32'].includes(process.arch)))('contentTracing',\n         const start = Date.now();\n         let n = 0;\n         const f = () => {};\n-        while (Date.now() - start < 200 || n < 500) {\n+        while (Date.now() - start < 200 && n < 500) {\n           await setTimeout(0);\n           f();\n           n++;"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

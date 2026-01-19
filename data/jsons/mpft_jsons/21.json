@@ -1,0 +1,27 @@
+{
+  "id": 21,
+  "repo": "next.js",
+  "issue_url": "https://github.com/vercel/next.js/commit/2bcb4bd6e85f7037a2998ea66691d3bb60e9a5ce",
+  "pr_url": "https://github.com/vercel/next.js/commit/2bcb4bd6e85f7037a2998ea66691d3bb60e9a5ce",
+  "issue_description": "",
+  "files_changed": [
+    {
+      "filename": "client/eval-script.js",
+      "status": "modified",
+      "patch": "@@ -2,12 +2,14 @@ import React from 'react'\n import ReactDOM from 'react-dom'\n import App from '../lib/app'\n import Link from '../lib/link'\n+import css from '../lib/css'\n \n const modules = new Map([\n   ['react', React],\n   ['react-dom', ReactDOM],\n   ['next/app', App],\n-  ['next/link', Link]\n+  ['next/link', Link],\n+  ['next/css', css]\n ])\n \n /**"
+    },
+    {
+      "filename": "server/build/bundle.js",
+      "status": "modified",
+      "patch": "@@ -14,7 +14,8 @@ export default function bundle (src, dst) {\n       'react-dom',\n       {\n         [require.resolve('react')]: 'react',\n-        [require.resolve('../lib/link')]: 'next/link'\n+        [require.resolve('../lib/link')]: 'next/link',\n+        [require.resolve('../lib/css')]: 'next/css'\n       }\n     ],\n     resolveLoader: {"
+    },
+    {
+      "filename": "server/build/transpile.js",
+      "status": "modified",
+      "patch": "@@ -25,7 +25,8 @@ const babelOptions = {\n       [\n         { src: `npm:${babelRuntimePath}`, expose: 'babel-runtime' },\n         { src: `npm:${require.resolve('react')}`, expose: 'react' },\n-        { src: `npm:${require.resolve('../lib/link')}`, expose: 'next/link' }\n+        { src: `npm:${require.resolve('../lib/link')}`, expose: 'next/link' },\n+        { src: `npm:${require.resolve('../lib/css')}`, expose: 'next/css' }\n       ]\n     ]\n   ],"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

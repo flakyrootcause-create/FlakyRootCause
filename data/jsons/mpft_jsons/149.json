@@ -1,0 +1,11 @@
+{
+  "id": 149,
+  "repo": "llvm-project",
+  "issue_url": "https://github.com/llvm/llvm-project/commit/93b4705",
+  "pr_url": "https://github.com/llvm/llvm-project/commit/93b4705",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "OS",
+  "root_cause_subcategory": NaN
+}

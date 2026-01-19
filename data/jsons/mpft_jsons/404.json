@@ -1,0 +1,11 @@
+{
+  "id": 404,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/a05cb0d1b0cb7504ed535a7c4f5b50a6bc7db659",
+  "pr_url": "https://github.com/nodejs/node/commit/a05cb0d1b0cb7504ed535a7c4f5b50a6bc7db659",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

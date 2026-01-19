@@ -1,0 +1,11 @@
+{
+  "id": 18,
+  "repo": "node",
+  "issue_url": "https://github.com/nodejs/node/commit/d7becc58750096b711c55a378a55f596a45f3ce1",
+  "pr_url": "https://github.com/nodejs/node/commit/d7becc58750096b711c55a378a55f596a45f3ce1",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Other",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

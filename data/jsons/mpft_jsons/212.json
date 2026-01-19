@@ -1,0 +1,42 @@
+{
+  "id": 212,
+  "repo": "kubernetes",
+  "issue_url": "https://github.com/kubernetes/kubernetes/commit/3355bd0800de3221aeea5e535ab70f8f84b1277d",
+  "pr_url": "https://github.com/kubernetes/kubernetes/commit/3355bd0800de3221aeea5e535ab70f8f84b1277d",
+  "issue_description": "Fixes #2495: **Kubelet doesn't kill old pods when BoundPods is empty**\n\nThe first time kubelet starts, while there are no updates, `kl.pods` is `nil` ([pkg/kubelet/kubelet.go#L1118](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/kubelet.go#L1118)):\n\n``` GO\ncase <-time.After(kl.resyncInterval):\n    glog.V(4).Infof(\"Periodic sync\")\n    if kl.pods == nil {\n        continue\n    }\n```\n\nwhich guarantees that [`syncPods(...)`](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/kubelet.go#L992), which contains the container killing logic is never called.\n\nSo the first part of the fix is to remove this check and allow `syncPods(...)` to be called even when nil, so that the first periodic sync can clean up old containers.\n\nHowever, this isn't enough because inside `syncPods(...)` there is a check to make sure that all sources have been \"seen\" before it will kill old containers ([pkg/kubelet/kubelet.go#L1026](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/kubelet.go#L1026)):\n\n``` GO\nif !kl.sourcesReady() {\n    // If the sources aren't ready, skip deletion, as we may accidentally delete pods\n    // for sources that haven't reported yet.\n    glog.V(4).Infof(\"Skipping deletes, sources aren't ready yet.\")\n    return nil\n}\n```\n\nThis check is performed in the [`SeenAllSources()`](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/config/config.go#L87) function, and is `true` only if a `SET` update has been seen for all registered kubelet sources.\n\nHowever, no `SET` update is emitted by any of the sources until they successfully read a value, which means the original problem still exists.\n\nSo the second part of the fix is to have the kubelet boundpod sources (etcd, file, and http) all emit a `SET` update with an empty pod list when the source is first read but no value exists; the empty update will not make it back to the kubelet sync loop because it will be filtered out by the [update merge logic](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/config/config.go#L140); but it will cause the source to be [marked as seen](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/kubelet/config/config.go#L238) so the periodic sync (enabled by the first fix) will clean up the old containers (since all sources will now be marked as seen after the first read attempt).\n",
+  "files_changed": [
+    {
+      "filename": "pkg/kubelet/config/etcd.go",
+      "status": "modified",
+      "patch": "@@ -59,7 +59,16 @@ func NewSourceEtcd(key string, client tools.EtcdClient, updates chan<- interface\n }\n \n func (s *sourceEtcd) run() {\n-\twatching := s.helper.Watch(s.key, 0)\n+\tboundPods := api.BoundPods{}\n+\terr := s.helper.ExtractToList(s.key, &boundPods)\n+\tif err != nil {\n+\t\tglog.Errorf(\"etcd failed to retrieve the value for the key %q. Error: %v\", s.key, err)\n+\t\treturn\n+\t}\n+\t// Push update. Maybe an empty PodList to allow EtcdSource to be marked as seen\n+\ts.updates <- kubelet.PodUpdate{boundPods.Items, kubelet.SET, kubelet.EtcdSource}\n+\tindex, _ := s.helper.ResourceVersioner.ResourceVersion(&boundPods)\n+\twatching := s.helper.Watch(s.key, index)\n \tfor {\n \t\tselect {\n \t\tcase event, ok := <-watching.ResultChan():\n@@ -87,6 +96,9 @@ func (s *sourceEtcd) run() {\n // It returns a list of containers, or an error if one occurs.\n func eventToPods(ev watch.Event) ([]api.BoundPod, error) {\n \tpods := []api.BoundPod{}\n+\tif ev.Object == nil {\n+\t\treturn pods, nil\n+\t}\n \tboundPods, ok := ev.Object.(*api.BoundPods)\n \tif !ok {\n \t\treturn pods, errors.New(\"unable to parse response as BoundPods\")"
+    },
+    {
+      "filename": "pkg/kubelet/config/etcd_test.go",
+      "status": "modified",
+      "patch": "@@ -33,7 +33,7 @@ func TestEventToPods(t *testing.T) {\n \t\t{\n \t\t\tinput: watch.Event{Object: nil},\n \t\t\tpods:  []api.BoundPod{},\n-\t\t\tfail:  true,\n+\t\t\tfail:  false,\n \t\t},\n \t\t{\n \t\t\tinput: watch.Event{Object: &api.BoundPods{}},"
+    },
+    {
+      "filename": "pkg/kubelet/config/file.go",
+      "status": "modified",
+      "patch": "@@ -64,6 +64,8 @@ func (s *sourceFile) extractFromPath() error {\n \t\tif !os.IsNotExist(err) {\n \t\t\treturn err\n \t\t}\n+\t\t// Emit an update with an empty PodList to allow FileSource to be marked as seen\n+\t\ts.updates <- kubelet.PodUpdate{[]api.BoundPod{}, kubelet.SET, kubelet.FileSource}\n \t\treturn fmt.Errorf(\"path does not exist, ignoring\")\n \t}\n "
+    },
+    {
+      "filename": "pkg/kubelet/config/file_test.go",
+      "status": "modified",
+      "patch": "@@ -92,8 +92,14 @@ func TestUpdateOnNonExistentFile(t *testing.T) {\n \tNewSourceFile(\"random_non_existent_path\", time.Millisecond, ch)\n \tselect {\n \tcase got := <-ch:\n-\t\tt.Errorf(\"Expected no update, Got %#v\", got)\n+\t\tupdate := got.(kubelet.PodUpdate)\n+\t\texpected := CreatePodUpdate(kubelet.SET, kubelet.FileSource)\n+\t\tif !api.Semantic.DeepEqual(expected, update) {\n+\t\t\tt.Fatalf(\"Expected %#v, Got %#v\", expected, update)\n+\t\t}\n+\n \tcase <-time.After(2 * time.Millisecond):\n+\t\tt.Errorf(\"Expected update, timeout instead\")\n \t}\n }\n "
+    },
+    {
+      "filename": "pkg/kubelet/config/http.go",
+      "status": "modified",
+      "patch": "@@ -69,6 +69,8 @@ func (s *sourceURL) extractFromURL() error {\n \t\treturn fmt.Errorf(\"%v: %v\", s.url, resp.Status)\n \t}\n \tif len(data) == 0 {\n+\t\t// Emit an update with an empty PodList to allow HTTPSource to be marked as seen\n+\t\ts.updates <- kubelet.PodUpdate{[]api.BoundPod{}, kubelet.SET, kubelet.HTTPSource}\n \t\treturn fmt.Errorf(\"zero-length data received from %v\", s.url)\n \t}\n \t// Short circuit if the manifest has not changed since the last time it was read."
+    },
+    {
+      "filename": "pkg/kubelet/kubelet.go",
+      "status": "modified",
+      "patch": "@@ -1118,9 +1118,6 @@ func (kl *Kubelet) syncLoop(updates <-chan PodUpdate, handler SyncHandler) {\n \t\t\t}\n \t\tcase <-time.After(kl.resyncInterval):\n \t\t\tglog.V(4).Infof(\"Periodic sync\")\n-\t\t\tif kl.pods == nil {\n-\t\t\t\tcontinue\n-\t\t\t}\n \t\t}\n \n \t\terr := handler.SyncPods(kl.pods)"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

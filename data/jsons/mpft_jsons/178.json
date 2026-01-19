@@ -1,0 +1,17 @@
+{
+  "id": 178,
+  "repo": "lucene",
+  "issue_url": "https://github.com/apache/lucene/pull/14562",
+  "pr_url": "https://github.com/apache/lucene/pull/14562",
+  "issue_description": "Fixes #13547",
+  "files_changed": [
+    {
+      "filename": "lucene/core/src/test/org/apache/lucene/TestMergeSchedulerExternal.java",
+      "status": "modified",
+      "patch": "@@ -116,9 +116,10 @@ public void testSubclassConcurrentMergeScheduler() throws IOException {\n     Field idField = newStringField(\"id\", \"\", Field.Store.YES);\n     doc.add(idField);\n \n+    MyMergeScheduler mergeScheduler = new MyMergeScheduler();\n     IndexWriterConfig iwc =\n         newIndexWriterConfig(new MockAnalyzer(random()))\n-            .setMergeScheduler(new MyMergeScheduler())\n+            .setMergeScheduler(mergeScheduler)\n             .setMaxBufferedDocs(2)\n             .setRAMBufferSizeMB(IndexWriterConfig.DISABLE_AUTO_FLUSH)\n             .setMergePolicy(newLogMergePolicy());\n@@ -141,13 +142,7 @@ public void testSubclassConcurrentMergeScheduler() throws IOException {\n       // OK\n     }\n \n-    try {\n-      ((MyMergeScheduler) writer.getConfig().getMergeScheduler()).sync();\n-    } catch (\n-        @SuppressWarnings(\"unused\")\n-        IllegalStateException ise) {\n-      // OK\n-    }\n+    mergeScheduler.sync();\n     writer.rollback();\n \n     try {"
+    }
+  ],
+  "fix_category": "Change condition",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

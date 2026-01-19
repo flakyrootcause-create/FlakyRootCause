@@ -1,0 +1,17 @@
+{
+  "id": 165,
+  "repo": "sentry-python",
+  "issue_url": "https://github.com/getsentry/sentry-python/pull/4593",
+  "pr_url": "https://github.com/getsentry/sentry-python/pull/4593",
+  "issue_description": "The test `test_installed_modules` appears to not be all that useful.\n\nThe test exists to verify the behavior of the [`_generate_installed_modules` function](https://github.com/getsentry/sentry-python/blob/9b66f3b51502ca600554c711bc3f599c18f8f18b/sentry_sdk/utils.py#L1689). However, all the test does is essentially check the output of `_generate_installed_modules` against a refactored version of the function call itself.\n\nIn short, in its current form, the test appears to not make too much sense. As the test recently started failing, let's just delete it.\n\n<!-- Describe your PR here -->\n\n---\n\nThank you for contributing to `sentry-python`! Please add tests to validate your changes, and lint your code using `tox -e linters`.\n\nRunning the test suite on your PR might require maintainer approval.",
+  "files_changed": [
+    {
+      "filename": "tests/test_utils.py",
+      "status": "modified",
+      "patch": "@@ -30,7 +30,6 @@\n     serialize_frame,\n     is_sentry_url,\n     _get_installed_modules,\n-    _generate_installed_modules,\n     ensure_integration_enabled,\n     to_string,\n     exc_info_from_error,\n@@ -667,47 +666,6 @@ def __str__(self):\n     assert result == repr(obj)\n \n \n-def test_installed_modules():\n-    try:\n-        from importlib.metadata import distributions, version\n-\n-        importlib_available = True\n-    except ImportError:\n-        importlib_available = False\n-\n-    try:\n-        import pkg_resources\n-\n-        pkg_resources_available = True\n-    except ImportError:\n-        pkg_resources_available = False\n-\n-    installed_distributions = {\n-        _normalize_distribution_name(dist): version\n-        for dist, version in _generate_installed_modules()\n-    }\n-\n-    if importlib_available:\n-        importlib_distributions = {\n-            _normalize_distribution_name(dist.metadata.get(\"Name\", None)): version(\n-                dist.metadata.get(\"Name\", None)\n-            )\n-            for dist in distributions()\n-            if dist.metadata.get(\"Name\", None) is not None\n-            and version(dist.metadata.get(\"Name\", None)) is not None\n-        }\n-        assert installed_distributions == importlib_distributions\n-\n-    elif pkg_resources_available:\n-        pkg_resources_distributions = {\n-            _normalize_distribution_name(dist.key): dist.version\n-            for dist in pkg_resources.working_set\n-        }\n-        assert installed_distributions == pkg_resources_distributions\n-    else:\n-        pytest.fail(\"Neither importlib nor pkg_resources is available\")\n-\n-\n def test_installed_modules_caching():\n     mock_generate_installed_modules = mock.Mock()\n     mock_generate_installed_modules.return_value = {\"package\": \"1.0.0\"}"
+    }
+  ],
+  "fix_category": "Remove dependency",
+  "root_cause_category": "Randomness",
+  "root_cause_subcategory": NaN
+}

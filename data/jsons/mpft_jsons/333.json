@@ -1,0 +1,11 @@
+{
+  "id": 333,
+  "repo": "ribbon",
+  "issue_url": "https://github.com/Netflix/ribbon/commit/c723dc5a2db992a3a2567c0b6c37a0851fc237f9",
+  "pr_url": "https://github.com/Netflix/ribbon/commit/c723dc5a2db992a3a2567c0b6c37a0851fc237f9",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

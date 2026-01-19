@@ -1,0 +1,32 @@
+{
+  "id": 20,
+  "repo": "next.js",
+  "issue_url": "https://github.com/vercel/next.js/commit/3b8ce1a479778dc161fec7c8e9401861deaaf447",
+  "pr_url": "https://github.com/vercel/next.js/commit/3b8ce1a479778dc161fec7c8e9401861deaaf447",
+  "issue_description": "There was a couple of errors on the dev script preventing it to work properly. I also merged this with the open pr I had for adding `next/css`\n",
+  "files_changed": [
+    {
+      "filename": "bin/next-dev",
+      "status": "modified",
+      "patch": "@@ -3,7 +3,7 @@\n import { resolve } from 'path'\n import parseArgs from 'minimist'\n import Server from '../server'\n-import build from '../server/build'\n+import build from '../server/build/index'\n \n const argv = parseArgs(process.argv.slice(2), {\n   alias: {"
+    },
+    {
+      "filename": "client/eval-script.js",
+      "status": "modified",
+      "patch": "@@ -2,12 +2,14 @@ import React from 'react'\n import ReactDOM from 'react-dom'\n import App from '../lib/app'\n import Link from '../lib/link'\n+import Css from '../lib/css'\n \n const modules = new Map([\n   ['react', React],\n   ['react-dom', ReactDOM],\n   ['next/app', App],\n-  ['next/link', Link]\n+  ['next/link', Link],\n+  ['next/css', Css]\n ])\n \n /**"
+    },
+    {
+      "filename": "server/build/bundle.js",
+      "status": "modified",
+      "patch": "@@ -14,7 +14,8 @@ export default function bundle (src, dst) {\n       'react-dom',\n       {\n         [require.resolve('react')]: 'react',\n-        [require.resolve('../lib/link')]: 'next/link'\n+        [require.resolve('../../lib/link')]: 'next/link',\n+        [require.resolve('../../lib/css')]: 'next/css'\n       }\n     ],\n     resolveLoader: {"
+    },
+    {
+      "filename": "server/build/transpile.js",
+      "status": "modified",
+      "patch": "@@ -25,7 +25,8 @@ const babelOptions = {\n       [\n         { src: `npm:${babelRuntimePath}`, expose: 'babel-runtime' },\n         { src: `npm:${require.resolve('react')}`, expose: 'react' },\n-        { src: `npm:${require.resolve('../lib/link')}`, expose: 'next/link' }\n+        { src: `npm:${require.resolve('../../lib/link')}`, expose: 'next/link' },\n+        { src: `npm:${require.resolve('../../lib/css')}`, expose: 'next/css' }\n       ]\n     ]\n   ],"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

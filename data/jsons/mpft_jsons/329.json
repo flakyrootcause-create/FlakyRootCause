@@ -1,0 +1,11 @@
+{
+  "id": 329,
+  "repo": "electron",
+  "issue_url": "https://github.com/electron/electron/commit/c42fb09fc925bbe82d0c99b6890af7dd1e0daf62",
+  "pr_url": "https://github.com/electron/electron/commit/c42fb09fc925bbe82d0c99b6890af7dd1e0daf62",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

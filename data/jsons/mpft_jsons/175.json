@@ -1,0 +1,11 @@
+{
+  "id": 175,
+  "repo": "terraform",
+  "issue_url": "https://github.com/hashicorp/terraform/pull/36566/files",
+  "pr_url": "https://github.com/hashicorp/terraform/pull/36566/files",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Change assertion",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

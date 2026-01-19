@@ -1,0 +1,11 @@
+{
+  "id": 346,
+  "repo": "spring-framework",
+  "issue_url": "https://github.com/spring-projects/spring-framework/commit/fb0aa5abb3ffbcaec68ed74e14d9b98faba92262",
+  "pr_url": "https://github.com/spring-projects/spring-framework/commit/fb0aa5abb3ffbcaec68ed74e14d9b98faba92262",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

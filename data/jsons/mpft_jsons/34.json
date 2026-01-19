@@ -1,0 +1,11 @@
+{
+  "id": 34,
+  "repo": "pytorch",
+  "issue_url": "https://github.com/pytorch/pytorch/commit/ae2e057d23a1d8b33ff19c2d1f9eabb48facd710",
+  "pr_url": "https://github.com/pytorch/pytorch/commit/ae2e057d23a1d8b33ff19c2d1f9eabb48facd710",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Resource leak",
+  "root_cause_subcategory": NaN
+}

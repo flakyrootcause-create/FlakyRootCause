@@ -1,0 +1,22 @@
+{
+  "id": 83,
+  "repo": "relay",
+  "issue_url": "https://github.com/getsentry/relay/issues/3170",
+  "pr_url": "https://github.com/getsentry/relay/pull/3187",
+  "issue_description": "### Flakiness Type\r\n\r\nAssertion failure\r\n\r\n### Name of Test\r\n\r\ntests/integration/test_store.py::test_store_external_relay[True]\r\n\r\n### Link to Test Run\r\n\r\nhttps://github.com/getsentry/relay/actions/runs/8064949158/job/22029826573?pr=3105\r\n\r\n### Details\r\n\r\n```\r\n=================================== FAILURES ===================================\r\n_______________________ test_store_external_relay[True] ________________________\r\n[gw0] linux -- Python 3.10.13 /home/runner/work/relay/relay/.venv/bin/python3\r\nTraceback (most recent call last):\r\n  File \"/home/runner/work/relay/relay/tests/integration/conftest.py\", line 247, in pytest_runtest_call\r\n    check_func()\r\n  File \"/home/runner/work/relay/relay/tests/integration/fixtures/mini_sentry.py\", line 419, in reraise_test_failures\r\n    pytest.fail(\r\n  File \"/home/runner/work/relay/relay/.venv/lib/python3.10/site-packages/_pytest/outcomes.py\", line 196, in fail\r\n    raise Failed(msg=reason, pytrace=pytrace)\r\nFailed: 1 exceptions happened in mini_sentry:\r\n\r\n> /api/666/envelope/: Relay sent us event: Health check probe 'relay authentication' failed\r\n```",
+  "files_changed": [
+    {
+      "filename": "tests/integration/fixtures/relay.py",
+      "status": "modified",
+      "patch": "@@ -185,6 +185,12 @@ def inner(\n \n         if wait_health_check:\n             relay.wait_relay_health_check()\n+            # Filter out health check failures, which can happen during startup\n+            mini_sentry.test_failures = [\n+                f\n+                for f in mini_sentry.test_failures\n+                if \"Health check probe\" not in str(f)\n+            ]\n \n         return relay\n "
+    },
+    {
+      "filename": "tests/integration/test_ephemeral_config.py",
+      "status": "modified",
+      "patch": "@@ -81,7 +81,6 @@ def test_store_via_ephemeral_relay(\n         version,\n     )\n     relay.wait_relay_health_check()\n-    print(mode)\n     if mode == \"managed\":\n         project_config[\"config\"][\"trustedRelays\"] = list(relay.iter_public_keys())\n         print(project_config[\"config\"][\"trustedRelays\"])"
+    }
+  ],
+  "fix_category": NaN,
+  "root_cause_category": NaN,
+  "root_cause_subcategory": "!Rust (Python)"
+}

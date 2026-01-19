@@ -1,0 +1,11 @@
+{
+  "id": 354,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/e76e1da5ea5cca0df90880481ee092b1766831c4",
+  "pr_url": "https://github.com/apache/kafka/commit/e76e1da5ea5cca0df90880481ee092b1766831c4",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

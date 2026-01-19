@@ -1,0 +1,17 @@
+{
+  "id": 210,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/0412be9e9de9b32ac83d7f00945f73c06776a7f3",
+  "pr_url": "https://github.com/apache/kafka/commit/0412be9e9de9b32ac83d7f00945f73c06776a7f3",
+  "issue_description": "\u2026ot specifying topic\n",
+  "files_changed": [
+    {
+      "filename": "core/src/main/scala/kafka/tools/ConsoleConsumer.scala",
+      "status": "modified",
+      "patch": "@@ -239,10 +239,22 @@ object ConsoleConsumer extends Logging {\n     var groupIdPassed = true\n     val options: OptionSet = tryParse(parser, args)\n     val useNewConsumer = options.has(useNewConsumerOpt)\n-    val filterOpt = List(whitelistOpt, blacklistOpt).filter(options.has)\n-    val topicOrFilterOpt = List(topicIdOpt, whitelistOpt, blacklistOpt).filter(options.has)\n-    val topicArg = options.valueOf(topicOrFilterOpt.head)\n-    val filterSpec = if (options.has(blacklistOpt)) new Blacklist(topicArg) else new Whitelist(topicArg)\n+\n+    // If using old consumer, exactly one of whitelist/blacklist/topic is required.\n+    // If using new consumer, topic must be specified.\n+    var topicArg: String = null\n+    var filterSpec: TopicFilter = null\n+    if (useNewConsumer) {\n+      if (!options.has(topicIdOpt))\n+        CommandLineUtils.printUsageAndDie(parser, \"Topic must be specified.\")\n+      topicArg = options.valueOf(topicIdOpt)\n+    } else {\n+      val topicOrFilterOpt = List(topicIdOpt, whitelistOpt, blacklistOpt).filter(options.has)\n+      if (topicOrFilterOpt.size != 1)\n+        CommandLineUtils.printUsageAndDie(parser, \"Exactly one of whitelist/blacklist/topic is required.\")\n+      topicArg = options.valueOf(topicOrFilterOpt.head)\n+      filterSpec = if (options.has(blacklistOpt)) new Blacklist(topicArg) else new Whitelist(topicArg)\n+    }\n     val consumerProps = if (options.has(consumerConfigOpt))\n       Utils.loadProps(options.valueOf(consumerConfigOpt))\n     else\n@@ -262,9 +274,6 @@ object ConsoleConsumer extends Logging {\n \n     CommandLineUtils.checkRequiredArgs(parser, options, if (useNewConsumer) bootstrapServerOpt else zkConnectOpt)\n \n-    if (!useNewConsumer && topicOrFilterOpt.size != 1)\n-      CommandLineUtils.printUsageAndDie(parser, \"Exactly one of whitelist/blacklist/topic is required.\")\n-\n     if (options.has(csvMetricsReporterEnabledOpt)) {\n       val csvReporterProps = new Properties()\n       csvReporterProps.put(\"kafka.metrics.polling.interval.secs\", \"5\")"
+    }
+  ],
+  "fix_category": "Setup/clean up state",
+  "root_cause_category": "Test order dependency",
+  "root_cause_subcategory": NaN
+}

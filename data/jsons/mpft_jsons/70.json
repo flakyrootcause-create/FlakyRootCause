@@ -1,0 +1,17 @@
+{
+  "id": 70,
+  "repo": "tornado",
+  "issue_url": "https://github.com/tornadoweb/tornado/pull/3312",
+  "pr_url": "https://github.com/tornadoweb/tornado/pull/3312",
+  "issue_description": "This test has recently become flaky on windows CI, and before investigating further, see if it's just because the CI machines are overloaded and subprocesses are slower on windows.",
+  "files_changed": [
+    {
+      "filename": "tornado/test/httpclient_test.py",
+      "status": "modified",
+      "patch": "@@ -853,7 +853,7 @@ def test_destructor_log(self):\n             stdout=subprocess.PIPE,\n             stderr=subprocess.STDOUT,\n             check=True,\n-            timeout=5,\n+            timeout=15,\n         )\n         if proc.stdout:\n             print(\"STDOUT:\")"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Concurrency",
+  "root_cause_subcategory": NaN
+}

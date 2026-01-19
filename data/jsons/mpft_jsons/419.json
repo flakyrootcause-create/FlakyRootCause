@@ -1,0 +1,17 @@
+{
+  "id": 419,
+  "repo": "flask",
+  "issue_url": "https://github.com/pallets/flask/pull/4293",
+  "pr_url": "https://github.com/pallets/flask/pull/4293",
+  "issue_description": "This test checks if loading an app in the background will catch and re-raise an exception. It occasionally fails on pypy3. Possibly, the background loading thread does not finish before the assert line, and so there is no exception yet. Try to address this by waiting for the lock before asserting. This could still fail if the thread starts *very* slowly.\r\n\r\ncloses #4292 ",
+  "files_changed": [
+    {
+      "filename": "tests/test_cli.py",
+      "status": "modified",
+      "patch": "@@ -334,7 +334,9 @@ def bad_load():\n     lazy = DispatchingApp(bad_load, use_eager_loading=False)\n \n     with pytest.raises(BadExc):\n-        lazy._flush_bg_loading_exception()\n+        # reduce flakiness by waiting for the internal loading lock\n+        with lazy._lock:\n+            lazy._flush_bg_loading_exception()\n \n \n def test_with_appcontext(runner):"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

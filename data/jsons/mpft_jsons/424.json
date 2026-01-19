@@ -1,0 +1,17 @@
+{
+  "id": 424,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/pull/19628",
+  "pr_url": "https://github.com/apache/kafka/pull/19628",
+  "issue_description": "[Jira: KAFKA-18537](https://issues.apache.org/jira/browse/KAFKA-18537)\nAdd a wait for cleaner thread shutdown in `testCleanerThreadShutdown` to\neliminate flakiness. After calling `cache.close()`, the test now uses\n`TestUtils.waitForCondition` to poll until the background\n\u201cremote-log-index-cleaner\u201d thread has fully exited before asserting that\nno cleaner threads remain. This ensures the asynchronous shutdown always\ncompletes before the final assertions.\n\nReviewers: TengYao Chi <kitingiao@gmail.com>, Chia-Ping Tsai\n <chia7712@gmail.com>\n",
+  "files_changed": [
+    {
+      "filename": "storage/src/test/java/org/apache/kafka/storage/internals/log/RemoteIndexCacheTest.java",
+      "status": "modified",
+      "patch": "@@ -376,8 +376,10 @@ public void testCleanerThreadShutdown() throws IOException, InterruptedException\n         // close the cache properly\n         cache.close();\n         // verify that the thread is closed properly\n-        threads = getRunningCleanerThread();\n-        assertTrue(threads.isEmpty(), \"Found unexpected \" + threads.size() + \" threads=\" + threads.stream().map(Thread::getName).collect(Collectors.joining(\", \")));\n+        TestUtils.waitForCondition(\n+                () -> getRunningCleanerThread().isEmpty(),\n+                () -> \"Failed while waiting for cleaner threads to shutdown. Remaining threads: \" +\n+                        getRunningCleanerThread().stream().map(Thread::getName).collect(Collectors.joining(\", \")));\n         // if the thread is correctly being shutdown it will not be running\n         assertFalse(cache.cleanerScheduler().isStarted(), \"Unexpected thread state=running. Check error logs.\");\n     }"
+    }
+  ],
+  "fix_category": "WaitFor",
+  "root_cause_category": "Async wait",
+  "root_cause_subcategory": NaN
+}

@@ -1,0 +1,11 @@
+{
+  "id": 211,
+  "repo": "kafka",
+  "issue_url": "https://github.com/apache/kafka/commit/f1e9aa1c6553855206f52b17c50eed537a6611e2",
+  "pr_url": "https://github.com/apache/kafka/commit/f1e9aa1c6553855206f52b17c50eed537a6611e2",
+  "issue_description": null,
+  "files_changed": [],
+  "fix_category": "Make deterministic",
+  "root_cause_category": "Unordered collections",
+  "root_cause_subcategory": NaN
+}
